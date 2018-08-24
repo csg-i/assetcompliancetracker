@@ -1,0 +1,55 @@
+﻿@model act.core.web.Models.ScoreCard.DirectorScoreCardScreen
+@{
+    ViewBag.Title = "Director Scorecard";
+}
+@section scripts
+{
+    @Url.ViewJavascript("DirectorScoreCard")
+}
+@section css
+{
+    @Url.ViewStyles("DirectorScoreCard")
+}
+@section nocontainer
+{
+    <div style="margin: 72px 24px 0">
+        <div class="clearfix mb-2">
+            <h1 class="float-left">Director Scorecard</h1>
+            <a href="@Url.FileDirectorScoreCard()" class="btn btn-sm btn-success float-right"><i class="fa fa-file-excel-o"></i> Export</a>
+        </div>
+        <hr/>
+        <div role="form" class="row clearfix mb-2">
+            <div class="col-md-2 col-12">
+                <h4>PCI</h4>
+                <div class="form-check form-check-inline">
+                    <input type="radio" id="pci" class="action-total-or-pci form-check-input" name="total" value="false" checked="checked"/>
+                    <label for="pci" class="form-check-label">PCI</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input type="radio" id="all" class="action-total-or-pci form-check-input" name="total" value="true"/>
+                    <label for="all" class="form-check-label">All</label>
+                </div>
+            </div>
+            <div class="offset-md-1 col-md-6 col-12">
+                <h4>Filter</h4>
+                <div class="form-check form-check-inline">
+                    <input id="filterAll" type="radio" class="action-filter form-check-input" name="filter" value="" checked="checked"/>
+                    <label for="filterAll" class="form-check-label">All</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input id="unassigned" type="radio" class="action-filter form-check-input" name="filter" value="unassigned"/>
+                    <label for="unassigned" class="form-check-label">Unassigned</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input id="notReporting" type="radio" class="action-filter form-check-input" name="filter" value="not-reporting"/>
+                    <label for="notReporting" class="form-check-label">Not&nbsp;Reporting</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input id="failing" type="radio" class="action-filter form-check-input" name="filter" value="failing"/>
+                    <label for="failing" class="form-check-label">Failing</label>
+                </div>
+            </div>
+        </div>
+        <div class="on-visible" data-url="@Url.PartialDirectorScoreCard()" data-visibility-action="loadScoreCard"></div>
+    </div>
+}

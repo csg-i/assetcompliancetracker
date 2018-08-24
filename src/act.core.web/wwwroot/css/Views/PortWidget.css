@@ -1,0 +1,8 @@
+﻿div.port-widget div#ports div.list-group-item div.action-add-edit-port{ cursor: pointer;}
+div.port-widget div#ports div.list-group-item.port{ border-left-width: 6px;}
+div.port-widget div#ports div.list-group-item.port p{ min-height: 2em; height: 2em; overflow-y: hidden}
+div.port-widget div#ports div.list-group-item.port.all p{ height: auto;}
+div.port-widget div#ports div.list-group-item.port.external{ border-left-color:#a94442;}
+div.port-widget div#ports div.list-group-item.port.external h4{ color:#a94442;}
+div.port-widget div#ports div.list-group-item.port.outgoing{ border-left-color:#8a6d3b;}
+div.port-widget div#ports div.list-group-item.port.outgoing h4{ color:#8a6d3b;}

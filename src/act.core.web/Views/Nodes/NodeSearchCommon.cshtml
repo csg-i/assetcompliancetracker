@@ -1,0 +1,87 @@
+@model NodeSearchCommon
+@using act.core.data
+@using act.core.web.Models.Nodes
+<h4 class="clearfix">
+    /
+    @foreach (var p in Model.Environments.Values)
+    {
+        <span><strong style="color: @p.color">@p.name</strong> /</span>
+    }
+    <span class="float-right text-muted">Viewing <span class="count">0</span> of <span class="match-count">0</span></span>
+</h4>
+<div role="form" class="clearfix">
+    <div class="form-check">
+        <input type="checkbox" name="hideProductExclusions" id="hideProductExclusions" value="true" class="form-check-input action-change-exclusions" />
+        <label for="hideProductExclusions" class="form-check-label">Hide Nodes for Products Excluded from Reporting</label>
+    </div>
+
+    <div class="d-lg-flex">
+        <div>
+            <select multiple="multiple" data-text="Environments" data-filter-type="environment" id="environment" name="environment">
+                @foreach (var p in Model.Environments)
+                {
+                    <option value="@p.Key" data-color="@p.Value.color">@p.Value.name</option>
+                }
+            </select>
+            <select multiple="multiple" data-text="Platforms" data-filter-type="platform" id="platform" name="platform">
+                @foreach (var p in Model.AllPlatforms)
+                {
+                    switch (p)
+                    {
+                        case PlatformConstant.WindowsClient:
+                            <option value="@p">Windows Client</option>
+                            break;
+                        case PlatformConstant.WindowsServer:
+                            <option value="@p">Windows Server</option>
+                            break;
+                        default:
+                            <option value="@p">@p</option>
+                            break;
+                    }
+                }
+            </select>
+            <select multiple="multiple" data-text="Scopes" data-filter-type="securityClass" id="securityClass" name="securityClass">
+                @foreach (var p in Model.AllSecurityClasses)
+                {                    
+                    <option value="@p">@p</option>               
+                }
+            </select>
+            <select multiple="multiple" data-text="States" data-filter-type="compliance" id="compliance" name="compliance">
+                @foreach (var p in Model.AllStates)
+                {                    
+                    <option value="@p">@p</option>               
+                }
+            </select>
+        </div>
+
+        <div class="form-group flex-fill">
+            <div class="input-group input-group-lg mt-1">
+                <div class="input-group-prepend">
+                    <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown">
+                        <span class="search-type">FQDN</span>
+                    </button>
+                    <div class="dropdown-menu" role="menu">
+                        <button class="dropdown-item action-change-filter" data-filter-type="searchType" data-place-holder="FQDN or Host name" data-value="@NodeSearchTypeConstant.Fqdn" data-text="FQDN">FQDN</button>
+                        <button class="dropdown-item action-change-filter" data-filter-type="searchType" data-place-holder="FQDN or Host name" data-value="@NodeSearchTypeConstant.Mine" data-text="Mine">Mine</button>
+                        <button class="dropdown-item action-change-filter" data-filter-type="searchType" data-place-holder="Owner Name" data-value="@NodeSearchTypeConstant.Owner" data-text="Owner">Owner</button>
+                        <button class="dropdown-item action-change-filter" data-filter-type="searchType" data-place-holder="Director Name" data-value="@NodeSearchTypeConstant.Director" data-text="Director">Director</button>
+                        <button class="dropdown-item action-change-filter" data-filter-type="searchType" data-place-holder="Product or Function" data-value="@NodeSearchTypeConstant.Product" data-text="Product / Function">Product / Function</button>
+                        @if (Model.NodesScreen)
+                        {
+                            <button class="dropdown-item action-change-filter" data-filter-type="searchType" data-place-holder="OS Specification Name" data-value="@NodeSearchTypeConstant.OsSpec" data-text="OS Spec">Os Spec</button>
+                            <button class="dropdown-item action-change-filter" data-filter-type="searchType" data-place-holder="Application Specification Name" data-value="@NodeSearchTypeConstant.AppSpec" data-text="App Spec">App Spec</button>
+                        }
+                    </div>
+                </div>
+                <input type="search" data-search-type="@NodeSearchTypeConstant.Fqdn" class="form-control action-search on-visible" data-visibility-action="wireUpSearch" data-lockr="@Model.NodesScreen.ToString().ToLower()" data-show-buttons="@Model.NodesScreen.ToString().ToLower()" id="search" name="search" placeholder="FQDN">
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="button">
+                        <span class="sr-only">Search</span>
+                        <i class="fa fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br/>

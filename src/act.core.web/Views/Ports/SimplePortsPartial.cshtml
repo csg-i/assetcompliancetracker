@@ -1,0 +1,4 @@
+﻿@model act.core.web.Models.Ports.SimplePorts
+<div data-count="@Model.Count" data-empty="@Model.IsEmpty.ToString().ToLower()">
+    @{ Model.ForEach(async p => await Html.RenderPartialAsync("ViewPortPartial", p)); }
+</div>

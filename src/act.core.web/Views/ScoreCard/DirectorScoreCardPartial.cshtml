@@ -1,0 +1,52 @@
+﻿@model act.core.web.Models.ScoreCard.DirectorScoreCard
+
+<table class="table" data-empty="@Model.Empty.ToString().ToLower()">
+    <thead>
+        <tr>
+            <th>Director</th>
+            <th>Owner</th>
+            <th class="text-right">Specs</th>
+            <th class="text-right text-muted">Assigned&nbsp;Nodes<br /><small class="text-muted"><span class="pci">PCI</span><span class="total">Total</span></small></th>
+            <th class="text-right text-muted">Unassigned&nbsp;Nodes<br /><small class="text-muted"><span class="pci">PCI</span><span class="total">Total</span></small></th>
+            <th class="text-right text-success">Passing&nbsp;Nodes<br /><small class="text-muted"><span class="pci">PCI</span><span class="total">Total</span></small></th>
+            <th class="text-right text-danger">Failing&nbsp;Nodes<br /><small class="text-muted"><span class="pci">PCI</span><span class="total">Total</span></small></th>
+            <th class="text-right text-warning">Not&nbsp;Reporting&nbsp;<br /><small class="text-muted"><span class="pci">PCI</span><span class="total">Total</span></small></th>
+            <th class="text-right text-info">Out&nbsp;Of&nbsp;Scope<br /><small class="text-muted"><span class="pci">PCI</span><span class="total">Total</span></small></th>
+            <th class="text-right">Total&nbsp;Nodes<br /><small class="text-muted"><span class="pci">PCI</span><span class="total">Total</span></small></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr data-pci-unassigned="@Model.UnassignedNodes.PciCount" data-all-unassigned="@Model.UnassignedNodes.TotalCount"
+            data-pci-not-reporting="@Model.NotReportingNodes.PciCount" data-all-not-reporting="@Model.NotReportingNodes.TotalCount"
+            data-pci-failing="@Model.FailingNodes.PciCount" data-all-failing="@Model.FailingNodes.TotalCount"
+            data-pci-count="@Model.AllNodes.PciCount" data-all-count="@Model.AllNodes.TotalCount">
+            <td colspan="2" class="bg-secondary text-white"><strong>Summary</strong></td>
+            <td class="text-right bg-secondary text-white">@Model.SpecCount</td>
+            <td class="text-right bg-secondary text-white"><span class="pci">@Model.AssignedNodes.PciCount</span><span class="total">@Model.AssignedNodes.TotalCount</span></td>
+            <td class="text-right bg-secondary text-white"><span class="pci">@Model.UnassignedNodes.PciCount</span><span class="total">@Model.UnassignedNodes.TotalCount</span> </td>
+            <td class="text-right bg-success text-white"><span class="pci">@Model.PassingNodes.PciCount</span><span class="total">@Model.PassingNodes.TotalCount</span> </td>
+            <td class="text-right bg-danger text-white"><span class="pci">@Model.FailingNodes.PciCount</span><span class="total">@Model.FailingNodes.TotalCount</span> </td>
+            <td class="text-right bg-warning text-white"><span class="pci">@Model.NotReportingNodes.PciCount</span><span class="total">@Model.NotReportingNodes.TotalCount</span> </td>
+            <td class="text-right bg-info text-white"><span class="pci">@Model.OutOfChefScopeNodes.PciCount</span><span class="total">@Model.OutOfChefScopeNodes.TotalCount</span> </td>
+            <td class="text-right bg-secondary  text-white"><span class="pci">@Model.AllNodes.PciCount</span><span class="total">@Model.AllNodes.TotalCount</span> </td>
+        </tr>
+        @foreach (var p in Model)
+        {
+            <tr data-pci-unassigned="@p.UnassignedNodes.PciCount" data-all-unassigned="@p.UnassignedNodes.TotalCount"
+                data-pci-not-reporting="@p.NotReportingNodes.PciCount" data-all-not-reporting="@p.NotReportingNodes.TotalCount"
+                data-pci-failing="@p.FailingNodes.PciCount" data-all-failing="@p.FailingNodes.TotalCount"
+                data-pci-count="@p.AllNodes.PciCount" data-all-count="@p.AllNodes.TotalCount">
+                <td>@p.Director</td>
+                <td>@p.Owner</td>
+                <td class="text-right">@p.SpecCount</td>
+                <td class="text-right text-muted"><span class="pci">@p.AssignedNodes.PciCount</span><span class="total">@p.AssignedNodes.TotalCount</span> </td>
+                <td class="text-right text-muted"><span class="pci">@p.UnassignedNodes.PciCount</span><span class="total">@p.UnassignedNodes.TotalCount</span> </td>
+                <td class="text-right text-success"><span class="pci">@p.PassingNodes.PciCount</span><span class="total">@p.PassingNodes.TotalCount</span> </td>
+                <td class="text-right text-danger"><span class="pci">@p.FailingNodes.PciCount</span><span class="total">@p.FailingNodes.TotalCount</span> </td>
+                <td class="text-right text-warning"><span class="pci">@p.NotReportingNodes.PciCount</span><span class="total">@p.NotReportingNodes.TotalCount</span> </td>
+                <td class="text-right text-info"><span class="pci">@p.OutOfChefScopeNodes.PciCount</span><span class="total">@p.OutOfChefScopeNodes.TotalCount</span> </td>
+                <td class="text-right"><span class="pci">@p.AllNodes.PciCount</span><span class="total">@p.AllNodes.TotalCount</span> </td>
+            </tr>
+        }
+    </tbody>
+</table>

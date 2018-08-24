@@ -1,0 +1,5 @@
+﻿div#results div.list-group-item { border-left-width: 6px }
+div#results div.list-group-item ul{ list-style: none;}
+div#results div.list-group-item.color-customertest { border-left-color: #17a2b8  }
+div#results div.list-group-item.color-production { border-left-color: #dc3545}
+

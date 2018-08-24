@@ -1,0 +1,21 @@
+﻿@model act.core.web.Models.BuildSpec.AssignedNodes
+
+<div>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Build&nbsp;Spec</th>
+            <th>FQDN</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var row in Model)
+        {
+            <tr>
+                <td>@row.BuildSpec</td>
+                <td>@row.Fqdn</td>                
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

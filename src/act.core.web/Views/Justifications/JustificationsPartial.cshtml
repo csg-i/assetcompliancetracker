@@ -1,0 +1,11 @@
+﻿@model act.core.web.Models.Justifications.Justifications
+ @if (Model.IsEmpty)
+ {
+     <div data-empty="true"></div>
+ }
+ else
+ {
+     <div data-count="@Model.Count">
+         @{ Model.ForEach(async p => await Html.RenderPartialAsync("JustificationPartial", p)); }
+     </div>
+ }

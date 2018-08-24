@@ -1,0 +1,2 @@
+﻿table tbody tr.c td { display: none;}
+table.total tbody tr.c td{ display: table-cell;}

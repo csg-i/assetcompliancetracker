@@ -1,0 +1,20 @@
+﻿@model act.core.web.Models.Health.SimpleHealthCheck
+
+@{
+    ViewBag.Title = "Simple Health Check";
+}
+
+<h1>Simple Health Check</h1>
+<p><strong>200</strong> OK -- point load balancers here so they know the site is up and compiling.</p>
+<h3>Database Connected: </h3>
+<code>@Model.DbConnected</code>
+<h3>Version: </h3>
+<code>@Model.AssemblyVersion</code>
+<br />
+<br />
+<br />
+<p>
+    <a href="javascript:self.history.back();">Go Back</a> |
+    <a href="@Url.Home()">Go Home</a>
+</p>
+

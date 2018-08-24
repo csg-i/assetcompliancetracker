@@ -1,0 +1,10 @@
+﻿table thead tr th span.total{ display: none;}
+table thead tr th span.pci{ display: inline;}
+table tbody tr td span.total{ display: none;}
+table tbody tr td span.pci{ display: inline;}
+
+table.total thead tr th span.total{ display: inline;}
+table.total thead tr th span.pci{ display: none;}
+table.total tbody tr td span.total{ display: inline;}
+table.total tbody tr td span.pci{ display: none;}
+table.table tbody tr td.text-right{ font-weight: bold;}

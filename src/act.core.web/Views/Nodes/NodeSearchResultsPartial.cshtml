@@ -1,0 +1,14 @@
+@model act.core.web.Models.Nodes.NodeSearchResults
+
+@if (Model.Empty)
+{
+    <div data-empty="true"></div>
+}
+else
+{
+    <div data-count="@Model.DisplayCount" data-match-count="@Model.MatchCount" class="list-group">
+    @{
+        Model.ForEach(async p => await Html.RenderPartialAsync("NodeSearchResultPartial", p));
+    }
+    </div>
+}

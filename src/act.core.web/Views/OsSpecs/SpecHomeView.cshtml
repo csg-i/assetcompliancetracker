@@ -1,0 +1,54 @@
+﻿@model  SpecHome
+@{
+    ViewBag.Title = "Operating System Specifications";
+}
+@section css
+    {@Url.ViewStyles("SpecHome")
+}
+@section scripts{
+    @Url.ViewJavascript("SpecHome")
+}
+<div class="clearfix">
+    <h2 class="float-left">Operating System Specifications</h2>
+    <div class="float-right">        
+        <a class="btn btn-outline-primary" href="@Url.OsSpecsWizard()">Add OS Spec</a>
+        <div class="text-muted text-right"><span class="count">0</span> total</div>
+    </div>
+</div>
+<hr/>
+<div role="form">
+    <div class="form-group">
+        <label class="sr-only" for="search">Search for OS Build Specification</label>
+        <div class="input-group input-group-lg">
+            <div class="input-group-prepend">
+                <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="search-type">@SpecSearchTypeConstant.Name.ToString()</span></button>
+                <div class="dropdown-menu">
+                    <button data-text="Name" data-type="@SpecSearchTypeConstant.Name" data-place-holder="Application Specification Name" class="action-change-search-type dropdown-item">Name</button>
+                    <button data-text="Mine" data-type="@SpecSearchTypeConstant.Mine" data-place-holder="Application Specification Name" class="action-change-search-type dropdown-item">Mine</button>
+                    <button data-text="Owner" data-type="@SpecSearchTypeConstant.Owner" data-place-holder="Owner Name" class="action-change-search-type dropdown-item">Owner</button>
+                </div>
+            </div>
+            <input type="search" data-search-type="@SpecSearchTypeConstant.Name.ToString()" class="form-control action-search on-visible" data-visibility-action="wireUpSearch" data-key="os" id="search" name="search" placeholder="OS Specification Name">
+            <div class="input-group-append">
+                <button type="button" class="btn btn-primary"><span class="sr-only">Search</span><i class="fa fa-search"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="results" data-url="@Url.PartialOsSpecSearch()"></div>
+<div class="jumbotron">
+    <h2 class="display-4">Search for OS Specs</h2>
+    <p class="lead">
+        The following search options are available:
+    </p>
+    <hr class="my-4">
+    <ul>
+        <li><p>Specification Name</p></li>
+        <li><p>Mine</p></li>
+        <li><p>Owner</p></li>
+    </ul>
+    <p>
+        Once the search option is selected, enter the search text and hit enter, tab or click on the magnifying glass <i class="fa fa-search"></i>. Wildcards are not allowed; it will search for all records containing the text entered. Once the search results are displayed, click on the desired record to begin editing.
+    </p>   
+</div>    

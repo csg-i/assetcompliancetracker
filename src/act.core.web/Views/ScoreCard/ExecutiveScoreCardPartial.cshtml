@@ -1,0 +1,60 @@
+﻿@model act.core.web.Models.ScoreCard.ExecutiveScoreCard
+    
+
+<div data-empty="@Model.Empty.ToString().ToLower()" data-employee-name="@Model.Owner" data-employee-id="@Model.EmployeeId" data-supervisor-name="@Model.Supervisor" data-supervisor-id="@Model.SupervisorId" data-supervisor-url="@(Model.SupervisorId.HasValue ? Url.PartialExecutiveScoreCard(Model.SupervisorId.Value): string.Empty)">    
+    @if (!Model.Empty)
+    {
+        <div class="clearfix mb-2">
+            <a href="@Url.FileExecutiveScoreCard(Model.EmployeeId)" class="btn btn-sm btn-success float-right"><i class="fa fa-file-excel-o"></i> Export</a>
+        </div>
+    }
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Spec&nbsp;Owner</th>
+                <th class="text-right">Specs</th>
+                <th class="text-right">Assigned&nbsp;Nodes<br/><small class="text-muted"><span class="pci">PCI</span><span class="total">Total</span></small></th>
+                <th class="text-right">Passing&nbsp;Nodes<br /><small class="text-muted"><span class="pci">PCI</span><span class="total">Total</span></small></th>
+                <th class="text-right">Failing&nbsp;Nodes<br /><small class="text-muted"><span class="pci">PCI</span><span class="total">Total</span></small></th>
+                <th class="text-right">Not&nbsp;Reporting&nbsp;<br /><small class="text-muted"><span class="pci">PCI</span><span class="total">Total</span></small></th>
+                <th class="text-right">Out&nbsp;of&nbsp;Scope<br /><small class="text-muted"><span class="pci">PCI</span><span class="total">Total</span></small></th>
+                <th class="text-right">Inventory&nbsp;Total&nbsp;Nodes<br /><small class="text-muted"><span class="pci">PCI</span><span class="total">Total</span></small></th>
+                <th class="text-right">Direct<br/>Reports</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model)
+            {
+                <tr>
+                    <td>
+                        @if (p.SpecCount > 0)
+                        {
+                            <a href="#" data-url="@Url.PartialOwnerScoreCard(p.EmployeeId)" class="action-employee-score-card-popup">@p.Name</a>
+                        }
+                        else
+                        {
+                            <text>@p.Name</text>
+                        }
+                    </td>
+                    <td class="text-right">@p.SpecCount</td>
+                    <td class="text-right"><span class="pci">@p.AssignedNodes.PciCount</span><span class="total">@p.AssignedNodes.TotalCount</span></td>
+                    <td class="text-right"><span class="pci">@p.PassingNodes.PciCount</span><span class="total">@p.PassingNodes.TotalCount</span></td>
+                    <td class="text-right"><span class="pci">@p.FailingNodes.PciCount</span><span class="total">@p.FailingNodes.TotalCount</span></td>
+                    <td class="text-right"><span class="pci">@p.NotReportingNodes.PciCount</span><span class="total">@p.NotReportingNodes.TotalCount</span></td>
+                    <td class="text-right"><span class="pci">@p.OutOfScopeNodes.PciCount</span><span class="total">@p.OutOfScopeNodes.TotalCount</span></td>
+                    <td class="text-right"><span class="pci">@p.TotalNodesInInventory.PciCount</span><span class="total">@p.TotalNodesInInventory.TotalCount</span></td>
+                    <td class="text-right">
+                        @if (p.DirectReportCount > 0)
+                        {
+                            <a href="#" class="action-reload-score-card" data-url="@Url.PartialExecutiveScoreCard(p.EmployeeId)" data-target="#executivescorecard">@p.DirectReportCount</a>
+                        }
+                        else
+                        {
+                            <text>0</text>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,81 @@
+﻿@using act.core.data
+@using act.core.web.Models.Ports
+@model BulkNewPorts
+<div>
+    <script type="text/template" id="rowtemplate">
+        <tr role="form" data-validate-url="@Url.JsonValidatePort()" data-save-url="@Url.JsonSavePort(Model.Platform)">
+            <td>
+                <input type="hidden" name="specId" value="@Model.SpecId" />
+                <div class="form-group">
+                    <textarea type="text" class="form-control" name="ports" rows="4"></textarea>
+                </div>
+            </td>
+            <td>
+                <div class="form-group">
+                    <select class="form-control" name="portType">
+                        <option>tcp</option>
+                        <option>udp</option>
+                        @if (Model.Platform== PlatformConstant.Linux)
+                        {
+                            <option>tcp6</option>
+                            <option>udp6</option>
+                        }
+                    </select>
+                </div>
+            </td>
+            <td>
+                <div class="form-group">
+                    <select class="form-control" name="direction">
+                        <option value="@SimplePortDirectionTypeConstant.PortListeningToInsideTraffic">Listening inside CSG</option>
+                        <option value="@SimplePortDirectionTypeConstant.PortListeningToOutsideTraffic">Listening outside CSG</option>
+                        <option value="@SimplePortDirectionTypeConstant.SendingTrafficToOusidePort">Sending Outside CSG</option>
+                    </select>
+                </div>
+            </td>
+            <td class="w-50">
+                <div class="form-group">
+                    <textarea class="form-control" name="justification" placeholder="Why is it needed?" rows="4"></textarea>
+                </div>
+            </td>
+            <td>
+               &nbsp;
+            </td>
+        </tr>
+    </script>
+    <div role="form" id="pastefromexcel">
+        <div class="row">
+            <div class="col-sm-6">
+                <p class="alert alert-info">
+                    This form takes data from Excel in two columns. Column 'A' includes all port ranges or individual ports separated by a comma (,). Port ranges are separated by a colon (:) or a dash (-). Column 'B' includes the justification for all the ports in its associated column 'A'.  For manual entry, please close this window and use the ‘+’ add button.
+                </p>
+            </div>
+            <div class="col-sm-6">
+                <h5>Example</h5>
+                <code>
+                    2 - 15, 19&#9;Since...<br />
+                    14-20, 22,25&#9;The reason...<br />
+                    80:89&#9;Because Web...
+                </code>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="paste">Paste</label>
+            <textarea type="text" class="form-control" id="paste" name="paste" rows="8"></textarea>
+        </div>
+    </div>
+    <div id="valid" style="display: none">
+        <h4>Valid Data</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Port(s)</th>
+                    <th>Type</th>
+                    <th>Direction</th>
+                    <th>Justification</th>
+                    <th>Valid</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>

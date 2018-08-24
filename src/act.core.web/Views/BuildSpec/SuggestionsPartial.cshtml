@@ -1,0 +1,32 @@
+﻿@using act.core.data
+@model act.core.web.Models.BuildSpec.Suggestions
+<div>
+    @if (Model.IsEmpty)
+    {
+        <h4>@Model.Text</h4>
+    }
+    else
+    {
+        <ul class="list-group">
+            @foreach (var p in Model)
+            {
+
+                <li class="list-group-item">                  
+                    <strong>@(p.Clone ? "Clone" : "Edit")</strong> the @(p.SpecType == BuildSpecificationTypeConstant.OperatingSystem ? "OS" : "App")Spec <em>@p.SpecName</em> owned by <em>@p.SpecOwner</em> and <strong>@(p.Remove ? "remove" : "add")</strong> the @(p.SuggestionType == JustificationTypeConstant.Port ? p.PortType.GetValueOrDefault().ToString().ToUpper() + " port" : p.SuggestionType.ToString().ToLower()) <strong>@p.Value</strong>@if(p.Clone){<text>, then change the failing nodes to point to the clone</text>}.
+                    @if (p.SpecType == BuildSpecificationTypeConstant.Application && !p.Clone && p.SuggestionType != JustificationTypeConstant.Port)
+                    {
+                        if (p.Remove && p.ToRemove!=null)
+                        {
+                            <button data-url="@Url.JsonDeletePackage(p.ToRemove.Id)" title="Remove it for me." class="btn btn-success btn-sm action-remove">Remove It</button>
+                        }
+                        else if (!p.Remove)
+                        {
+                            <button data-url="@Url.JsonAddPackage(p.SuggestionType)" title="Add it for me." class="btn btn-success btn-sm action-add" data-name="@p.Value" data-spec-id="@p.SpecId">Add It</button>
+                        }
+                    }
+                </li>
+            }
+            <li class="list-group-item">Remediate the issue on the nodes, themselves.</li>
+        </ul>
+}
+</div>

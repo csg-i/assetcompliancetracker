@@ -1,0 +1,100 @@
+﻿﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - ACT -  Asset Compliance Tracker</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="~/img/apple-touch-icon.png">
+    <link rel="icon" sizes="32x32" href="~/img/favicon-32x32.png">
+    <link rel="icon" sizes="16x16" href="~/img/favicon-16x16.png">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <environment include="Development">
+        <link rel="stylesheet" href="~/css/jaymvc.css" asp-append-version="true" />
+    </environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="~/css/jaymvc.min.css" asp-append-version="true" />
+    </environment>
+    @RenderSection("css", false)
+</head>
+<body>
+<header>
+    <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
+        <a href="@Url.Home()" class="navbar-brand">ACT</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarText">
+            <ul class="navbar-nav ml-lg-auto">
+
+                <li class="nav-item ml-lg-2"><a class="nav-link" href="@Url.NodeSearch()"><i class="fa fa-server"></i> Nodes</a></li>
+
+                <li class="nav-item dropdown d-none d-lg-inline-block ml-lg-2">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-shield"></i> Specifications</a>
+                    <div class="dropdown-menu bg-dark">
+                        <a class="dropdown-item bg-dark text-white-50" href="@Url.OsSpecs()"><i class="fa fa-linux"></i> Operating System</a>
+                        <a class="dropdown-item bg-dark text-white-50" href="@Url.AppSpecs()"><i class="fa fa-share-alt"></i> Application</a>
+                    </div>
+                </li>
+                <li class="nav-item d-lg-none"><a class="nav-link" href="@Url.OsSpecs()"><i class="fa fa-linux"></i> Operating System Specs</a></li>
+                <li class="nav-item d-lg-none"><a class="nav-link" href="@Url.AppSpecs()"><i class="fa fa-share-alt"></i> Application Specs</a></li>
+
+
+                <li class="nav-item dropdown d-none d-lg-inline-block ml-lg-2">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-file-text"></i> Reports</a>
+                    <div class="dropdown-menu bg-dark">
+                        <a class="dropdown-item bg-dark text-white-50" href="@Url.OwnerReport()"><i class="fa fa-user"></i> Specs By Owner</a>
+                        <a class="dropdown-item bg-dark text-white-50" href="@Url.AllPortsReport()"><i class="fa fa-terminal"></i> All Ports</a>
+                        <a class="dropdown-item bg-dark text-white-50" href="@Url.AssignedNodesReport()"><i class="fa fa-server"></i> Assigned Nodes</a>
+                        <a class="dropdown-item bg-dark text-white-50" href="@Url.NotReportingNodesReport()"><i class="fa fa-bug"></i> Not Reporting</a>
+                        <a class="dropdown-item bg-dark text-white-50" href="@Url.NodesExcludedByProductReport()"><i class="fa fa-ban"></i> Excluded By Product</a>
+                    </div>
+                </li>
+                <li class="nav-item d-lg-none"><a class="nav-link" href="@Url.ReportsHome()"><i class="fa fa-file-text"></i> Reports</a></li>
+
+                <li class="nav-item dropdown d-none d-lg-inline-block ml-lg-2">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-table"></i> Scorecards</a>
+                    <div class="dropdown-menu bg-dark">
+                        <a class="dropdown-item bg-dark text-white-50" href="@Url.ExecutiveScoreCard()"><i class="fa fa-user-circle"></i> Executive</a>
+                        <a class="dropdown-item bg-dark text-white-50" href="@Url.DirectorScoreCard()"><i class="fa fa-user-circle-o"></i> Director</a>
+                        <a class="dropdown-item bg-dark text-white-50" href="@Url.ProductScoreCard()"><i class="fa fa-product-hunt"></i> Product</a>
+                        <a class="dropdown-item bg-dark text-white-50" href="@Url.PlatformScoreCard()"><i class="fa fa-linux"></i> Platform</a>
+                        <a class="dropdown-item bg-dark text-white-50" href="@Url.OwnerScoreCard()"><i class="fa fa-user"></i> Owner</a>
+                    </div>
+                </li>
+                <li class="nav-item d-lg-none"><a class="nav-link" href="@Url.ScoreCardsHome()"><i class="fa fa-table"></i> Scorecards</a></li>
+
+                <li class="nav-item ml-lg-2"><a class="nav-link" href="@Url.HelpHome()"><i class="fa fa-question-circle"></i> Help</a></li>
+
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <li class="nav-item ml-lg-5"><a class="nav-link" href="@Url.Logoff()"><i class="fa fa-sign-out"></i> <span class="d-lg-none">Sign Out</span></a></li>
+                }
+                else
+                {
+                    <li class="nav-item ml-lg-5"><a class="nav-link" href="@Url.Logon()"><i class="fa fa-sign-in"></i> <span class="d-lg-none">Sign In</span></a></li>
+                }
+            </ul>
+        </div>
+    </nav>
+</header>
+
+<main class="my-4 py-4">
+    @RenderSection("nocontainer", false)
+    <div class="container-fluid my-3 py-3">
+        @RenderBody()
+    </div>
+</main>
+<footer class="fixed-bottom bg-dark border-light border-top text-white">
+    <div class="container-fluid">
+        <div>&copy; @DateTime.Today.Year - CSG Systems Inc. <a href="@Url.Health()" class="float-right text-light">ACT Health</a></div>
+    </div>
+</footer>
+<environment include="Development">
+    <script src="~/js/jaymvc.js" asp-append-version="true"></script>
+</environment>
+<environment exclude="Development">
+    <script src="~/js/jaymvc.min.js" asp-append-version="true"></script>
+</environment>
+@RenderSection("scripts", false)
+</body>
+</html>

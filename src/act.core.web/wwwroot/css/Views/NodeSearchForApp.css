@@ -1,0 +1,9 @@
+﻿div.list-group-item { border-left-width: 6px; cursor:pointer }
+div.list-group-item ul.float-right{ list-style: none;}
+div.list-group-item ul.float-right li:last-child{ display:none}
+div.list-group-item ul.float-right li{ max-width: 150px;overflow: hidden;max-height: 20px;}
+div.filter-product div.list-group-item ul.float-right li:last-child{ display: inline-block;}
+div.filter-product div.list-group-item ul.float-right li:first-child{ display: none;}
+
+div#results div.list-group-item.color-customertest { border-left-color: #17a2b8  }
+div#results div.list-group-item.color-production { border-left-color: #dc3545}

@@ -1,0 +1,55 @@
+﻿@model act.core.web.Models.ScoreCard.PlatformScoreCard
+
+<div data-empty="@Model.Empty.ToString().ToLower()">
+    @if (!Model.Empty)
+    {
+        <div class="clearfix mb-2">
+            <a href="@Url.FilePlatformScoreCard()" class="btn btn-sm btn-success float-right"><i class="fa fa-file-excel-o"></i> Export</a>
+        </div>
+    }
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Spec Name</th>
+            <th>Owner</th>
+            <th>OS</th>
+            <th>Version</th>
+            <th class="text-right"># Nodes</th>
+            <th class="text-right"># App Specs</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var p in Model)
+        {
+            var bgClass = p.NodeCount == 0 && p.AppSpecCount == 0 ? "bg-danger" : p.NodeCount == 1 ? "bg-info" :  p.NodeCount == 0 || p.AppSpecCount == 0 ? "bg-warning" : string.Empty;
+            var txtClass = string.IsNullOrWhiteSpace(bgClass) ? string.Empty : "text-white";
+            <tr class="@bgClass" data-filter="@p.SpecName.ToLower() @p.Owner.ToLower()">
+                <td><a href="@Url.BuildSpecReport(p.Id)" class="@txtClass">@p.SpecName</a></td>
+                <td class="@txtClass">@p.Owner</td>
+                <td class="@txtClass">@p.OsName</td>
+                <td class="@txtClass">@p.OsVersion</td>
+                <td class="text-right @txtClass">
+                    @if (p.NodeCount == 0)
+                    {
+                        <span class="btn btn-link @txtClass">0</span>                        
+                    }
+                    else
+                    {
+                        <button class="btn btn-link @txtClass action-goto" data-lockr="nodesearch" data-name="@p.SpecName" data-url="@Url.NodeSearch()">@p.NodeCount</button>
+                    }
+                </td>
+                <td class="text-right">
+                    @if (p.AppSpecCount == 0)
+                    {
+                        <span class="btn btn-link @txtClass">0</span>
+                    }
+                    else
+                    {
+                        <button class="btn btn-link @txtClass action-goto" data-lockr="app" data-name="@p.SpecName" data-url="@Url.AppSpecs()">@p.AppSpecCount</button>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

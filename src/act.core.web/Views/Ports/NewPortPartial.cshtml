@@ -1,0 +1,54 @@
+﻿@using act.core.data
+@using act.core.web.Models.Ports
+@model NewPort
+
+<form role="form">
+    <p class="alert alert-info">
+        Enter below the ports that are used, each on its own line. Use a colon (:) to show a range.  Refer to vendor specific documentation to figure out ports being used.
+        @if (Model.Platform != PlatformConstant.Other && Model.Platform != PlatformConstant.Appliance)
+        {
+            <em>Enter "netstat -an" to get a list of ports listening on your server as a verification step.</em>
+        }
+    </p>
+    <input type="hidden" name="specId" id="specId" value="@Model.SpecId"/>
+    <div class="form-group">
+        <label for="ports">Ports</label>
+        <textarea type="text" class="form-control" id="ports" name="ports" rows="8"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="portType">Type</label>
+        <select class="form-control" id="portType" name="portType">
+            <option value="">Choose Port Type</option>
+            <option>tcp</option>
+            <option>udp</option>
+            @if (Model.Platform == PlatformConstant.Linux)
+            {
+                <option>tcp6</option>
+                <option>udp6</option>
+            }
+        </select>
+    </div>
+    <h5><strong>Direction</strong></h5>
+    <p class="text-muted">Justification for sending trafific to port(s) <em>inside CSG</em> do not need to be entered in this tool.</p>
+    <div class="radio">
+        <label>
+            <input type="radio" name="direction" value="@SimplePortDirectionTypeConstant.PortListeningToInsideTraffic" checked="checked" /> Port(s) listening to traffic originating inside CSG
+        </label>
+    </div>
+    <div class="radio">
+        <label>
+            <input type="radio" name="direction" value="@SimplePortDirectionTypeConstant.PortListeningToOutsideTraffic" /> Port(s) listening to traffic originating inside or outside CSG
+        </label>
+    </div>
+    <div class="radio">
+        <label>
+            <input type="radio" name="direction" value="@SimplePortDirectionTypeConstant.SendingTrafficToOusidePort" /> Sending traffic to port(s) outside CSG
+        </label>
+    </div>
+
+    <div class="form-group">
+        <label for="justification">Justification</label>
+        <textarea class="form-control" id="justification" name="justification" placeholder="Why is it needed?" rows="8"></textarea>
+    </div>
+</form>

@@ -1,0 +1,108 @@
+﻿@using act.core.data
+@model act.core.web.Models.ScoreCard.OwnerScoreCard
+    
+<div data-empty="@Model.Empty.ToString().ToLower()">
+    @if (!Model.Empty)
+    {
+        <div class="clearfix mb-2">
+            <a href="@Url.FileOwnerScoreCard(Model.EmployeeId)" class="btn btn-sm btn-success float-right"><i class="fa fa-file-excel-o"></i> Export</a>
+        </div>
+    }
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Build Spec</th>
+            <th>Platform</th>
+            <th class="text-right">Nodes<br/><small class="text-muted"> Passing / Failing / Total</small></th>
+            <th class="text-right">Software<br/><small class="text-muted">OS / App</small></th>
+            <th class="text-right">Unjustified<br/><small class="text-muted">OS / App</small></th>
+            <th class="text-right">Ports<br/><small class="text-muted">OS / App</small></th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>
+                    @if (p.ParentId.HasValue && p.BuildSpecificationType == BuildSpecificationTypeConstant.Application)
+                    {
+                        <div>
+                            <span class="text-muted">App: </span><a href="@Url.BuildSpecReport(p.Id)" target="_blank">@p.SpecName</a>
+                            <br/>
+                            <span class="text-muted">OS: </span><a href="@Url.BuildSpecReport(p.ParentId.Value)" target="_blank">@p.ParentName</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div>
+                            <span class="text-muted">OS: </span><a href="@Url.BuildSpecReport(p.Id)" target="_blank">@p.SpecName</a>        
+                        </div>
+                    }
+                <td>
+                    @switch (p.Platform)
+                    {
+                        case PlatformConstant.WindowsServer:
+                            <text>Windows Server</text>
+                            break;                            
+                        case PlatformConstant.WindowsClient:
+                            <text>Windows Client</text>
+                            break;
+                        default:
+                            <text>@p.Platform.ToString()</text>
+                            break;
+                    }
+                </td>
+                <td class="text-right">
+                    @if (p.BuildSpecificationType == BuildSpecificationTypeConstant.Application)
+                    {
+                        <text><span class="text-success">@p.PassingNodeCount</span> / <span class="text-danger">@p.FailingNodeCount</span> / @p.NodeCount</text>
+                    }
+                    else
+                    {
+                        <small class="text-muted"><i class="fa fa-ban"></i></small>
+                    }
+                </td>
+                <td class="text-right">
+                    @if (p.Platform == PlatformConstant.Other || p.Platform == PlatformConstant.Appliance)
+                    {
+                        <small class="text-muted"><i class="fa fa-ban"></i></small>
+                    }
+                    else if (p.BuildSpecificationType == BuildSpecificationTypeConstant.Application)
+                    {
+                        <text>@p.TotalSoftwareCount.OsCount / @p.TotalSoftwareCount.AppCount</text>
+                    }
+                    else
+                    {
+                        <text>@p.TotalSoftwareCount.OsCount / <small class="text-muted"><i class="fa fa-ban"></i></small></text>
+                    }
+                </td>
+                <td class="text-right">
+                    @if (p.Platform == PlatformConstant.Other || p.Platform == PlatformConstant.Appliance)
+                    {
+                        <small class="text-muted"><i class="fa fa-ban"></i></small>
+                    }
+                    else if (p.BuildSpecificationType == BuildSpecificationTypeConstant.Application)
+                    {
+                        <text>@p.UnjustifiedSoftwareCount.OsCount / @p.UnjustifiedSoftwareCount.AppCount</text>
+                    }
+                    else
+                    {
+                        <text>@p.UnjustifiedSoftwareCount.OsCount / <small class="text-muted"><i class="fa fa-ban"></i></small></text>
+                    }
+                </td>
+                <td class="text-right"><a href="#" data-url="@Url.PartialPortReport(p.Id)" class="action-port-popup">
+                        @if (p.BuildSpecificationType == BuildSpecificationTypeConstant.Application)
+                        {
+                            <text>@p.PortCount.OsCount / @p.PortCount.AppCount</text>
+                        }
+                        else
+                        {
+                            <text>@p.PortCount.OsCount / <small class="text-muted"><i class="fa fa-ban"></i></small></text>
+                        }
+                    </a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

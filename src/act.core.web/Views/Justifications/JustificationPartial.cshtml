@@ -1,0 +1,18 @@
+﻿@model act.core.web.Models.Justifications.Justification
+<div class="list-group-item list-group-item-action clearfix" data-justification-id="@Model.Id" data-color="@Model.Color">
+    <span class="text-justify">@Model.HtmlText</span>
+    <div class="btn-group btn-group-sm">
+        <button type="button" role="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="sr-only">Toggle Dropdown</span></button>
+        <div class="dropdown-menu">
+            <button class="dropdown-item action-edit-justification" data-url="@Url.PartialEditJustification(Model.Id)" data-save-url="@Url.JsonUpateJustification(Model.Id)"><i class="fa fa-pencil-square-o"></i>  Edit</button>
+            <button class="dropdown-item action-read-justification"><i class="fa fa-book"></i>  Read</button>
+            <button class="dropdown-item action-delete-justification" data-url="@Url.JsonDeleteJustification(Model.Id)" data-message="Are you sure you want delete this justification?  It will remove all associations with @Model.FriendlyNameLowerPlural"><i class="fa fa-trash"></i>  Delete</button>
+            <div role="separator" class="dropdown-divider"></div>
+            <button class="dropdown-item action-change-color" data-url="@Url.JsonChangeJustificationColor(Model.Id)"><i class="fa fa-random"></i>  New Random Color</button>
+            <button class="dropdown-item action-change-color" data-url="@Url.JsonChangeJustificationColor(Model.Id)" data-type="choose"><i class="fa fa-tags"></i>  Color Picker</button>
+            <div role="separator" class="dropdown-divider"></div>
+            <button class="dropdown-item action-filter" data-type="only" title="Show only @Model.FriendlyNameLowerPlural assigned"><i class="fa fa-eye"></i>  Show Only @Model.FriendlyNamePlural</button>
+            <button class="dropdown-item action-filter" data-type="hide" title="Hide @Model.FriendlyNameLowerPlural assigned"><i class="fa fa-eye-slash"></i>  Hide @Model.FriendlyNamePlural</button>
+        </div>
+    </div>
+</div>

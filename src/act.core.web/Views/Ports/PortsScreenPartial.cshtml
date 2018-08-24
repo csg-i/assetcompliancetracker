@@ -1,0 +1,27 @@
+﻿@model act.core.web.Models.Ports.PortsScreen
+    
+<div class="port-widget">
+    <div class="clearfix">
+        <h4 class="float-left">Port Justifications</h4>
+        <button class="btn btn-sm btn-secondary float-right action-bulk-add-ports" data-url="@Url.PartialBulkNewPorts(Model.Platform, Model.SpecId)" data-title="Import Port Justifications" title="Import Port Justifications"><i class="fa fa-file-excel-o"></i> Excel Import</button>
+    </div>
+    <span class="text-danger">External</span> / <span class="text-muted">Internal</span> / <span class="text-warning">Outgoing</span>
+    <hr/>
+    <div id="ports" class="on-visible list-group" data-visibility-action="populatePorts" data-url="@Url.PartialGetPorts(Model.Platform, Model.SpecId)">
+        <div class="list-group-item example">
+            <a href="#" role="button" class="float-right action-close-ports-example" title="Close Help Text"><i class="fa fa-eye-slash"></i></a>
+            <h3 class="list-group-item-heading">How it works</h3>
+            <p>
+                Use the button below to easily <button class="btn p-0 btn-link action-add-edit-port" data-title="Add Port Justification" data-validate-url="@Url.JsonValidatePort()" data-url="@Url.PartialNewPort(Model.Platform, Model.SpecId)" data-save-url="@Url.JsonSavePort(Model.Platform)">add</button> single or multiple ports that have the same justification.
+                Each port must be on its own line or use a colon (<strong>:</strong>) to denote a port range. If ports have different justifications, they will need to be separate entries.
+                Once port justifications are entered, the screen will display each record. The <span class="text-danger">External</span> versus <span class="text-muted">
+                    Internal
+                </span> Ports will have a color associated with each to visually see the different entries.
+                To delete any port justification, click the <i class="fa fa-trash"></i> trash can in the upper right hand corner of the record.
+            </p>
+        </div>
+    </div>
+    <div class="clearfix">
+        <button type="button" role="button" class="mt-2 btn btn-sm btn-secondary float-right action-add-edit-port" data-title="Add Port Justification" data-validate-url="@Url.JsonValidatePort()" data-url="@Url.PartialNewPort(Model.Platform, Model.SpecId)" data-save-url="@Url.JsonSavePort(Model.Platform)" title="Add Port Justification"><i class="fa fa-plus"></i></button>
+    </div>
+</div>

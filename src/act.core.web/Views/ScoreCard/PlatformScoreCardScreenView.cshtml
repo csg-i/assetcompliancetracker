@@ -1,0 +1,39 @@
+﻿@model act.core.web.Models.ScoreCard.PlatformScoreCardScreen
+@{
+    ViewBag.Title = "Platform Scorecard";
+}
+@section scripts
+{
+    @Url.ViewJavascript("ScoreCard, PlatformScoreCard")
+}
+<h1 class="mb-0">Platform Scorecard</h1>
+<div role="form" class="form-inline">
+    <div class="form-check form-check-inline">
+        <input type="radio" id="showAll" class="action-zero-data form-check-input" name="show" value="" checked="checked"/>
+        <label for="showAll" class="form-check-label"><strong>All</strong></label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input type="radio" id="noAppSpecs" class="action-zero-data form-check-input" name="show" value="bg-danger"/>
+        <label for="noAppSpecs" class="form-check-label text-danger"><strong>No App Specs</strong></label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input type="radio" id="noNodes" class="action-zero-data form-check-input" name="show" value="bg-warning"/>
+        <label for="noNodes" class="form-check-label text-warning"><strong>No Nodes</strong></label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input type="radio" id="oneNode" class="action-zero-data form-check-input" name="show" value="bg-info"/>
+        <label for="oneNode" class="form-check-label text-info"><strong>Only One Node</strong></label>
+    </div>
+    <div class="form-group">
+        <label for="filter" class="sr-only">Filter</label>
+        <div class="input-group">
+            <input type="text" class="form-control action-filter" data-on-enter="true" id="filter" name="filter" placeholder="filter by name or owner"/>
+            <div class="input-group-append">
+                <span class="btn btn-outline-secondary"><i class="fa fa-filter"></i></span>
+                <button class="btn btn-outline-danger action-clear-filter"><i class="fa fa-eraser"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="on-visible" data-url="@Url.PartialPlatformScoreCard()" data-visibility-action="loadScoreCard"></div>

@@ -1,0 +1,17 @@
+﻿@model act.core.web.Models.Home.Home
+@{
+    ViewBag.Title = "Reports Home";
+}
+
+<div class="jumbotron text-center">
+    <h1 class="display-4">Scorecards</h1>
+    <p class="lead">Statistical records used to measure achievement or progress toward particular goals.</p>
+    <hr class="my-4"/>
+    <div class="btn-group-lg btn-group btn-group-vertical">
+        <a class="btn btn-outline-primary btn-lg" href="@Url.ExecutiveScoreCard()">Executive</a>
+        <a class="btn btn-outline-primary btn-lg" href="@Url.DirectorScoreCard()">Director</a>
+        <a class="btn btn-outline-primary btn-lg" href="@Url.ProductScoreCard()">Product</a>
+        <a class="btn btn-outline-primary btn-lg" href="@Url.PlatformScoreCard()">Platform</a>
+        <a class="btn btn-outline-primary btn-lg" href="@Url.OwnerScoreCard()">Owner</a>
+    </div>
+</div>

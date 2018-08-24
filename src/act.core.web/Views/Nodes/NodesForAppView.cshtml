@@ -1,0 +1,40 @@
+﻿@using act.core.data
+@using act.core.web.Models.Nodes
+@model NodesForApp
+
+@{
+    ViewBag.Title = string.Format("Nodes for Build Spec {0}", Model.Information.Name);
+}
+
+@section css{
+    @Url.ViewStyles("NodeSearchForApp")
+}
+
+@section scripts{
+    @Url.ViewJavascript("NodeSearchCommon,NodeSearchForApp")
+}
+
+<h1 id="title">Nodes for @Model.Information.Name</h1>
+@await Html.PartialAsync("NodeSearchCommon", Model)
+<div id="messageArea"></div>
+<div class="row">
+    <div class="col-sm-6">
+        <h4>Results <small class="text-muted">Click to Assign/Unassign</small></h4>
+        <div id="results" class="on-visible" data-visibility-action="wireUpResultsDoneHandler" data-url="@Url.PartialNodeSearch()" data-spec-id="@Model.Information.Id"></div>
+
+        <div class="jumbotron">
+            <h2>Search for Nodes/Servers</h2>
+            <p>Pick a search type from the drop down and enter search terms to see a list of Nodes. Click the item to assign/unassign to the build spec for @Model.Information.Name. If you cannot find your node, data is pulled from the inventory system regularly so it may not be here yet, but check back soon.</p>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <h4>Assigned <small class="text-muted">Click to Unassign</small></h4>
+        <div class="list-group on-visible" id="assigned" data-visibility-action="wireUpAssigned" data-assigned="[@(string.Join(",",Model.NodeIds))]">
+            @foreach (var p in Model.Nodes)
+            {
+                @await Html.PartialAsync("NodeSearchResultPartial", p)
+            }
+        </div>
+    </div>
+</div>
+<a href="#" class="action-scroll-top" data-where="#title">top</a>

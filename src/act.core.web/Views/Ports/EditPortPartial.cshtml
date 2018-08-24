@@ -1,0 +1,107 @@
+﻿@using act.core.data
+@using act.core.web.Models.Ports
+@model act.core.web.Models.Ports.EditPort
+
+<form role="form">
+    <p class="alert alert-info">
+        Enter below the ports that are used, each on its own line. Use a colon (:) to show a range. Refer to vendor specific documentation to figure out ports being used.
+        @if (Model.Platform != PlatformConstant.Other && Model.Platform != PlatformConstant.Appliance)
+        {
+            <em>Enter "netstat -an" to get a list of ports listening on your server as a verification step.</em>
+        }
+    </p>
+    <input type="hidden" name="specId" id="specId" value="@Model.SpecId"/>
+    <input type="hidden" name="justificationId" id="justificationId" value="@Model.Port.JustificationId"/>
+    <div class="form-group">
+        <label for="ports">Ports</label>
+        <textarea type="text" class="form-control" id="ports" name="ports" rows="8">@Model.Port.Ports</textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="portType">Type</label>
+        <select class="form-control" id="portType" name="portType">
+            @if (Model.Port.Type == PortTypeConstant.Tcp)
+            {
+                <option value="@PortTypeConstant.Tcp" selected="selected")>TCP</option>
+            }
+            else
+            {
+                <option value="@PortTypeConstant.Tcp">TCP</option>
+            }
+            @if (Model.Port.Type == PortTypeConstant.Udp)
+            {
+                <option value="@PortTypeConstant.Udp" selected="selected">UDP</option>
+            }
+            else
+            {
+                <option value="@PortTypeConstant.Udp">UDP</option>
+            }
+            @if (Model.Platform == PlatformConstant.Linux)
+            {
+                if (Model.Port.Type == PortTypeConstant.Tcp6)
+                {
+                    <option value="@PortTypeConstant.Tcp6" selected="selected")>TCP (ipv6)</option>
+                }
+                else
+                {
+                    <option value="@PortTypeConstant.Tcp6">TCP (ipv6)</option>
+                }
+                if (Model.Port.Type == PortTypeConstant.Udp6)
+                {
+                    <option value="@PortTypeConstant.Udp6" selected="selected">UDP (ipv6)</option>
+                }
+                else
+                {
+                    <option value="@PortTypeConstant.Udp6">UDP (ipv6)</option>
+                }
+            }
+        </select>
+    </div>
+    <h5>
+        <strong>Direction</strong>
+    </h5>
+    <p class="text-muted">Justification for sending trafific to port(s) <em>inside CSG</em> do not need to be entered in this tool.</p>
+    <div class="radio">
+        <label>
+            @if (Model.Port.Direction == SimplePortDirectionTypeConstant.PortListeningToInsideTraffic)
+            {
+                <input type="radio" name="direction" value="@SimplePortDirectionTypeConstant.PortListeningToInsideTraffic" checked="checked"/>
+            }
+            else
+            {
+                <input type="radio" name="direction" value="@SimplePortDirectionTypeConstant.PortListeningToInsideTraffic"/>
+            }
+            <span> Port(s) listening to traffic originating inside CSG</span>
+        </label>
+    </div>
+    <div class="radio">
+        <label>
+            @if (Model.Port.Direction == SimplePortDirectionTypeConstant.PortListeningToOutsideTraffic)
+            {
+                <input type="radio" name="direction" value="@SimplePortDirectionTypeConstant.PortListeningToOutsideTraffic" checked="checked"/>
+            }
+            else
+            {
+                <input type="radio" name="direction" value="@SimplePortDirectionTypeConstant.PortListeningToOutsideTraffic"/>
+            }
+            <span> Port(s) listening to traffic originating inside or outside CSG</span>
+        </label>
+    </div>
+    <div class="radio">
+        <label>
+            @if (Model.Port.Direction == SimplePortDirectionTypeConstant.SendingTrafficToOusidePort)
+            {
+                <input type="radio" name="direction" value="@SimplePortDirectionTypeConstant.SendingTrafficToOusidePort" checked="checked"/>
+            }
+            else
+            {
+                <input type="radio" name="direction" value="@SimplePortDirectionTypeConstant.SendingTrafficToOusidePort"/>
+            }
+            <span> Sending traffic to port(s) outside CSG</span>
+        </label>
+    </div>
+    <div class="form-group">
+        <label for="justification">Justification</label>
+        <textarea class="form-control" id="justification" name="justification" placeholder="Why is it needed?" rows="8">@Model.Port.Justification</textarea>
+    </div>
+</form>

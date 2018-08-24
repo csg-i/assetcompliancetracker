@@ -1,0 +1,41 @@
+﻿@model act.core.web.Models.BuildSpec.SpecByOwners
+
+<div>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>App Specs</th>
+            <th>OS Specs</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Owner</td>
+                <td>
+                    @if (p.AppSpecCount > 0)
+                    {
+                        <a href="#" data-url="@Url.PartialAppSpecSearch()" data-search-type="@SpecSearchTypeConstant.Owner" data-search="@p.SamAccountName" class="action-popup-results">@p.AppSpecCount</a>
+                    }
+                    else
+                    {
+                        <text>0</text>   
+                    }
+                </td>
+                <td>
+                    @if (p.OsSpecCount > 0)
+                    {
+                        <a href="#" data-url="@Url.PartialOsSpecSearch()" data-search-type="@SpecSearchTypeConstant.Owner" data-search="@p.SamAccountName" class="action-popup-results">@p.OsSpecCount</a>
+                    }
+                    else
+                    {
+                        <text>0</text>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

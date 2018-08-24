@@ -1,0 +1,21 @@
+﻿@model act.core.web.Models.BuildSpec.BuildSpecReport
+@{
+    ViewBag.Title = "Build Specification Report";
+}
+@section css{
+    @Url.ViewStyles("BuildSpecReport")
+}
+@section scripts{
+    @Url.ViewJavascript("BuildSpecReport")
+}
+<div class="clearfix">
+    <h1 class="float-left">Build Specification</h1>
+    <h4 class="float-right">
+        Confluence URL: <code>
+            @Model.RootUri@Url.PartialBuildSpecReport(Model.Id)
+        </code>
+    </h4>
+</div>
+<div class="on-visible" data-visibility-action="load" data-url="@Url.PartialBuildSpecReport(Model.Id)">
+
+</div>

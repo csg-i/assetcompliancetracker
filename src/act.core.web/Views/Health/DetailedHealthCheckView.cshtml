@@ -1,0 +1,36 @@
+﻿@model act.core.web.Models.Health.DetailedHealthCheck
+
+@{
+    ViewBag.Title = "Detailed Health Check";
+}
+
+<h1>Detailed Health Check</h1>
+<p><strong>200</strong> OK -- point load balancers here so they know the site is up and compiling.
+</p>
+<h3>Logged in as: </h3>
+<code>@Model.LoggedInUser</code>
+
+<h3>Configuration</h3>
+<ul>
+    @foreach (var setting in Model.Configuration)
+    {
+        <li>
+            <code>@setting</code>
+        </li>
+
+    }
+</ul>
+<h3>Database Context Info</h3>
+<code>@Model.ContextConnectionStringInfo</code>
+<h3>Database Connected: </h3>
+<code>@Model.DbConnected</code>
+<h3>Version: </h3>
+<code>@Model.AssemblyVersion</code>
+<br />
+<br />
+<br />
+<p>
+    <a href="javascript:self.history.back();">Go Back</a> |
+    <a href="@Url.Home()">Go Home</a>
+</p>
+

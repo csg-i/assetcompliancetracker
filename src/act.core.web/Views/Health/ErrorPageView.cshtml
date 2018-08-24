@@ -1,0 +1,22 @@
+﻿@model act.core.web.Models.Health.ErrorPage
+
+@{
+    ViewBag.Title = @Model.Code + " Error";
+}
+
+<h2>@Model.Description</h2>
+<p><strong>@Model.Code:</strong> @Model.LongDescription</p>
+@if (Model.ShowRequestId)
+{
+    <p>
+        <strong>Request ID:</strong> <code>@Model.RequestId</code>
+    </p>
+}
+<br />
+<br />
+<br />
+<p>
+    <a href="javascript:self.history.back();">Go Back</a> |
+    <a href="@Url.Home()">Go Home</a>
+</p>
+

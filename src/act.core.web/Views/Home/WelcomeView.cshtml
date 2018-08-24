@@ -1,0 +1,82 @@
+﻿@using act.core.web.Models.Dashboard
+@model act.core.web.Models.Home.Welcome
+@{
+    ViewBag.Title = string.Format("Welcome {0} {1}", Model.FirstName, Model.LastName);
+}
+
+@section css{
+    @Url.ViewStyles("welcome")
+}
+@section scripts{
+    <script src="~/js/highcharts.min.js" asp-append-version="true"></script>
+    @Url.ViewJavascript("wireUpTypeAhead,welcome");
+}
+
+<h1 class="display-4"><strong>Welcome @Model.FirstName.</strong>  Are you ready to ACT?</h1>
+<hr/>
+<div class="row clearfix on-visible status" data-visibility-action="status" data-url="@Url.JsonDashboardStatus()">
+    <div class="col-12 col-lg-4 col-xl-3 offset-xl-1 in-scope"></div>
+    <div class="col-12 col-lg-4 col-xl-3 failing"></div>
+    <div class="col-12 col-lg-4 col-xl-4 out-of-scope"></div>
+</div>
+<hr/>
+<div class="row">
+    <div class="col-sm-12 on-visible" data-visibility-action="drawComplianceOverTime" id="overtime" data-url="@Url.JsonDashboardComplianceOverTime()" data-pci-only="true" data-days-back="14">
+        
+    </div>
+</div>
+<div class="row">
+    <div class="col-12 col-sm-10 offset-sm-1 col-xl-8 offset-xl-2">
+        <div role="form" class="row">
+            <div class="form-group col">
+                <label for="pciOnly" class="sr-only">PCI?</label>
+                <select name="pciOnly" id="pciOnly" class="form-control form-control-sm action-change-compliance-over-time" data-url="@Url.JsonDashboardComplianceOverTime()">
+                    <option value="true">PCI Only</option>
+                    <option value="">All</option>
+                </select>
+            </div>
+            <div class="form-group col">
+                <label for="daysBack" class="sr-only">Weeks Back</label>
+                <select name="daysBack" id="daysBack" class="form-control form-control-sm action-change-compliance-over-time" data-url="@Url.JsonDashboardComplianceOverTime()">
+                    <option value="7">1 Week</option>
+                    <option value="14" selected="selected">2 Weeks</option>
+                    <option value="21">3 Weeks</option>
+                    <option value="28">4 Weeks</option>
+                </select>
+            </div>
+            <div class="form-group col">
+                <label for="filterType" class="sr-only">Weeks Back</label>
+                <select name="filterType" id="filterType" class="form-control form-control-sm action-change-compliance-over-time" data-url="@Url.JsonDashboardComplianceOverTime()">
+                    <option value="@ComplianceOverTime.EmployeeFilterConstant.Director" selected="selected">@ComplianceOverTime.EmployeeFilterConstant.Director</option>
+                    <option value="@ComplianceOverTime.EmployeeFilterConstant.Owner">@ComplianceOverTime.EmployeeFilterConstant.Owner</option>
+                </select>
+            </div>
+            <div class="form-group col-12 col-lg-6">
+                <input type="hidden" id="employeeId" name="employeeId" value=""/>
+                <label for="employee" class="sr-only">Employee</label>
+                <input type="text" id="employee" class="form-control form-control-sm on-visible" data-value-field="#employeeId" data-visibility-action="wireUpTypeAhead" placeholder="search for employee" data-url="@Url.JsonEmployeeTypeAhead()" data-after-action="afterTypeAhead" data-graph-url="@Url.JsonDashboardComplianceOverTime()"/>
+            </div>
+        </div>
+    </div>
+</div>
+<hr/>
+<div class="row">
+    <div class="col-lg-6 col-12">
+        <div class="on-visible" data-visibility-action="drawDirectorChart" data-url="@Url.JsonDashboardDirectorChart()" data-search-url="@Url.NodeSearch()"></div>
+    </div>
+    <div class="col-lg-6 col-12">
+        <div class="on-visible" data-visibility-action="drawTopOffendersChart" data-url="@Url.JsonDashboardTopOffenders()"></div>
+    </div>
+</div>
+
+<hr />
+<div class="on-visible clearfix" data-visibility-action="spread" data-url="@Url.JsonDashboardSpread()">
+   
+    <div id="os">
+    </div>
+     
+    <hr />
+
+    <div id="product">
+    </div>
+</div>

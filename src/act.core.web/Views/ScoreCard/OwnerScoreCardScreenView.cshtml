@@ -1,0 +1,17 @@
+﻿@model act.core.web.Models.ScoreCard.OwnerScoreCardScreen
+@{
+    ViewBag.Title = "Owner Scorecard";
+}
+@section scripts
+{
+    @Url.ViewJavascript("wireUpTypeAhead, ScoreCard, OwnerScoreCard")
+}
+<h1>Owner Scorecard</h1>
+<hr />
+<div role="form">
+    <div class="form-group">
+        <label for="employee">Employee Lookup</label>
+        <input id="employee" name="employee" type="search" class="form-control form-contol-lg on-visible" placeholder="Search for Employees" data-visibility-action="wireUpTypeAheadSearch" data-score-card-url="@Url.PartialOwnerScoreCard()" data-target="#ownerscorecard" data-url="@Url.JsonEmployeeTypeAhead()" value="" />
+    </div>
+</div>
+<div id="ownerscorecard" class="on-visible" data-url="@Url.PartialOwnerScoreCard(Model.EmployeeId)" data-search-box="#employee" data-type="owner" data-name="@Model.Name" data-hash="@Model.EmployeeId" data-visibility-action="loadScoreCard"></div>

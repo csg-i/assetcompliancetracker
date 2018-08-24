@@ -1,0 +1,14 @@
+@model act.core.web.Models.OsSpecs.OsSpecSearchResults
+
+@if (Model.Empty)
+{
+    <div data-empty="true"></div>
+}
+else
+{
+    <div data-count="@Model.Count" class="list-group">
+    @{   
+        Model.ForEach(async p => await Html.RenderPartialAsync("OsSpecSearchResultPartial", p));
+    }
+    </div>
+}

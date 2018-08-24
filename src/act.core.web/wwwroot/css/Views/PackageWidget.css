@@ -1,0 +1,32 @@
+﻿div.package-widget div#justifications div.btn-group { margin-left: 8px; margin-bottom: 8px; position: absolute; top: 8px; right: 8px;}
+div.package-widget div#justifications div.btn-group.btn-group-sm .btn { font-size: 6px; padding: 5px 5px;}
+div.package-widget div#justifications div.list-group-item { border-left-width: 6px;  box-shadow: 2px 5px 5px #e0e0e0; }
+div.package-widget div#justifications div.list-group-item.outline { border-left-style:dashed; }
+div.package-widget div#justifications div.list-group-item span.text-justify { height: 5em; display: inline-block; overflow: hidden; margin-right: 16px;}
+div.package-widget ul#packages li.list-group-item.ui-draggable span.handle { cursor: pointer;}
+div.package-widget ul#packages li.list-group-item.ui-draggable { padding-left:6px}
+div.package-widget div.grey { background: #ededed; }
+div.package-widget div.no-pad { padding: 0 2px; }
+div.package-widget button.action-new-justification { margin: 15px }
+div.package-widget button.action-new-package { margin: 15px 0 15px 15px; }
+div.package-widget .example { font-size: large }
+div.package-widget div#trashArea {font-size: 150px;min-height: 400px; background: linear-gradient(to bottom right, rgba(255, 0, 0, 0), #ededed); border:solid 5px #fff}
+div.package-widget div#trashArea.active { border: dashed 5px #000;  }
+div.package-widget div#trashArea.hover { background:linear-gradient(to bottom right, rgba(255, 0, 0, 0), #245269)  }
+div.package-widget div#trash { margin-top: 100px; color: #cdcdcd;}
+div.package-widget a.action-clean-duplicates { visibility: hidden}
+div#area.app div.package-widget a.action-clean-duplicates {visibility: visible} 
+
+div.package-widget em.filter-label { font-size: x-small; display: block;}
+@media (min-width: 992px) and (max-width: 1199px) {
+    div.package-widget div#trashArea { font-size: 100px; }
+    div.package-widget div#trash { margin-top: 100px;margin-left: 10px;}
+}
+@media (min-width: 768px) and (max-width: 991px) {
+    div.package-widget div#trashArea { font-size: 75px; }
+    div.package-widget div#trash { margin-top: 110px;margin-left: 10px;}
+}
+@media (max-width: 767px) {
+    div.package-widget div#trashArea { font-size: 50px; }
+    div.package-widget div#trash { margin-top: 150px; margin-left: 50px;}
+}

@@ -1,0 +1,47 @@
+﻿@model act.core.web.Models.BuildSpec.ReviewDataItems
+<div>
+    @if (Model.OsFailures)
+    {
+        <h4>Operating System Name/Version Failures</h4>
+    }
+    else if (Model.Errors)
+    {
+        <h4>Encountered Errors Running Checks</h4>
+    }
+    else
+    {
+        <h4>@(Model.ResultType)s should @(Model.ShouldExist ? string.Empty : "not ") contain
+            @if (Model.PortType.HasValue)
+                {
+                <text>@Model.PortType.ToString().ToUpper() port</text>
+            }</h4>
+        <p class="text-muted">            
+            @Model.Name
+        </p>
+    }
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>FQDN</th>
+            <th>Spec</th>
+            <th>Env</th>
+            <th>Scope</th>
+            <th>Owner</th>
+            <th>Function</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var node in Model)
+        {
+            <tr>
+                <td><a target="_blank" href="@Url.ChefAutomateComplianceReport(node.EnvironmentId, node.ChefId)">@node.Fqdn</a></td>
+                <td>@node.BuildSpec</td>
+                <td>@node.EnvironmentName</td>
+                <td>@node.PciScope</td>
+                <td>@node.Owner</td>
+                <td>@node.Product<br/><em>@node.Function</em></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

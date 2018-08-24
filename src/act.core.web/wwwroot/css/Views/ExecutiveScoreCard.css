@@ -1,0 +1,9 @@
+﻿div#executivescorecard table thead tr th span.total{ display: none;}
+div#executivescorecard table thead tr th span.pci{ display: inline;}
+div#executivescorecard table tbody tr td span.total{ display: none;}
+div#executivescorecard table tbody tr td span.pci{ display: inline;}
+
+div#executivescorecard.total table thead tr th span.total{ display: inline;}
+div#executivescorecard.total table thead tr th span.pci{ display: none;}
+div#executivescorecard.total table tbody tr td span.total{ display: inline;}
+div#executivescorecard.total table tbody tr td span.pci{ display: none;}

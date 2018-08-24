@@ -1,0 +1,32 @@
+﻿@using act.core.web.Models.Home
+@model Help
+@{
+    ViewBag.Title = "Help Home";
+}
+
+<div class="jumbotron text-center col-12 col-md-6 mx-auto col-sm-8 col-lg-4 col-xl-3">
+    <h1 class="display-4">Help</h1>
+    <p class="lead">To make it easier for someone to do something by offering services or resources.</p>
+    <hr class="my-4"/>
+    @if (Model.IsEmpty)
+    {
+        <h3 class="text-danger">Help has not be setup</h3>    
+    }
+    else
+    {
+        <p class="text-success">You will be taken to another site in a new tab or window.</p>
+        <div class="btn-group-lg btn-group btn-group-vertical">
+            @foreach (var link in Model)
+            {
+                if (string.IsNullOrWhiteSpace(link.Icon))
+                {
+                    <a class="btn btn-outline-primary btn-lg" href="@link.Url" target="_blank">@link.Text</a>
+                }
+                else
+                {
+                    <a class="btn btn-outline-primary btn-lg" href="@link.Url" target="_blank"><i class="fa fa-@link.Icon"></i> @link.Text</a>
+                }
+            }
+        </div>
+    }
+</div>

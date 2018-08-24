@@ -1,0 +1,93 @@
+@using act.core.data
+@model act.core.web.Models.OsSpecs.OsSpecInformation
+    
+<div class="os-information-widget on-visible" data-visibility-action="initializeInfoWidget" data-url="@Url.JsonSaveOsSpecInfo()">
+    <form role="form" class="col-xl-6 col-lg-7 col-md-8 col-sm-10 col-12 m-auto">
+        <p class="text-muted">
+            Enter the specification for a specific OS and version
+        </p>
+        <hr />
+        <input type="hidden" name="id" id="id" value="@Model.Id"/>
+        <div class="form-group">
+            <label class="sr-only" for="name">Build Specification Name</label>
+            <input type="text" class="form-control form-contol-lg action-os-spec-name-changed" id="name" name="name" placeholder="OS Specification Name" value="@Model.Name" maxlength="256" autofocus>
+        </div>
+        <div class="form-group">
+            <label for="platform">Platform</label>
+            <select class="form-control action-platform-changed" id="platform" name="platform" data-text="Red Hat Enterprise Linux 7">
+                @if (Model.Platform == PlatformConstant.Linux)
+                {
+                    <option data-text="Red Hat Enterprise Linux 7" value="@(PlatformConstant.Linux.ToString().ToLower())" selected="selected">Linux</option>
+                }
+                else
+                {
+                    <option data-text="Red Hat Enterprise Linux 7" value="@(PlatformConstant.Linux.ToString().ToLower())">Linux</option>             
+                }
+                
+                @if (Model.Platform == PlatformConstant.WindowsServer)
+                {
+                    <option data-text="Windows 2012 R2 Standard" value="@(PlatformConstant.WindowsServer.ToString().ToLower())" selected="selected">Windows Server</option>
+
+                }
+                else
+                {
+                    <option data-text="Windows 2012 R2 Standard" value="@(PlatformConstant.WindowsServer.ToString().ToLower())">Windows Server</option>
+                }
+                
+                @if (Model.Platform == PlatformConstant.Unix)
+                {
+                    <option data-text="Solaris" value="@(PlatformConstant.Unix.ToString().ToLower())" selected="selected">Unix</option>
+                }
+                else
+                {
+                    <option data-text="Solaris" value="@(PlatformConstant.Unix.ToString().ToLower())">Unix</option>             
+                }
+
+                @if (Model.Platform == PlatformConstant.WindowsClient)
+                {
+                    <option data-text="Windows 10" value="@(PlatformConstant.WindowsClient.ToString().ToLower())" selected="selected">Windows Client</option>
+
+                }
+                else
+                {
+                    <option data-text="Windows 10" value="@(PlatformConstant.WindowsClient.ToString().ToLower())">Windows Client</option>
+                }
+                
+                @if (Model.Platform == PlatformConstant.Appliance)
+                {
+                    <option data-text="Appliance Name" value="@(PlatformConstant.Appliance.ToString().ToLower())" selected="selected">Other (Appliance)</option>
+                }
+                else
+                {
+                    <option data-text="Appliance Name" value="@(PlatformConstant.Appliance.ToString().ToLower())">Other (Appliance)</option>
+                }
+                
+                @if (Model.Platform == PlatformConstant.Other)
+                {
+                    <option data-text="Other" value="@(PlatformConstant.Other.ToString().ToLower())" selected="selected">Other</option>
+                }
+                else
+                {
+                    <option data-text="Other" value="@(PlatformConstant.Other.ToString().ToLower())">Other</option>
+                }
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="osname">OS Name</label>
+            <input type="text" class="form-control" id="osname" name="osname" placeholder="OS Name (ex. Red Hat Enterprise Linux 7)" value="@Model.OsName" maxlength="256">
+        </div>
+        <div class="form-group">
+            <label for="osversion">OS Version</label>
+            <input type="text" class="form-control" id="osversion" name="osversion" placeholder="OS Version (ex. 1935.200.2122)" value="@Model.OsVersion" maxlength="32">
+        </div>
+        <div class="form-group">
+            <input type="hidden" id="ownerid" name="ownerid" value="@Model.OwnerId"/>
+            <label for="ownername">Owner</label>
+            <input type="text" class="form-control on-visible" data-visibility-action="wireUpTypeAhead" data-value-field="#ownerid" data-url="@Url.JsonEmployeeTypeAhead()" id="ownername" name="ownername" placeholder="Owner of this specification" value="@Model.OwnerName">
+        </div>
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="text" class="form-control" id="email" name="email" placeholder="Optional Email Address for Compliance Checks." value="@Model.Email" maxlength="256">
+        </div>
+    </form>
+</div>

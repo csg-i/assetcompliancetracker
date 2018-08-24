@@ -1,0 +1,12 @@
+﻿@model act.core.web.Models.Report.PortsReportScreen
+@{
+    ViewBag.Title = "All Ports";
+}
+@section scripts{
+    @Url.ViewJavascript("AllReportScreens")
+}
+
+<h1>All Ports</h1>
+<div class="on-visible" data-visibility-action="loadReport" data-url="@Url.PartialAllPortsReport()">
+
+</div>

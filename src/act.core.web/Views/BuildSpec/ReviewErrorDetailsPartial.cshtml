@@ -1,0 +1,14 @@
+﻿@model act.core.web.Models.BuildSpec.ReviewErrorDetails
+<div>
+   
+    <h4>@Model.Name</h4>
+    <p class="text-muted">            
+        @Model.Code
+    </p>
+    <ul class="list-group">
+        @foreach (var err in Model)
+        {
+            <li class="list-group-item">@err</li>
+        }
+    </ul>        
+</div>

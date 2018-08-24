@@ -1,0 +1,3 @@
+﻿
+div#results div.list-group-item:hover {background-color: #f5f5f5; }
+div#results div.list-group-item span.badge { margin-right: 12px;}

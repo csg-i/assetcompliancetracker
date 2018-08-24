@@ -1,0 +1,33 @@
+﻿@using act.core.data
+@model act.core.web.Models.BuildSpec.PortReportItems
+
+<div>
+    <h4><span class="text-danger">External Inbound</span> / <span class="text-warning">External Outbound</span> / <span class="text-muted">Internal Inbound</span></h4>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Port</th>
+            <th>Source</th>
+            <th>Build&nbsp;Spec</th>
+            <th>Type</th>
+            <th>Direction</th>
+            <th>External?</th>
+            <th>Justification</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var row in Model)
+        {
+            <tr>
+                <td>@row.Port</td>
+                <td>@(row.BuildSpecificationType == BuildSpecificationTypeConstant.OperatingSystem ? "OS" : "App")</td>
+                <td>@row.BuildSpecName</td>
+                <td>@row.PortType.ToString().ToUpper()</td>
+                <td class="text-@(row.Outgoing ? "warning" : row.External ? "danger" : string.Empty)">@row.Outgoing.ToDirectionString()</td>
+                <td class="text-@(row.Outgoing ? "warning" : row.External ? "danger" : string.Empty)">@row.External.ToYesString()</td>
+                <td><blockquote>@row.Justification</blockquote> <em class="float-right"><span class="sr-only">Spec Owner </span>- @row.Justifier</em></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

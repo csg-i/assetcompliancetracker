@@ -1,0 +1,17 @@
+﻿@model act.core.web.Models.Home.Home
+@{
+    ViewBag.Title = "Reports Home";
+}
+
+<div class="jumbotron text-center">
+    <h1 class="display-4">Reports</h1>
+    <p class="lead">Accounts given of particular matters, especially in the form of an official documents, after thorough investigation or consideration.</p>
+    <hr class="my-4"/>
+    <div class="btn-group-lg btn-group btn-group-vertical">
+        <a class="btn btn-outline-primary btn-lg" href="@Url.OwnerReport()">Specs By Owner</a>
+        <a class="btn btn-outline-primary btn-lg" href="@Url.AllPortsReport()">All Ports</a>
+        <a class="btn btn-outline-primary btn-lg" href="@Url.AssignedNodesReport()">Assigned Nodes</a>
+        <a class="btn btn-outline-primary btn-lg" href="@Url.NotReportingNodesReport()">Nodes Not Reporting</a>
+        <a class="btn btn-outline-primary btn-lg" href="@Url.NodesExcludedByProductReport()">Nodes Excluded By Product</a>
+    </div>
+</div>

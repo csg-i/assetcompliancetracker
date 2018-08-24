@@ -1,0 +1,54 @@
+﻿@using act.core.data
+@model act.core.web.Models.AppSpecs.AppSpecInformation
+    
+<div class="app-information-widget on-visible" data-visibility-action="initializeInfoWidget" data-url="@Url.JsonSaveAppSpecInfo()" data-platform="@Model.Platform">
+    <form role="form" class="col-xl-6 col-lg-7 col-md-8 col-sm-10 col-12 m-auto">
+        <p class="text-muted">
+            Enter the specification for a specific application
+        </p>
+        <hr />
+        <input type="hidden" name="id" id="id" value="@Model.Id"/>
+        <div class="form-group">
+            <label class="sr-only" for="name">Build Specification Name</label>
+            <input type="text" class="form-control form-control-lg action-app-spec-name-changed" id="name" name="name" placeholder="Application Specification Name" data-core-os-wraper="#coreoswraper" value="@Model.Name" maxlength="256" autofocus>
+        </div>
+        <div class="form-group">
+            <input type="hidden" id="osspecid" name="osspecid" value="@Model.OsSpecId" />
+            <label for="osspecname">OS Specification</label>
+            <div class="input-group">
+                <input type="text" class="form-control on-visible" data-visibility-action="wireUpTypeAhead" data-after-action="afterTypeAhead" data-value-field="#osspecid" data-url="@Url.JsonOsSpecTypeAheadSearch()" id="osspecname" name="osspecname" placeholder="OS Specification" value="@Model.OsSpecName">
+                <div class="input-group-append">
+                    <button class="btn btn-secondary action-os-spec-link" data-url="@Url.OsSpecsWizard()" data-id="@Model.OsSpecId">Go</button>
+                </div>
+            </div>
+        </div>
+        <div class="form-check" id="coreoswrapper" style="display:@(Model.Platform.ToString().ToLower().StartsWith("windows") ? "block": "none")">           
+            @if (Model.RunningCoreOs.GetValueOrDefault())
+            {
+                <input type="checkbox" class="form-check-input" name="runningcoreos" id="runningcoreos" value="true" checked="checked">
+            }
+            else
+            {
+                <input type="checkbox" class="form-check-input" name="runningcoreos" id="runningcoreos" value="true">
+            } 
+            <label for="runningcoreos" class="form-check-label"> Running Core OS (No GUI)</label>
+        </div>
+        <div class="form-group">
+            <input type="hidden" id="ownerid" name="ownerid" value="@Model.OwnerId"/>
+            <label for="ownername">Owner</label>
+            <input type="text" class="form-control on-visible" data-visibility-action="wireUpTypeAhead" data-value-field="#ownerid" data-url="@Url.JsonEmployeeTypeAhead()" id="ownername" name="ownername" placeholder="Owner of this specification" value="@Model.OwnerName">
+        </div>
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="text" class="form-control" id="email" name="email" placeholder="Optional Email Address for Compliance Checks." value="@Model.Email" maxlength="256">
+        </div>
+        <div class="form-group">
+            <label for="wikilink">Confluence Wiki Link</label>
+            <input type="text" class="form-control" id="wikilink" name="wikilink" placeholder="Optional link to a your document library in confluence." value="@Model.WikiLink" maxlength="256">
+        </div>
+        <div class="form-group">
+            <label for="overview">Overview</label>
+            <textarea class="form-control" id="overview" name="overview" rows="10" placeholder="Enter any CSG specific settings including NTP, logging, IIS configuration, etc.  This can also include information about the location of where code is published to.">@Model.Overview</textarea>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,81 @@
+﻿@using act.core.data
+@model act.core.web.Models.BuildSpec.ReviewData
+
+
+<table class="table table-striped" data-name="@Model.Name" data-success="@((Model.Count == 0 && Model.CountOfOsFailures == 0).ToString().ToLower())">
+    <thead>
+    <tr>
+        <th>Result&nbsp;Type</th>
+        <th class="w-50">Item</th>
+        <th>Failure</th>
+        <th class="text-center">Count</th>
+        <th class="text-right">&nbsp;</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var error in Model.Errors)
+    {
+        <tr class="text-danger danger">
+            <td>Error</td>
+            <td class="w-50">@error.Name</td>
+            <td>@error.Code</td>
+            <td class="text-center"><button class="action-popup btn btn-secondary btn-sm" data-title="Details" data-url="@Url.PartialReviewDataErrorDetails(Model.Id, Model.EnvironmentId)" data-name="@error.Name" data-code="@error.Code">@error.Count</button></td>
+            <td class="text-right"><button class="action-popup btn btn-secondary btn-sm" data-title="Error Messages" data-url="@Url.PartialReviewDataErrorMessages(Model.Id, Model.EnvironmentId)" data-name="@error.Name" data-code="@error.Code">Errors</button></td>
+        </tr>
+    }
+    @if (Model.CountOfOsFailures > 0)
+    {
+        <tr>
+            <td>Invalid OS</td>
+            <td class="w-50">&nbsp;</td>
+            <td>&nbsp;</td>
+            <td class="text-center"><button class="action-popup btn btn-secondary btn-sm" data-title="Details" data-url="@Url.PartialReviewDataOsFailureDetails(Model.Id, Model.EnvironmentId)">@Model.CountOfOsFailures</button></td>
+            <td class="text-right">&nbsp;</td>
+        </tr>
+    }
+    @foreach (var failure in Model)
+    {
+        <tr>
+            <td>
+
+                @switch (failure.ResultType)
+                {
+                    case JustificationTypeConstant.Feature:
+                        <text>Windows&nbsp;Feature</text>
+                        break;
+                    case JustificationTypeConstant.Application:
+                        <text>Windows&nbsp;App</text>
+                        break;
+                    case JustificationTypeConstant.Package:
+                        <text>Linux&nbsp;Package</text>
+                        break;
+                    case JustificationTypeConstant.Port:
+                        if (failure.PortType.HasValue)
+                        {
+                            <text>@failure.PortType.Value.ToString().ToUpper()</text>
+                        }
+                        <text> Port</text>
+                        break;
+                }
+            </td>
+            <td class="w-50">@failure.Name</td>
+            <td>
+                @if (failure.ShouldExist)
+                {
+                    <text>is&nbsp;not&nbsp;installed</text>
+                }
+                else
+                {
+                    <text>is&nbsp;not&nbsp;in&nbsp;spec</text>
+                }
+            </td>
+            <td class="text-center">
+                <button class="action-popup btn btn-secondary btn-sm" data-title="Details" data-url="@Url.PartialReviewDataDetails(Model.Id, Model.EnvironmentId, failure.ResultType, failure.ShouldExist, failure.PortType)" data-name="@failure.Name">@failure.Count</button>
+            </td>
+            <td class="text-right">
+                <button class="action-popup btn btn-secondary btn-sm" data-title="Suggestions" data-url="@Url.PartialReviewSuggestions(Model.Id, Model.EnvironmentId, failure.ResultType, failure.ShouldExist, failure.PortType)" data-name="@failure.Name">Suggestions?</button>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

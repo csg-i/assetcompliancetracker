@@ -1,0 +1,18 @@
+﻿@using act.core.data
+@model SpecDone
+
+
+<div class="jumbotron">
+    <h2 class="display-4">The @Model.TypeString Specification has been saved.</h2>
+    <hr class="my-4">
+    <ul>
+        <li><p><a href="@Url.BuildSpecReport(Model.SpecId)">View Report</a></p></li>
+        @if (Model.Type == BuildSpecificationTypeConstant.Application)
+        {
+            <li><p><a href="@Url.NodesForBuildSpec(Model.SpecId)">Assign nodes to this spec</a></p></li>
+        }
+        <li><p><a href="@Url.SpecsWizard(Model.Type, Model.SpecId)">Review this spec</a></p></li>
+        <li><p><a href="@Url.SpecsWizard(Model.Type)">Add another spec</a></p></li>
+        <li><p><a href="@Url.Home()">Go Home</a></p></li>
+    </ul>
+</div>

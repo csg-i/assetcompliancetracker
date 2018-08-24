@@ -1,0 +1,15 @@
+﻿@model act.core.web.Models.Report.OwnerReportScreen
+@{
+    ViewBag.Title = "Build Specifications By Owner";
+}
+@section css{
+    @Url.ViewStyles("OwnerReportScreen")
+}
+@section scripts{
+     @Url.ViewJavascript("OwnerReportScreen,AllReportScreens")
+}
+
+<h1>Build Specifications By Owner</h1>
+<div class="on-visible" data-visibility-action="loadReport" data-url="@Url.PartialByOwnerReport()">
+
+</div>

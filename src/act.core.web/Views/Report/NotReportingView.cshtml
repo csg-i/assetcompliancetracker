@@ -1,0 +1,27 @@
+﻿@model act.core.web.Models.Report.NotReporting
+@{
+    ViewBag.Title = "Not Reporting Nodes";
+}
+@section css{
+     @Url.ViewStyles("AllReports")
+}
+@section scripts{
+    @Url.ViewJavascript("AllReportScreens")
+}
+
+<h1>Not Reporting Nodes</h1>
+<hr/>
+<div role="form" class="clearfix mb-2">
+    <h4>PCI</h4>
+    <div class="form-check form-check-inline">
+        <input type="radio" id="pci" class="action-total-or-pci form-check-input" name="total" value="false" checked="checked"/>
+        <label for="pci" class="form-check-label">PCI</label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input type="radio" id="all" class="action-total-or-pci form-check-input" name="total" value="true"/>
+        <label for="all" class="form-check-label">All</label>
+    </div>
+</div>
+<div class="on-visible" data-visibility-action="loadReport" data-url="@Url.PartialNotReportingNodes()">
+
+</div>

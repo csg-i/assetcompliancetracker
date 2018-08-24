@@ -1,0 +1,41 @@
+﻿@using act.core.web.Models.Nodes
+@model NodeSearch
+
+@{
+    ViewBag.Title = "Node Search";
+}
+
+@section css{
+    @Url.ViewStyles("NodeSearch")
+}
+
+@section scripts{
+    @Url.ViewJavascript("NodeSearchCommon,NodeSearch")
+    <script type="text/template" id="bstemplate">       
+        <div class="form-group">
+            <label class="sr-only">Build Specification</label>
+            <div class="input-group">
+                <input type="text" autocomplete="off" class="form-control" name="specname" placeholder="Start typing at least 3 characters" />
+                <div class="input-group-append">
+                    <button class="btn btn-danger" type="button">
+                        <span class="sr-only">Cancel</span>
+                        <i class="fa fa-minus-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </script>
+}
+
+<h1 id="title">Node Search</h1>
+@await Html.PartialAsync("NodeSearchCommon", Model)
+<div id="results" data-url="@Url.PartialNodeSearch()"></div>
+<div class="jumbotron">
+    <h2 class="display-4">Search for Nodes/Servers</h2>
+    <hr class="my-4 "/>
+    <p>
+        This screen provides a way to easily search for nodes and assign various Application Specs to various nodes.  The search options include Environment, Platform, Security Class and then you can select either FQDN (Fully Qualified Domain Name), Mine, Owner or Product/Feature.  Once the search option is selected, enter the text to search on and hit enter, tab or click on the magnifying glass  <i class="fa fa-search"></i>.  The search results display with a link below each name indicating if the node is assigned to an Application spec or not. The Environment labels are color coded to easily visualize the nodes for those environments.  In addition, a record count is displayed above the search icon.  To assign a node to an Application spec, simply click on the link and begin typing the name of the spec to find a match to the text entered.  Repeat this process for all the nodes to be assigned.  If you cannot find your node, data is pulled from the inventory system regularly so it may not be here yet, but check back soon.
+    </p>
+</div>
+
+<a href="#" class="action-scroll-top" data-where="#title">top</a>

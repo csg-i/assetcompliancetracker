@@ -1,0 +1,168 @@
+﻿@using act.core.data
+@model act.core.web.Models.BuildSpec.BuildSpec
+
+<div>
+    <div>
+        @if (Model.Type == BuildSpecificationTypeConstant.OperatingSystem)
+        {
+            <h3 class="underline clearfix">
+                OS Only <small><a class="btn btn-sm btn-outline-secondary float-right" href="@Url.OsSpecsWizard(Model.Id)">Edit</a></small>
+            </h3>
+        }
+        else
+        {
+            <h3 class="underline clearfix">
+                Overview <small><a class="btn btn-sm btn-outline-secondary float-right" href="@Url.AppSpecsWizard(Model.Id)">Edit</a></small>
+            </h3>
+        }
+        <h4>@Model.Name</h4>
+        <p><strong>@Model.OsName</strong> @Model.OsVersion</p>
+        <p>@Model.Owner</p>
+        @if (!string.IsNullOrWhiteSpace(Model.WikiLink))
+        {
+            <p>
+                <a href="@Model.WikiLink">@Model.WikiLink</a>
+            </p>
+        }
+        <div>@Model.Overview</div>
+    </div>
+    @{
+        JustificationTypeConstant? jtc = null;
+        var counter = 1;
+    }
+    @foreach (var justification in Model.Justifications)
+    {
+        if (jtc != justification.JustificationType)
+        {
+            jtc = justification.JustificationType;
+            counter = 1;
+            if (justification.JustificationType == JustificationTypeConstant.Package)
+            {
+                <h3 class="underline">*nix Packages</h3>                    
+            } 
+            else if (justification.JustificationType == JustificationTypeConstant.Feature)
+            {
+                <h3 class="underline">Windows OS Features</h3>
+            }
+            else
+            {
+
+                <h3 class="underline">Windows Third Party Applications</h3>
+            }
+        }
+        <div class="panel panel-@(jtc.CardColorClass()??"default") card border-@jtc.CardColorClass() mb-2">
+            <div class="panel-heading card-header bg-@jtc.CardColorClass() text-white">@jtc Justification @(counter++) (@(justification.FromSpecType == BuildSpecificationTypeConstant.OperatingSystem ? "OS" : "App"))</div>
+            <div class="panel-body card-body clearfix">
+                <blockquote class="text-justify">@justification.Text</blockquote>
+                <em class="float-right"><span class="sr-only">Spec Owner </span>- @justification.Justifier</em>
+            </div>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Details</th>
+                    @if (justification.JustificationType == JustificationTypeConstant.Feature)
+                    {
+                        <th>Core&nbsp;v.&nbsp;Gui</th>
+                    }
+                    else
+                    {
+                        <th>PCI&nbsp;Scopes</th>
+                        <th>Environments</th>
+                    }
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var p in justification.Software)
+                {
+                    <tr>
+                        <td>@p.Name</td>
+                        <td>@p.Description</td>
+                        @if (justification.JustificationType == JustificationTypeConstant.Feature)
+                        {
+                            <td>@(p.NonCore ? "GUI" : "Both")</td>
+                        }
+                        else
+                        {
+                            <td>@p.PciScope.GetValueOrDefault(PciScopeConstant.A | PciScopeConstant.B | PciScopeConstant.C)</td>
+                            <td>@(!string.IsNullOrWhiteSpace(p.Environments) ? p.Environments : "All")</td>
+                        }   
+                    </tr>
+                }
+                </tbody>
+            </table>
+
+        </div>
+    }
+    @if (Model.UnjustifiedSoftware.Any())
+    {
+        <h3 class="underline">Software Pending Justifications</h3>
+        <div class="panel panel-danger card border-danger mb-2">
+            <div class="panel-heading card-header bg-danger text-white">
+                <em>Needs Justification</em>
+            </div>
+            <div class="panel-body card-body">
+                <p class="text-muted">The owner needs to use the ACT Tool to justify these items.</p>
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Name</th>
+                        <th>Details</th>
+                        <th>Core&nbsp;v.&nbsp;Gui</th>
+                        <th>PCI&nbsp;Scopes</th>
+                        <th>Environments</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.UnjustifiedSoftware)
+                    {
+                        <tr>
+                            <td>
+                                @if (p.JustificationType == JustificationTypeConstant.Package)
+                                {
+                                    <text>*nix Package</text>                    
+                                } 
+                                else if (p.JustificationType == JustificationTypeConstant.Feature)
+                                {
+                                    <text>Windows OS Feature</text>
+                                }
+                                else
+                                {
+
+                                    <text>Windows Third Party Application</text>
+                                }
+                            </td>
+                            <td>@p.Name</td>
+                            <td>@p.Description</td>
+                            <td>@(p.NonCore ? "GUI" : "Both")</td>
+                            <td>@p.PciScope.GetValueOrDefault(PciScopeConstant.A|PciScopeConstant.B|PciScopeConstant.C)</td>
+                            <td>@(!string.IsNullOrWhiteSpace(p.Environments) ? p.Environments : "All")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    <h3 class="underline">Ports</h3>
+    @await Html.PartialAsync("PortReportItemsPartial", Model.Ports)
+    @if (Model.Nodes.Any())
+    {
+        <h3 class="underline">Assigned Nodes</h3>
+        <div class="panel panel-success card border-success mb-2">
+            <div class="panel-heading card-header bg-success text-white">
+                FQDNs
+            </div>
+            <div class="panel-body card-body">
+                <p class="text-muted">Below is a list of all nodes that have been assigned to this build specification. Click a node to view them in the inventory system.  This will open in a new tab.</p>
+            </div>
+            <div class="list-group">
+                @foreach (var p in Model.Nodes)
+                {
+                    <a href="@Url.InventorySystemLink(p.InventoryItemId)" target="_blank" class="list-group-item">@p.Fqdn</a>
+                }
+            </div>
+        </div>
+    }
+</div>

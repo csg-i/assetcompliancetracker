@@ -1,0 +1,25 @@
+﻿@model act.core.web.Models.BuildSpec.ReportingNodes
+
+<div>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Director</th>
+            <th>Owner</th>
+            <th>FQDN</th>
+            <th>PCI Scope</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var row in Model)
+        {
+            <tr class="@row.PciScope.ToString().ToLower()">
+                <td>@row.Director</td>
+                <td>@row.Owner</td>
+                <td>@row.Fqdn</td>
+                <td>@row.PciScope.ToString()</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,26 @@
+@model act.core.web.Models.AppSpecs.AppSpecSearchResult
+<div class="list-group-item clearfix">
+    <span class="badge badge-dark float-right badge-pill">@Model.OsSpecName</span>
+    <h4 class="list-group-item-heading">@Model.Name</h4>   
+    <div class="row">
+        <div class="col-12 col-md-5">
+            <p class="list-group-item-text">
+                <strong class="@(Model.Counts.PercentComplete < 1 ? "text-danger" : "text-muted")" title="Ports: @Model.Counts.Ports, Total Software: @Model.Counts.TotalSoftware, Justified Software: @Model.Counts.JustifiedSoftware">@Model.Counts.PercentComplete.ToPercent()</strong> - @Model.Owner
+            </p>
+        </div>
+        <div class="col-12 col-md-7">
+            <div class="btn-group btn-group-sm float-left">
+                <a href="@Url.AppSpecsWizard(Model.Id)" class="btn btn-outline-secondary" title="Edit"><i class="fa fa-pencil-square-o"></i></a>
+                <a href="@Url.BuildSpecReport(Model.Id)" class="btn btn-outline-secondary" title="View Report"><i class="fa fa-eye"></i></a>
+                <a href="@Url.PortReport(Model.Id)" class="btn btn-outline-secondary" title="View Port Report"><i class="fa fa-terminal"></i></a>
+                <a href="@Url.Review(Model.Id)" class="btn btn-outline-secondary" title="Review Compliance"><i class="fa fa-crosshairs"></i></a>
+                <a href="#" data-url="@Url.JsonCloneAppSpec(Model.Id)" class="btn btn-outline-secondary action-clone" title="Clone App Spec"><i class="fa fa-clone"></i></a>
+                <a href="@Url.NodesForBuildSpec(Model.Id)" class="btn btn-outline-secondary" title="Assign Nodes"><i class="fa fa-globe"></i></a>
+                @if (Model.LoggedInEmployeeId == Model.OwnerId)
+                {
+                    <a href="#" data-url="@Url.JsonDeleteAppSpec(Model.Id)" class="btn btn-danger action-delete" title="Delete App Spec"><i class="fa fa-trash"></i></a>
+                }
+            </div>
+        </div>
+    </div>
+</div>

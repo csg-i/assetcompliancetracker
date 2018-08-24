@@ -1,0 +1,36 @@
+﻿@using act.core.data
+@model SpecWizard
+@{
+    ViewBag.Title = "Application Specification";
+}
+@section css{
+    @Url.ViewStyles("PackageWidget,PortWidget")
+}
+@section scripts{
+
+    @Url.ViewJavascript("wireUpTypeAhead, SpecWizard, AppSpecInformationWidget, PackageWidget, PortWidget")
+
+}
+<div class="clearfix">
+    <div class="text-center button-area float-right">
+        <span>Step <span class="step">1</span> of <span class="steps">3</span></span>
+        <button type="button" role="button" class="btn btn-outline-secondary btn-sm action-previous" style="display:none">Previous</button> <button type="button" role="button" class="btn btn-sm btn-outline-primary action-next">Next</button> <button type="button" role="button" class="btn btn-primary btn-sm action-done" data-url="@Url.SpecsWizardDone(BuildSpecificationTypeConstant.Application)">Done</button>
+    </div>
+    <h3 class="build-spec-name" data-default="New Application Spec"><em>New Application Spec</em></h3>
+    <div id="area" class="widget-wrapper app on-visible"
+         data-linux-order="[&quot;@Url.PartialAppSpecInformation()&quot;, &quot;@Url.PartialPackagesScreen(Model.BuildSpecificationType, JustificationTypeConstant.Package)&quot;, &quot;@Url.PartialPortsScreen(PlatformConstant.Linux)&quot;]"
+         data-unix-order="[&quot;@Url.PartialAppSpecInformation()&quot;, &quot;@Url.PartialPackagesScreen(Model.BuildSpecificationType, JustificationTypeConstant.Package)&quot;, &quot;@Url.PartialPortsScreen(PlatformConstant.Unix)&quot;]"
+         data-windows-server-order="[&quot;@Url.PartialAppSpecInformation()&quot;, &quot;@Url.PartialPackagesScreen(Model.BuildSpecificationType, JustificationTypeConstant.Feature)&quot;, &quot;@Url.PartialPackagesScreen(Model.BuildSpecificationType, JustificationTypeConstant.Application)&quot;, &quot;@Url.PartialPortsScreen(PlatformConstant.WindowsServer)&quot;]"
+         data-windows-client-order="[&quot;@Url.PartialAppSpecInformation()&quot;, &quot;@Url.PartialPackagesScreen(Model.BuildSpecificationType, JustificationTypeConstant.Application)&quot;, &quot;@Url.PartialPortsScreen(PlatformConstant.WindowsClient)&quot;]"
+         data-other-order="[&quot;@Url.PartialAppSpecInformation()&quot;, &quot;@Url.PartialPortsScreen(PlatformConstant.Other)&quot;]"
+         data-appliance-order="[&quot;@Url.PartialAppSpecInformation()&quot;, &quot;@Url.PartialPortsScreen(PlatformConstant.Appliance)&quot;]"
+         data-id="@Model.Id"
+         data-visibility-action="initializeWizard"
+         data-from-clone="@Model.FromClone.ToString().ToLower()">
+    </div>
+    <div class="text-center button-area">
+        <hr />
+        <h4>Step <span class="step">1</span> of <span class="steps">3</span></h4>
+        <button type="button" role="button" class="btn btn-outline-secondary action-previous" style="display:none">Previous</button> <button type="button" role="button" class="btn btn-outline-primary action-next">Next</button> <button type="button" role="button" class="btn btn-primary action-done" data-url="@Url.SpecsWizardDone(BuildSpecificationTypeConstant.Application)">Done</button>
+    </div>
+</div>

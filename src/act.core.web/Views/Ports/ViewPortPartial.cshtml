@@ -1,0 +1,13 @@
+﻿@using act.core.web.Models.Ports
+@model ViewPort
+<div class="list-group-item list-group-item-action port @(Model.Port.Direction == SimplePortDirectionTypeConstant.PortListeningToOutsideTraffic ? "external": Model.Port.Direction == SimplePortDirectionTypeConstant.SendingTrafficToOusidePort ? "outgoing" : "internal")">
+    <span class="badge badge-primary badge-pill float-right">@Model.Port.Type</span>
+    <div class="btn-group btn-group-sm float-right my-0 mr-4">
+        <button class="btn btn-outline-danger action-delete-port" title="Delete Port Justification" data-url="@Url.JsonDeletePort(Model.Port.JustificationId)"><span class="sr-only">Delete Port Justification</span><i class="fa fa-trash"></i></button>
+        <button class="btn btn-outline-secondary action-view-toggle" title="View Whole Justification"><span class="sr-only">View Whole Justification</span><i class="fa fa-eye"></i></button>
+    </div>
+    <div class="action-add-edit-port" data-edit="true" data-url="@Url.PartialEditPort(Model.Platform, Model.SpecId, Model.Port.JustificationId)" data-save-url="@Url.JsonSavePort(Model.Platform)" data-validate-url="@Url.JsonValidatePort()" data-title="Edit Port Justification">
+        <h4 class="mb-1">@Model.PortsHtml</h4>
+        <p>@Model.JustificationHtml</p>
+    </div>
+</div>

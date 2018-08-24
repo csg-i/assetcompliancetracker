@@ -1,0 +1,36 @@
+﻿@model act.core.web.Models.ScoreCard.ExecutiveScoreCardScreen
+@{
+    ViewBag.Title = "Executive Scorecard";
+}
+@section scripts
+{
+    @Url.ViewJavascript("wireUpTypeAhead, ScoreCard,ExecutiveScoreCard")
+}
+@section css
+{
+     @Url.ViewStyles("ExecutiveScoreCard")
+}
+<h1>Executive Scorecard</h1>
+<hr />
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="#" class="action-employee-search" data-hidden="true"><strong>...</strong></a></li>
+    <li class="breadcrumb-item supervisor" style="display:none"><a href="#" class="action-reload-score-card" data-target="#executivescorecard"></a></li>
+    <li class="breadcrumb-item employee" style="display:none"><a href="#"></a></li>
+</ol>
+<div role="form" style="display:none" id="employeesearch">
+    <div class="form-group">
+        <label for="employee" class="sr-only">Employee Lookup</label>
+        <input id="employee" name="employee" type="search" class="form-control form-control-lg on-visible" placeholder="Search for Employees" data-visibility-action="wireUpTypeAheadSearch" data-score-card-url="@Url.PartialExecutiveScoreCard()" data-target="#executivescorecard"  data-url="@Url.JsonEmployeeTypeAhead()" value=""/>
+    </div>
+</div>
+<div role="form" class="clearfix mb-2">
+    <div class="form-check form-check-inline">
+        <input type="radio" id="pci" class="action-total-or-pci form-check-input" name="total" value="false" checked="checked"/>
+        <label for="pci" class="form-check-label">PCI</label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input type="radio" id="all" class="action-total-or-pci form-check-input" name="total" value="true"/>
+        <label for="all" class="form-check-label">All</label>
+    </div>
+</div>
+<div id="executivescorecard" class="on-visible" data-url="@Url.PartialExecutiveScoreCard(Model.EmployeeId)" data.name="@Model.Name" data-type="exec" data-hash="@Model.EmployeeId" data-visibility-action="loadScoreCard"></div>
