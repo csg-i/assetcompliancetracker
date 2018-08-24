@@ -1,0 +1,12 @@
+name: csg_linux_compliant_server
+title: CSG Linux Compliant Server Benchmark
+maintainer: CSG Systems - PCI Remediation
+copyright: Copyright (c) 2017 CSG Systems International, Inc. and/or its affiliates ("CSG")., All Rights Reserved.
+copyright_email: jay.brummels@csgi.com
+license: Proprietary, All rights reserved
+summary: CSG Linux Compliant Server Benchmark
+version: 2.2.0
+supports:
+  - os-family: centos
+  - os-family: rhel
+  - os-family: redhat
