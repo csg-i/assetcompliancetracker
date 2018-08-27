@@ -107,12 +107,12 @@ The dashboard gives graphs that produce an overview of your organizations PCI He
 
 There are screens for searching and adding/editing **Build Specification** as well as Report screens for an **App Spec** that can be shown to PCI Assessors.
 
-The **Spec wizard** will change based on the kind of server. Windows Severs will have 4 steps.
+The **Spec wizard** will change based on the kind of server. Windows Servers will have 4 steps.
 - Windows OS Features
 - Windows 3rd Party Apps
 - Ports
 
-While linux will only have 3
+While Linux Servers will only have 3
 - Packages
 - Ports
 
