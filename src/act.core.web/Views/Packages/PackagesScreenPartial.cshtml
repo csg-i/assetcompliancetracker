@@ -1,0 +1,98 @@
+﻿@using act.core.web.Models.Packages
+@model PackagesScreen
+<div class="package-widget">
+    <div class="row">
+        <div class="col-md-3 grey">
+            <div class="row">
+                <div class="col-md-11">
+                    <h4>Justifications</h4>
+                    <hr />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 no-pad clearfix">
+                    <div class="list-group on-visible" data-visibility-action="populateJustifications" id="justifications" data-url="@Url.PartialGetJustificationsForSpec(Model.PackageType, Model.SpecId)">
+                        <div class="list-group-item example">
+                            <h3 class="list-group-item-heading">How it works</h3>
+                            <p>Use the button below to add new justifications.  You may drag @Model.FriendlyNameLowerPlural over the justifications to assign them.</p>
+                        </div>
+                    </div>
+                    <button role="button" class="btn btn-sm btn-secondary action-new-justification float-right mt-2 mr-1" title="New Justification" data-url="@Url.PartialNewJustification(Model.PackageType, Model.SpecId)" data-save-url="@Url.JsonAddJustification(Model.PackageType, Model.SpecId)"><i class="fa fa-plus"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7 col-8">
+            <div class="row">
+                <div class="col-12 d-sm-none">
+                    <hr />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-9 col-md-10">
+                    <h4 class="clearfix">@Model.FriendlyNamePlural<em class="filter-label float-right" data-justification-type="all">No Filters</em></h4>
+                    <hr />
+                </div>
+                <div class="col-3 col-md-2 clearfix">
+                    <button role="button" class="btn btn-sm btn-secondary float-right action-bulk-add" title="Bulk Add @Model.FriendlyNamePlural" data-type="@Model.FriendlyNameLowerPlural" data-url="@Url.PartialNewBulkPackages(Model.BuildSpecificationType, Model.PackageType, Model.SpecId)" data-save-url="@Url.JsonBulkAddPackages(Model.PackageType)"><i class="fa fa-plus"></i> Bulk</button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="row" id="control" style="display: none;">
+                        <div class="col-md-7 col-lg-9">
+                            <div class="input-group">
+                                <input type="search" id="searchFilter" class="form-control action-filter on-visible" data-visibility-action="wireUpPackageSearch" data-type="text" placeholder="Search for @Model.FriendlyNameLower"/>
+                                <span class="input-group-append">
+                                    <button class="btn">
+                                    <i class="fa fa-filter"></i><span class="sr-only">Filter icon to show this input is for filtering the list below.</span></button>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-5 col-lg-3 clearfix">
+                            <button class="action-filter float-left btn btn-link p-0" data-type="all">Clear Filters</button>
+                            <button class="action-filter float-right btn btn-link p-0" data-type="not">Unjustified</button>
+                        </div>
+                        <div class="col-12">
+                            <hr />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12" id="messageArea"></div>
+                    </div>
+                    <div class="clearfix">
+                        <button class="action-select btn btn-link float-left px-0" data-type="all" title="Select all visible">All</button><button class="action-select btn btn-link float-right px-0" data-type="none" title="Deselect all">None</button>
+                    </div>
+                    <ul class="list-group on-visible" data-visibility-action="bootstrapPackages" id="packages" data-name="@Model.FriendlyNameLowerPlural">
+                        <li class="list-group-item example">
+                            <button role="button" class="float-right btn btn-link p-0 action-close-package-example" title="Close Help Text"><i class="fa fa-eye-slash"></i></button>
+                            <h3 class="list-group-item-heading">How it works</h3>
+                            <p>
+                                Use the button below to add new @Model.FriendlyNameLowerPlural one at a time or <button class="action-bulk-add btn btn-link px-0" data-type="@Model.FriendlyNameLowerPlural" data-url="@Url.PartialNewBulkPackages(Model.BuildSpecificationType, Model.PackageType, Model.SpecId)" data-save-url="@Url.JsonBulkAddPackages(Model.PackageType)">Bulk Add</button> them using the button above. You may drag @Model.FriendlyNameLowerPlural over the justifications to assign a justification for the @Model.FriendlyNameLower being installed, or drag them to the trash.
+                            </p>
+                        </li>
+                        @foreach (var package in Model.Packages)
+                        {
+                            @await Html.PartialAsync("PackagePartial", package)
+                        }                        
+                    </ul>
+                    <div class="clearfix">
+                        <button data-url="@Url.JsonCleanupDuplicatePackages(Model.PackageType, Model.SpecId)" data-type="@Model.PackageType.ToString()" class="float-left btn btn-link action-clean-duplicates px-0" data-title="Clean Duplicates from OS Spec.">clean duplicates</button >
+                        <button  role="button" class="btn btn-sm btn-secondary action-new-package float-right mt-1 mr-1" data-type="@Model.FriendlyNameLower" data-url="@Url.PartialNewPackage(Model.BuildSpecificationType, Model.PackageType, Model.SpecId)" data-save-url="@Url.JsonAddPackage(Model.PackageType)" title="New @Model.FriendlyName"><i class="fa fa-plus"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-4 on-visible" data-visibility-action="bootstrapTrash" id="trashArea">
+            <div class="mx-auto" id="trash" title="Delete @Model.FriendlyNamePlural"><i class="fa fa-trash"></i><span class="sr-only">Delete @Model.FriendlyNamePlural</span>&nbsp;</div>
+        </div>
+    </div>
+    <script id="colorChooserTemplate" type="text/template">
+        <form role="form">
+            <div class="form-group">
+                <label for="color">Pick a Color</label>
+                <input type="color" id="color" name="color" value="" />
+            </div>
+        </form>
+    </script>
+</div>

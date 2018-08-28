@@ -1,0 +1,43 @@
+﻿@using act.core.data
+@model act.core.web.Models.Packages.NewPackage
+<div>
+    <input type="hidden" id="specId" name="specId" value="@Model.SpecId" />
+    <div class="form-group">
+        <label for="name">@Model.FriendlyName</label>
+        <input type="text" class="form-control" id="name" name="name" placeholder="@Model.Example" />
+    </div>
+    <div class="form-group">
+        <label for="description">Description</label>
+        <input type="text" class="form-control" id="description" name="description"  placeholder="Optional description, classification or version" />
+    </div> 
+    @if (Model.BuildSpecificationType == BuildSpecificationTypeConstant.OperatingSystem && Model.PackageType == JustificationTypeConstant.Feature)
+    {
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" name="noncore" id="noncore" value="true"> NOT needed for Core (GUI Only)
+            </label>
+        </div>
+    }
+    @if (Model.PackageType != JustificationTypeConstant.Feature)
+    {
+        <div class="form-group">
+            <label for="environmentIds">Environment</label>
+            <select multiple="multiple" class="form-control" name="environmentIds" id="environmentIds" data-placeholder="All by Default">
+                @foreach (var env in Model.AllEnvironments)
+                {                
+                    <option value="@env.Key">@env.Value.name</option>                                     
+                }
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="pciScope">PCI Scope</label>
+            <select multiple="multiple" class="form-control" name="pciScope" id="pciScope" data-placeholder="All by Default">
+                @foreach (var pci in Model.AllPciScopes)
+                {                
+                    <option value="@pci">@pci</option>                                     
+                }
+            </select>
+        </div>
+    }
+</div>

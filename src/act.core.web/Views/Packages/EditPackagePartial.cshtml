@@ -1,0 +1,64 @@
+﻿@using act.core.data
+@model act.core.web.Models.Packages.EditPackage
+<div>
+    <div class="form-group">
+        <label for="name">Name</label>
+        <input type="text" class="form-control" id="name" name="name" placeholder="@Model.Name" value="@Model.Name" />
+    </div>
+    <div class="form-group">
+        <label for="description">Description</label>
+        <input type="text" class="form-control" id="description" name="description" placeholder="Optional description, classification or version" value="@Model.Description" />
+    </div>
+    @if (Model.BuildSpecificationType == BuildSpecificationTypeConstant.OperatingSystem && Model.PackageType == JustificationTypeConstant.Feature)
+    {
+        <div class="checkbox">
+            <label>
+                @if (Model.NonCore)
+                {
+                    <input type="checkbox" name="noncore" id="noncore" value="true" checked="checked">
+                }
+                else
+                {
+                    <input type="checkbox" name="noncore" id="noncore" value="true">
+                }
+                <span> NOT needed for Core (GUI Only)</span>
+            </label>
+        </div>
+    }
+    
+    @if (Model.PackageType != JustificationTypeConstant.Feature)
+    {
+        <div class="form-group">
+            <label for="environmentIds">Environment</label>
+            <select multiple="multiple" class="form-control" name="environmentIds" id="environmentIds" data-placeholder="All by Default">
+                @foreach (var env in Model.AllEnvironments)
+                {
+                    if (Model.EnvironmentIds.Contains(env.Key))
+                    {
+                        <option value="@env.Key" selected="selected">@env.Value.name</option>
+                    }
+                    else
+                    {
+                        <option value="@env.Key">@env.Value.name</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="pciScope">PCI Scope</label>
+            <select multiple="multiple" class="form-control" name="pciScope" id="pciScope" data-placeholder="All by Default">
+                @foreach (var pci in Model.AllPciScopes)
+                {
+                    if (Model.PciScope.HasValue && Model.PciScope.Value.HasFlag(pci))
+                    {
+                        <option value="@pci" selected="selected">@pci</option>
+                    }
+                    else
+                    {
+                        <option value="@pci">@pci</option>
+                    }
+                }
+            </select>
+        </div>
+    }
+</div>

@@ -1,0 +1,23 @@
+﻿@model act.core.web.Models.Packages.Package
+<li class="pl-2 list-group-item list-group-item-action" data-justification="" data-justification-id="@Model.JustificationId" data-delete-url="@Url.JsonDeletePackage(Model.Id)" data-assign-url="@Url.JsonAssignPackageJustification(Model.Id)" data-edit-url="@Url.PartialEditPackage(Model.Id)" data-save-url="@Url.JsonSavePackage(Model.Id)">
+    <span class="handle">
+        <i class="fa fa-arrows"></i> 
+        <span class="text">
+            @Model.Name <small class="text-muted">
+                @if (Model.NonCore)
+                {
+                    <em>(GUI)</em>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.EnvironmentDescription))
+                {
+                    <em title="Environment"><small>@Model.EnvironmentDescription</small></em>
+                }
+                @if (Model.PciScope.HasValue)
+                {
+                    <strong title="PCI Scope"><em><small>@Model.PciScope.Value.ToString().Replace(", ","/")</small></em></strong>
+                }
+                @Model.Description 
+            </small>
+        </span>
+    </span>
+</li>

@@ -1,0 +1,6 @@
+﻿@model act.core.web.Models.Packages.Packages
+<div data-count="@Model.Count" data-empty="@Model.IsEmpty.ToString().ToLower()">
+@{
+    Model.ForEach(async p => await Html.RenderPartialAsync("PackagePartial", p));
+}
+</div>

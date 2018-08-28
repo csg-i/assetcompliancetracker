@@ -441,7 +441,7 @@ namespace act.core.web.Services
                 .Select(p => new Software(p.Name, p.Description, p.JustificationType, p.NonCore, p.PciScope,
                     _ctx.SoftwareComponentEnvironments.BySoftwareComponent(p.Id).GetEnvironmentNames().GetAwaiter().GetResult()))
                 .ToArray();
-            var nodes = appSpec.Nodes.Select(p => new GamNode(p.InventoryItemId, p.Fqdn)).ToArray();
+            var nodes = appSpec.Nodes.Select(p => new InventorySystemNode(p.InventoryItemId, p.Fqdn)).ToArray();
 
             return new BuildSpec(specId, type, appSpec.Name, appSpec.Owner.OwnerText(),
                 osSpec.OperatingSystemName, osSpec.OperatingSystemVersion, appSpec.WikiLink, appSpec.Overview,

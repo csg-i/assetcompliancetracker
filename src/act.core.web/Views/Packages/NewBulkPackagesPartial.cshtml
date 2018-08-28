@@ -1,0 +1,27 @@
+﻿@using act.core.web.Models.Packages
+@model NewBulkPackages
+<div>
+    <p class="alert alert-info">
+        Enter or paste in the @Model.FriendlyNameLower names one per line.  @await Html.PartialAsync(Model.HelpTextPartial)
+    </p>
+    <input type="hidden" id="specId" name="specId" value="@Model.SpecId"/>
+    <div class="radio">
+        <label>
+            <input type="radio" name="addType" value="@BulkAddTypeConstant.NamesOnly" checked="checked" /> Names Only (one per line)
+        </label>
+    </div>
+    <div class="radio">
+        <label>
+            <input type="radio" name="addType" value="@BulkAddTypeConstant.WithDescriptions" /> Names and Descriptions (2 excel columns)
+        </label>
+    </div>
+    <div class="radio">
+        <label>
+            <input type="radio" name="addType" value="@BulkAddTypeConstant.WithJustifications" /> Names and Justifications (2 excel columns)
+        </label>
+    </div>
+    <div class="form-group">
+        <label for="bulktext">@Model.FriendlyNamePlural</label>
+        <textarea class="form-control" id="bulktext" name="bulktext" placeholder="@Model.Example" rows="15"></textarea>
+    </div>
+</div>

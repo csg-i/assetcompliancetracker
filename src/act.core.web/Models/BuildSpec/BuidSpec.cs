@@ -17,9 +17,9 @@ namespace act.core.web.Models.BuildSpec
         public HtmlString Overview { get; }
         public IOrderedEnumerable<Justification> Justifications { get; }
         public IOrderedEnumerable<Software> UnjustifiedSoftware { get; }
-        public IOrderedEnumerable<GamNode> Nodes { get; }
+        public IOrderedEnumerable<InventorySystemNode> Nodes { get; }
 
-        public BuildSpec(long id, BuildSpecificationTypeConstant type, string name, string owner,string osName, string osVersion, string wikiLink, string overview, Justification[] justifications, PortReportItems ports, Software[] unJustifiedThings, GamNode[] nodes)
+        public BuildSpec(long id, BuildSpecificationTypeConstant type, string name, string owner,string osName, string osVersion, string wikiLink, string overview, Justification[] justifications, PortReportItems ports, Software[] unJustifiedThings, InventorySystemNode[] nodes)
         {
             Id = id;
             Type = type;
@@ -32,7 +32,7 @@ namespace act.core.web.Models.BuildSpec
             Overview = new HtmlString((overview??string.Empty).Replace("\n","<br/>"));
             Justifications = (justifications ?? Enumerable.Empty<Justification>()).OrderBy(p => (int)p.JustificationType);
             UnjustifiedSoftware = (unJustifiedThings ?? Enumerable.Empty<Software>()).OrderBy(p => p.JustificationType).ThenBy(p => p.Name);
-            Nodes = (nodes ?? Enumerable.Empty<GamNode>()).OrderBy(p => p.Fqdn);
+            Nodes = (nodes ?? Enumerable.Empty<InventorySystemNode>()).OrderBy(p => p.Fqdn);
         }
     }
 }
