@@ -55,11 +55,11 @@
                 
                 @if (Model.Platform == PlatformConstant.Appliance)
                 {
-                    <option data-text="Appliance Name" value="@(PlatformConstant.Appliance.ToString().ToLower())" selected="selected">Other (Appliance)</option>
+                    <option data-text="Appliance Name" value="@(PlatformConstant.Appliance.ToString().ToLower())" selected="selected">Appliance</option>
                 }
                 else
                 {
-                    <option data-text="Appliance Name" value="@(PlatformConstant.Appliance.ToString().ToLower())">Other (Appliance)</option>
+                    <option data-text="Appliance Name" value="@(PlatformConstant.Appliance.ToString().ToLower())">Appliance</option>
                 }
                 
                 @if (Model.Platform == PlatformConstant.Other)
