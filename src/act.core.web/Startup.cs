@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using act.core.data;
@@ -12,11 +12,7 @@ using Microsoft.AspNetCore.Authentication.WsFederation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using Microsoft.AspNetCore.DataProtection.Repositories;
-
 using Amazon.S3;
-using Amazon.S3.Model;
 using AspNetCore.DataProtection.Aws.S3;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -41,20 +37,20 @@ namespace act.core.web
             public string MetadataAddress { get; set; }
             public string Wtrealm { get; set; }
         }
-        
+
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             //setup adfs
             var adfs = new AdfsSection();
             _configuration.GetSection("ADFS").Bind(adfs);
-            
-            
+
+
             //register all dependencies
             services
                 .AddDefaultAWSOptions(_configuration.GetAWSOptions())
                 .AddActDbContextPool(_configuration)
-                .ConfigureGatherer()              
+                .ConfigureGatherer()
                 .AddTransient<ISpecificationFactory<OsSpecInformation, OsSpecSearchResult>, OsSpecificationFactory>()
                 .AddTransient<ISpecificationFactory<AppSpecInformation, AppSpecSearchResult>, AppSpecificationFactory>()
                 .AddTransient<IBuildSpecificationFactory, BuildSpecificationFactory>()
@@ -102,7 +98,7 @@ namespace act.core.web
                 }).Services
                 .Configure<MvcOptions>(o =>
                 {
-                    o.Filters.Add(new RequireHttpsAttribute());                     
+                    o.Filters.Add(new RequireHttpsAttribute());
                 })
                 .AddMvc(o => //require auth user by default
                 {
@@ -115,10 +111,6 @@ namespace act.core.web
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory
-                .AddAWSProvider(_configuration.GetAWSLoggingConfigSection(),
-                    (logLevel, message, ex) => $"[{DateTime.UtcNow}] {logLevel}: {message} {ex}");
-            
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -127,7 +119,7 @@ namespace act.core.web
             {
                 app.UseExceptionHandler("/Health/Error/500");
             }
-            
+
             app.UseStatusCodePages(async ctx =>
             {
                 if (ctx.HttpContext.Request.IsAjaxRequest())
@@ -144,18 +136,41 @@ namespace act.core.web
                     ctx.HttpContext.Response.Redirect($"/Health/Error/{ctx.HttpContext.Response.StatusCode}");
                 }
             });
-            app.UseAuthentication();
-            app.UseStaticFiles();
-            var logger = loggerFactory.CreateLogger<Startup>();
-                
-            logger.LogInformation($"Startup of ACT Web Version {FileVersionInfo.GetVersionInfo(GetType().Assembly.Location).ProductVersion}");
-            
-            app.UseMvc(routes =>
+            app
+                .UseAuthentication()
+                .Use(next =>
+                {
+                    return async context =>
+                    {
+                        context.Response.Headers.Add("X-UA-Compatible", "IE=edge");
+                        context.Response.Headers.Add("Access-Test-Allow-Origin", "*");
+
+                        await next(context);
+                    };
+                })
+                .UseStaticFiles()
+                .UseMvc(routes =>
+                {
+                    routes.MapRoute(
+                        name: "default",
+                        template: "{controller=Home}/{action=Index}/{id?}");
+                });
+            try
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
-            });
+                loggerFactory
+                    .AddAWSProvider(_configuration.GetAWSLoggingConfigSection(),
+                        (logLevel, message, ex) => $"[{DateTime.UtcNow}] {logLevel}: {message} {ex}");
+                var logger = loggerFactory.CreateLogger<Startup>();
+
+                logger.LogInformation(
+                    $"Startup of ACT Web Version {FileVersionInfo.GetVersionInfo(GetType().Assembly.Location).ProductVersion}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+
+
         }
     }
 }
