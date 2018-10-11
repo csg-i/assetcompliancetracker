@@ -59,7 +59,7 @@ namespace act.core.data
             }
         }
         
-        public static async Task ExecuteCommandAsync(this DbContext ctx, string sql, params DbParameter[] parms)
+        public static async Task<int> ExecuteCommandAsync(this DbContext ctx, string sql, params DbParameter[] parms)
         {
             using (var cmd = ctx.Database.GetDbConnection().CreateCommand())
             {
@@ -69,7 +69,7 @@ namespace act.core.data
 
                 await ctx.Database.OpenConnectionAsync();
 
-                await cmd.ExecuteNonQueryAsync();
+                return await cmd.ExecuteNonQueryAsync();
             }
         }
 

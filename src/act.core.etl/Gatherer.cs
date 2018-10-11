@@ -353,18 +353,24 @@ namespace act.core.etl
             var date = DateTime.Today.AddDays(-28);
             var count = 0;
             _logger.LogDebug($"Gathering Old Compliance runs to purge prior to {date.ToShortDateString()}");
-            while (await _ctx.ComplianceResults.AnyAsync(p => p.EndDate < date || !p.Node.IsActive))
+            var maxQ = _ctx.ComplianceResults.Where(p => p.EndDate < date).Select(p => p.Id);
+            
+            var max = (await maxQ.AnyAsync()) ? (await maxQ.MaxAsync()) : -1;
+            
+            _logger.LogDebug("Purging Old Compliance Runs");
+            if (max > 0)
             {
-                _logger.LogDebug("Purging 1000 Old Compliance Runs");
-                await _ctx.ExecuteCommandAsync(
-                    "DELETE r FROM ComplianceResult r join Node n on r.InventoryItemId = n.InventoryItemId WHERE r.EndDate < @date OR n.IsActive = 0 ORDER BY Id limit 1000",
-                    new MySqlParameter("@date", MySqlDbType.Date){Value=date});
-               
-                count += 1000;
+                count += await _ctx.ExecuteCommandAsync(
+                    "DELETE r FROM ComplianceResult r where Id < @max",
+                    new MySqlParameter("@max", MySqlDbType.Int64){Value=max});
             }
+            _logger.LogDebug("Purging Compliance Runs from inactive nodes");
 
+            count += await _ctx.ExecuteCommandAsync("DELETE r FROM ComplianceResult r JOIN Node n ON r.InventoryItemId = n.InventoryItemId WHERE n.IsActive = 0");
+            
             return count;
         }
+        
         public async Task<int> PurgeOldComplianceDetails()
         {
             var count = await _ctx.ComplianceResultTests.CountAsync();
