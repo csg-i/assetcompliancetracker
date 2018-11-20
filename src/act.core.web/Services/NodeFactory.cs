@@ -98,9 +98,7 @@ namespace act.core.web.Services
 
         public async Task<long?> BuildSpecIdByHost(string fqdnOrHostName)
         {
-            {
-                return await _ctx.Nodes.AsNoTracking().BuildSpecIdByFqdnOrHostName(fqdnOrHostName);
-            }
+            return await _ctx.Nodes.AsNoTracking().BuildSpecIdByFqdnOrHostName(fqdnOrHostName);            
         }
 
         public async Task<NodeSearchResult[]> GetAssignedToBuildSpec(long buildSpecId)
