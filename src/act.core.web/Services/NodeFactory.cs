@@ -14,6 +14,7 @@ namespace act.core.web.Services
         Task<long?> BuildSpecIdByHost(string fqdnOrHostName);
         Task<NodeSearchResult[]> GetAssignedToBuildSpec(long buildSpecId);
         Task AssignBuildSpecification(long nodeId, long? buildSpecId);
+        Task<bool> AssignBuildSpecification(string fqdn, long buildSpecId);
         Task<Guid[]> ChefIdsForAppOrOsSpecAndEnvironment(long specId, int environmentId);
 
         Task<NodeSearchResults> Search(PlatformConstant[] platform,
@@ -43,13 +44,45 @@ namespace act.core.web.Services
         {
             var it = await _ctx.Nodes.ById(nodeId);
             if (it == null)
-                throw new ArgumentException(@"A Node with the InventoryItemId {id} was not found.", nameof(nodeId));
+                throw new ArgumentException($"A Node with the InventoryItemId {nodeId} was not found.", nameof(nodeId));
+            
+            var buildSpecExists = buildSpecId.HasValue && await _ctx.BuildSpecifications
+                .OfBuildSpecType(BuildSpecificationTypeConstant.Application)
+                .ExistsById(buildSpecId.Value);
 
+            if (!buildSpecExists)
+            {
+                it.BuildSpecificationId = null;
+                await _ctx.SaveChangesAsync();
+            }
+            else if (it.BuildSpecificationId != buildSpecId.Value)
+            {
+                it.BuildSpecificationId = buildSpecId.Value;
+                await _ctx.SaveChangesAsync();
+            }
+        }
+        public async Task<bool> AssignBuildSpecification(string fqdn, long buildSpecId)
+        {
+            var it = await _ctx.Nodes.NodeByFqdnOrHostName(fqdn);
+            if (it == null)
+                throw new ArgumentException($"A Node with the FQDN {fqdn} was not found.", nameof(fqdn));
+
+            var buildSpecExists = await _ctx.BuildSpecifications
+                .OfBuildSpecType(BuildSpecificationTypeConstant.Application)
+                .ExistsById(buildSpecId);
+
+            if (!buildSpecExists)
+                throw new ArgumentException($"An Application Specification with the ID {buildSpecId} was not found.",
+                    nameof(buildSpecId));
+                
             if (it.BuildSpecificationId != buildSpecId)
             {
                 it.BuildSpecificationId = buildSpecId;
                 await _ctx.SaveChangesAsync();
+                return true;
             }
+
+            return false;
         }
 
         public async Task<Guid[]> ChefIdsForAppOrOsSpecAndEnvironment(long specId, int environmentId)

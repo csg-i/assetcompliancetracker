@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using act.core.data;
@@ -16,11 +17,13 @@ namespace act.core.web.Controllers
     public class BuildSpecController : PureMvcControllerBase
     {
         private readonly IBuildSpecificationFactory _buildSpecificationFactory;
+        private readonly INodeFactory _nodeFactory;
         private readonly ISuggestionFactory _suggestionFactory;
 
-        public BuildSpecController(IBuildSpecificationFactory buildSpecificationFactory, ISuggestionFactory suggestionFactory, ILoggerFactory logger) : base(logger)
+        public BuildSpecController(IBuildSpecificationFactory buildSpecificationFactory, INodeFactory nodeFactory, ISuggestionFactory suggestionFactory, ILoggerFactory logger) : base(logger)
         {
             _buildSpecificationFactory = buildSpecificationFactory;
+            _nodeFactory = nodeFactory;
             _suggestionFactory = suggestionFactory;
         }
 
@@ -38,6 +41,33 @@ namespace act.core.web.Controllers
                 return StatusCode(HttpStatusCode.BadRequest, "fqdn is required.");
 
             return Json(await _buildSpecificationFactory.InspecForFqdn(fqdn));
+        }
+        
+        /// <summary>
+        /// Used by the cookbook to assign a node to a build spec
+        /// </summary>
+        /// <param name="id">Build Spec Id to assign to</param>
+        /// <param name="fqdn">FQDN of the machine requesting.</param>
+        /// <returns>Ok, NotFound, or BadRequest</returns>       
+        [HttpPut]
+        [AllowAnonymous]
+        public async Task<IActionResult> AssignTo(long id, string fqdn)
+        {
+            SetNoCacheHeader();
+            if (string.IsNullOrWhiteSpace(fqdn))
+                return BadRequest("fqdn is required.");
+
+            try
+            {
+                if(await _nodeFactory.AssignBuildSpecification(fqdn, id))
+                    Logger.LogWarning($"{fqdn} was assigned to application spec {id} via an unauthenticated PUT.");
+
+                return Ok();
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpGet]
