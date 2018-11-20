@@ -9,9 +9,6 @@ action_class do
 end
 
 action :default do
-  # Chef Compliance InSpec Profiles
-  log "Using pci compliance via url #{compliance_url} for #{new_resource.name}"
-
   protocol = new_resource.node_attr('csg', 'pci', 'build_spec', 'url', 'protocol')
   server = new_resource.node_attr('csg', 'pci', 'build_spec', 'url', 'server')
   port = new_resource.node_attr('csg', 'pci', 'build_spec', 'url', 'port')
