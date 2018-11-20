@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace act.core.web.Controllers
 {
-    [AllowAnonymous]
+    
     public class BuildSpecController : PureMvcControllerBase
     {
         private readonly IBuildSpecificationFactory _buildSpecificationFactory;
@@ -30,6 +30,7 @@ namespace act.core.web.Controllers
         /// <param name="fqdn">FQDN of the machine requesting.</param>
         /// <returns>JSON meant to convert to Ruby Hash</returns>       
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult> RetrieveFor(string fqdn)
         {
             SetNoCacheHeader();
@@ -40,13 +41,16 @@ namespace act.core.web.Controllers
         }
 
         [HttpGet]
-        
+        [AllowAnonymous]
         public ViewResult Report(long id)
         {
             var uri = GetUri();
             return View(new BuildSpecReport(id, uri.AbsoluteUri.Replace(uri.PathAndQuery, string.Empty)));
         }
 
+        [HttpGet]
+        [HttpPost]
+        [AllowAnonymous]
         public async Task<PartialViewResult> Specs(long id)
         {
             return PartialView(await _buildSpecificationFactory.BuildSpecification(id));

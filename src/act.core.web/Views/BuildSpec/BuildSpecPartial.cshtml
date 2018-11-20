@@ -6,13 +6,21 @@
         @if (Model.Type == BuildSpecificationTypeConstant.OperatingSystem)
         {
             <h3 class="underline clearfix">
-                OS Only <small><a class="btn btn-sm btn-outline-secondary float-right" href="@Url.OsSpecsWizard(Model.Id)">Edit</a></small>
+                OS Only 
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <small><a class="btn btn-sm btn-outline-secondary float-right" href="@Url.OsSpecsWizard(Model.Id)">Edit</a></small>                                                                                                                                  
+                }
             </h3>
         }
         else
         {
             <h3 class="underline clearfix">
-                Overview <small><a class="btn btn-sm btn-outline-secondary float-right" href="@Url.AppSpecsWizard(Model.Id)">Edit</a></small>
+                Overview 
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <small><a class="btn btn-sm btn-outline-secondary float-right" href="@Url.AppSpecsWizard(Model.Id)">Edit</a></small>
+                }
             </h3>
         }
         <h4>@Model.Name</h4>
