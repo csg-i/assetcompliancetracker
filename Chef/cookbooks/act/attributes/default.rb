@@ -4,6 +4,7 @@ default['act'].tap do |act|
     url['port'] = 443
     url['server'] = 'act.myserver.org'
     url['path'] = '/BuildSpec/RetrieveFor'
+    url['put_path'] = '/BuildSpec/AssignTo'
     url['fqdn_arg'] = 'fqdn'
   end
   act['inspec_download_url_prefix'] = 'https://artifacts.myorg.org/act/inspec/'
