@@ -1,0 +1,11 @@
+version: 0.2
+
+phases:
+  build:
+    commands:
+      - dotnet restore
+      - dotnet build -c Release
+      - dotnet publish -r linux-x64 -c Release --verion-suffix CODEBUILD_RESOLVED_SOURCE_VERSION
+artifacts:
+  files:
+    - bin/Release/netcoreapp2.1/publish/*
