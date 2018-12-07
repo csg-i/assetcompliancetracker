@@ -11,6 +11,15 @@ phases:
       - mkdir localstaging/QA/publish
       - mkdir localstaging/PROD/.ebextensions
       - mkdir localstaging/QA/.ebextensions
+      - cp AWS/Lambda/*.json localstaging/Lambda
+      - cp AWS/Docker/Extensions/*.config localstaging/PROD/.ebextensions
+      - cp AWS/Docker/Extensions/*.config localstaging/QA/.ebextensions
+      - cp AWS/Docker/Extensions/Prod/*.config localstaging/PROD/.ebextensions
+      - cp AWS/Docker/Extensions/QA/*.config localstaging/QA/.ebextensions
+      - cp AWS/Docker/*.json localstaging/PROD
+      - cp AWS/Docker/Dockerfile localstaging/PROD
+      - cp AWS/Docker/*.json localstaging/QA
+      - cp AWS/Docker/Dockerfile localstaging/QA
   build:
     commands:
       - dotnet restore
@@ -20,15 +29,6 @@ phases:
   post_build:
     commands:
       - cp -r bin/Release/netcoreapp2.1/linux-x64/publish/* localstaging/Lambda
-      - cp AWS/Lambda/*.json localstaging/Lambda
-      - cp AWS/Docker/Extensions/*.config localstaging/PROD/.ebextensions
-      - cp AWS/Docker/Extensions/*.config localstaging/QA/.ebextensions
-      - cp AWS/Docker/Extensions/Prod/*.config localstaging/PROD/.ebextensions
-      - cp AWS/Docker/Extensions/QA/*.config localstaging/QA/.ebextensions
-      - cp AWS/Docker/*.json localstaging/PROD
-      - cp AWS/Docker/Dockerfile localstaging/PROD
-      - cp AWS/Docker/*.json localstaging/QA
-      - cp AWS/Docker/Dockerfile localstaging/PROD
       - cp -r bin/Release/netcoreapp2.1/publish localstaging/PROD/
       - cp -r bin/Release/netcoreapp2.1/publish localstaging/QA/
       - cd localstaging/Lambda
