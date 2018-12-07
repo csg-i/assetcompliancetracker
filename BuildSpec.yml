@@ -2,14 +2,14 @@ version: 0.2
 
 phases:
   pre_build:
-    command:
-      mkdir localstaging
-      mkdir localstaging/PROD/.ebextensions
-      mkdir localstaging/QA/.ebextensions
-      cp AWS/Docker/Extensions/*.config localstaging/PROD/.ebextensions
-      cp AWS/Docker/Extensions/*.config localstaging/QA/.ebextensions
-      cp AWS/Docker/Extensoins/Prod/*.config localstaging/PROD/.ebextensions
-      cp AWS/Docker/Extensions/QA/*.config localstaging/QA/.ebextensions
+    commands:
+      - mkdir localstaging
+      - mkdir localstaging/PROD/.ebextensions
+      - mkdir localstaging/QA/.ebextensions
+      - cp AWS/Docker/Extensions/*.config localstaging/PROD/.ebextensions
+      - cp AWS/Docker/Extensions/*.config localstaging/QA/.ebextensions
+      - cp AWS/Docker/Extensoins/Prod/*.config localstaging/PROD/.ebextensions
+      - cp AWS/Docker/Extensions/QA/*.config localstaging/QA/.ebextensions
   build:
     commands:
       - dotnet restore
@@ -18,14 +18,14 @@ phases:
       - dotnet publish src/act.core.web/act.core.web.csproj -c Release --version-suffix $CODEBUILD_RESOLVED_SOURCE_VERSION
   post_build:
     commands:
-        zip -v localstaging/Lambda.zip bin/Release/netcoreapp2.1/linux-x64/publish/*
-        zip -v localstaging/Lambda.zip AWS/Lambda/*.json
-        zip -v -r localstaging/DockerQA.zip bin/Release/netcoreapp2.1/publish
-        zip -v -r localstaging/DockerProd.zip bin/Release/netcoreapp2.1/publish
-        zip -v localstaging/DockerQA.zip AWS/Docker/*
-        zip -v localstaging/DockerProd.zip AWS/Docker/*
-        zip -v -r localstaging/DockerQA.zip localstaging/QA/.ebextensions
-        zip -v -r localstaging/DockerProd.zip localstaging/PROD/.ebextensions
+      - zip -v localstaging/Lambda.zip bin/Release/netcoreapp2.1/linux-x64/publish/*
+      - zip -v localstaging/Lambda.zip AWS/Lambda/*.json
+      - zip -v -r localstaging/DockerQA.zip bin/Release/netcoreapp2.1/publish
+      - zip -v -r localstaging/DockerProd.zip bin/Release/netcoreapp2.1/publish
+      - zip -v localstaging/DockerQA.zip AWS/Docker/*
+      - zip -v localstaging/DockerProd.zip AWS/Docker/*
+      - zip -v -r localstaging/DockerQA.zip localstaging/QA/.ebextensions
+      - zip -v -r localstaging/DockerProd.zip localstaging/PROD/.ebextensions
 artifacts:
   files:
     - localstaging/DockerQA.zip
