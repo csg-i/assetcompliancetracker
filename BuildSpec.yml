@@ -4,6 +4,8 @@ phases:
   pre_build:
     commands:
       - mkdir localstaging
+      - mkdir localstaging/PROD
+      - mkdir localstaging/QA
       - mkdir localstaging/PROD/.ebextensions
       - mkdir localstaging/QA/.ebextensions
       - cp AWS/Docker/Extensions/*.config localstaging/PROD/.ebextensions
