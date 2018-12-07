@@ -25,10 +25,10 @@ phases:
       - cp AWS/Docker/Extensions/*.config localstaging/QA/.ebextensions
       - cp AWS/Docker/Extensions/Prod/*.config localstaging/PROD/.ebextensions
       - cp AWS/Docker/Extensions/QA/*.config localstaging/QA/.ebextensions
-      - cp -r bin/Release/netcoreapp2.1/publish localstaging/PROD/publish
-      - cp -r bin/Release/netcoreapp2.1/publish localstaging/QA/publish
-      - cp -r AWS/Docker/* localstaging/QA
-      - cp -r AWS/Docker/* localstaging/PROD
+      - cp -r bin/Release/netcoreapp2.1/publish localstaging/PROD/
+      - cp -r bin/Release/netcoreapp2.1/publish localstaging/QA/
+      - cp AWS/Docker/* localstaging/QA
+      - cp AWS/Docker/* localstaging/PROD
       - cd localstaging/Lambda
       - zip -v -r ../Lambda.zip .
       - cd ../PROD
