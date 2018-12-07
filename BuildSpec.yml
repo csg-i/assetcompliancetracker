@@ -10,7 +10,7 @@ phases:
       - mkdir localstaging/QA/.ebextensions
       - cp AWS/Docker/Extensions/*.config localstaging/PROD/.ebextensions
       - cp AWS/Docker/Extensions/*.config localstaging/QA/.ebextensions
-      - cp AWS/Docker/Extensoins/Prod/*.config localstaging/PROD/.ebextensions
+      - cp AWS/Docker/Extensions/Prod/*.config localstaging/PROD/.ebextensions
       - cp AWS/Docker/Extensions/QA/*.config localstaging/QA/.ebextensions
   build:
     commands:
