@@ -32,9 +32,9 @@ phases:
       - cd localstaging/Lambda
       - zip -v -r ../Lambda.zip .
       - cd ../PROD
-      - zip -v -r BeanstalkProd.zip .
+      - zip -v -r ../BeanstalkProd.zip .
       - cd ../QA
-      - zip -v -r BeanstalkQA.zip .
+      - zip -v -r ../BeanstalkQA.zip .
 artifacts:
   files:
     - localstaging/BeanstalkQA.zip
