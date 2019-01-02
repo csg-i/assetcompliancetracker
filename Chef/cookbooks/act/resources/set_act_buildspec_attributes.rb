@@ -20,7 +20,9 @@ end
 
 action :default do
   # Chef Compliance InSpec Profiles
-  log "Using ACT pci compliance via url #{compliance_url} for #{new_resource.name}"
+  log "Using ACT pci compliance via url #{compliance_url} for #{new_resource.name}" do
+    level :info
+  end
 
   protocol = new_resource.node_attr('act', 'url', 'protocol')
   server = new_resource.node_attr('act', 'url', 'server')
@@ -31,7 +33,9 @@ action :default do
   url = "#{protocol}://#{server}:#{port}"
   query = "#{path}?#{fqdn_arg}=#{fqdn}"
 
-  log "using url #{url} and query #{query}"
+  log "using url #{url} and query #{query}" do
+    level :debug
+  end
 
   begin
     json = Chef::HTTP.new(url).get(query)
