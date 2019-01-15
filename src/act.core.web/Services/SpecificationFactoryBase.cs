@@ -186,6 +186,7 @@ namespace act.core.web.Services
                 Name = $"Clone {Guid.NewGuid()}",
                 WikiLink = toClone.WikiLink,
                 Overview = toClone.Overview,
+                EmailAddress = toClone.EmailAddress,
                 OperatingSystemVersion = toClone.OperatingSystemVersion,
                 OperatingSystemName = toClone.OperatingSystemName,
                 OwnerEmployeeId = employeeSecurity.EmployeeId,

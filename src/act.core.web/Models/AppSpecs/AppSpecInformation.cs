@@ -31,7 +31,7 @@ namespace act.core.web.Models.AppSpecs
             var errors = new Dictionary<string, string>();
             if (string.IsNullOrWhiteSpace(Name) || Name.Length > 256)
                 errors.Add("name", "The Build Specification Name is required with a max length of 256 characters.");
-            if (OsSpecId <= 0)
+            if (OsSpecId == null || OsSpecId <= 0)
                 errors.Add("osspecname", "The OS Specification cannot be blank.");
             if (OwnerId == null)
                 errors.Add("ownername", "The Owner is required.");
