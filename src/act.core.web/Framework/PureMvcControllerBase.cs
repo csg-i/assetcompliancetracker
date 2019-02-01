@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -42,7 +42,37 @@ namespace act.core.web.Framework
 
         public Uri GetUri()
         {
-            return HttpContext.Request.GetUri();;
+            const string unknownHostName = "UNKNOWN-HOST";
+            var request = HttpContext.Request;
+            if (null == request)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (true == string.IsNullOrWhiteSpace(request.Scheme))
+            {
+                throw new ArgumentException("Http request Scheme is not specified");
+            }
+
+            string hostName = request.Host.HasValue ? request.Host.ToString() : unknownHostName;
+            
+            var builder = new StringBuilder();
+
+            builder.Append(request.Scheme)
+                .Append("://")
+                .Append(hostName);
+
+            if (true == request.Path.HasValue)
+            {
+                builder.Append(request.Path.Value);
+            }
+
+            if (true == request.QueryString.HasValue)
+            {
+                builder.Append(request.QueryString);
+            }
+
+            return new Uri(builder.ToString());
         }
         public bool IsLoggedIn => HttpContext.User.Identity.IsAuthenticated;
 

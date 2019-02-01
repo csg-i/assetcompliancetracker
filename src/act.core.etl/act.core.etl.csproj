@@ -1,18 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
-    <VersionPrefix>1.0.0</VersionPrefix>
-    <Product>ACT</Product>
-    <Company>CSG International</Company>
-    <Copyright>2018 CSG International</Copyright>
-    <RepositoryUrl>https://github.com/csg-i/assetcompliancetracker</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://github.com/csg-i/assetcompliancetracker</PackageProjectUrl>
-    <PackageLicenseUrl>
-    </PackageLicenseUrl>
-    <Authors>Jay Brummels</Authors>
+    <IsPackable>False</IsPackable>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>..\..\bin\Debug\</OutputPath>

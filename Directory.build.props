@@ -1,0 +1,14 @@
+﻿<Project>
+  <PropertyGroup>
+    <Copyright>©2018-2019 CSG Systems International, Inc.  All rights reserved.</Copyright>
+    <PackageProjectUrl>https://github.com/csg-i/assetcompliancetracker</PackageProjectUrl>   
+    <RepositoryUrl>https://github.com/csg-i/assetcompliancetracker</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Authors>Jay Brummels</Authors>
+    <Product>Asset Compliance Tracker</Product>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <Version>1.0.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+  </PropertyGroup>
+</Project>
