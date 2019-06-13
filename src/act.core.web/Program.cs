@@ -15,6 +15,12 @@ namespace act.core.web
        
         private static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration( (hostingContext,builder) =>
+                {
+                    var hostingEnvironment = hostingContext.HostingEnvironment;
+                    var path = hostingEnvironment.IsProduction() ? "Production" : "NonProd";
+                    builder.AddSystemsManager($"/ACT/{path}");
+                })
                 .UseStartup<Startup>()
                 .Build();
 

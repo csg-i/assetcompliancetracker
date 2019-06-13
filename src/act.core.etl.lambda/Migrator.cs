@@ -15,12 +15,21 @@ namespace act.core.etl.lambda
     {
         private ServiceProvider _serviceProvider;
 
+        private const string DefaultParameterStoreValue = "/ActLambda";
+        private const string ParameterStoreName = "ConnectionStringParameterQuery";
         public Migrator()
         {
+            var parm = DefaultParameterStoreValue;
+            var env = Environment.GetEnvironmentVariables();
+            if (env.Contains(ParameterStoreName) && env[ParameterStoreName] != null)
+                parm = env[ParameterStoreName].ToString();   
+            
+            
             var config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", false, true)
                 .AddEnvironmentVariables()
+                .AddSystemsManager(parm)
                 .Build();
             var addins = config.GetSection("AddIns").GetChildren().Select(p => p.Value).ToArray();
             

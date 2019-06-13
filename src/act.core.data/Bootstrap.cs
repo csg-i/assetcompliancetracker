@@ -9,12 +9,11 @@ namespace act.core.data
 {
     public static class Bootstrap
     {
-        public static IServiceCollection AddActDbContext(this IServiceCollection services, IConfiguration configuration,  int commandTimeout=30, string fallbackConnectionStringName="ActDb")
+        public static IServiceCollection AddActDbContext(this IServiceCollection services, IConfiguration configuration,  int commandTimeout=30, string connectionStringName="ActDb")
         {
-            var aurora = new AuroraAwareConnectionStringBuilder(configuration);
             return services.AddDbContext<ActDbContext>(options =>
 
-                options.UseMySql(aurora.GetConnectionString(fallbackConnectionStringName), o =>
+                options.UseMySql(configuration.GetConnectionString(connectionStringName), o =>
                     {
                         o.ServerVersion(new Version(5, 6, 10), ServerType.MySql);
                         o.CommandTimeout(commandTimeout);
@@ -22,11 +21,10 @@ namespace act.core.data
                     .ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning)));
 
         }
-        public static IServiceCollection AddActDbContextPool(this IServiceCollection services, IConfiguration configuration, int commandTimeout=30, string fallbackConnectionStringName = "ActDb")
+        public static IServiceCollection AddActDbContextPool(this IServiceCollection services, IConfiguration configuration, int commandTimeout=30, string connectionStringName = "ActDb")
         {
-            var aurora = new AuroraAwareConnectionStringBuilder(configuration);
             return services.AddDbContextPool<ActDbContext>(options =>
-                options.UseMySql(aurora.GetConnectionString(fallbackConnectionStringName), o =>
+                options.UseMySql(configuration.GetConnectionString(connectionStringName), o =>
                     {
                         o.ServerVersion(new Version(5, 6, 10), ServerType.MySql);
                         o.CommandTimeout(commandTimeout);
