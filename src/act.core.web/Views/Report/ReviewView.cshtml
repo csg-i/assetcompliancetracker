@@ -3,7 +3,7 @@
     ViewBag.Title = "Review Compliance";
 }
 @section scripts{
-    @Url.ViewJavascript("review")
+    @Url.ViewJavascript("Review")
 }
 
 <div>
@@ -22,7 +22,7 @@
                         }
                         else
                         {
-                            <option value="@e.Key" data-gather-url="@Url.JsonDataGatherForSpec(Model.SpecId, e.Key)" data-nodes-url="@Url.JsonAssignedNodeComplianceReports(Model.SpecId, e.Key)" data-review-url="@Url.PartialReviewData(Model.SpecId, e.Key)"><span style="color: @e.Value.color">@e.Value.name</span></option>                            
+                            <option value="@e.Key" data-gather-url="@Url.JsonDataGatherForSpec(Model.SpecId, e.Key)" data-nodes-url="@Url.JsonAssignedNodeComplianceReports(Model.SpecId, e.Key)" data-review-url="@Url.PartialReviewData(Model.SpecId, e.Key)"><span style="color: @e.Value.color">@e.Value.name</span></option>
                         }
                     }
                 </select>
