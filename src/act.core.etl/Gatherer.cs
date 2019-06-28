@@ -375,7 +375,7 @@ namespace act.core.etl
         {
             await _ctx.ExecuteCommandAsync("TRUNCATE TABLE ComplianceResultTest");
             await _ctx.ExecuteCommandAsync("TRUNCATE TABLE ComplianceResultError");
-            return 1;
+            return 0;
         }
 
         public async Task<int> ResetComplianceStatus()
