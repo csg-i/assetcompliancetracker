@@ -373,11 +373,9 @@ namespace act.core.etl
         
         public async Task<int> PurgeOldComplianceDetails()
         {
-            var count = await _ctx.ComplianceResultTests.CountAsync();
-            count += await _ctx.ComplianceResultErrors.CountAsync();
             await _ctx.ExecuteCommandAsync("TRUNCATE TABLE ComplianceResultTest");
             await _ctx.ExecuteCommandAsync("TRUNCATE TABLE ComplianceResultError");
-            return count;
+            return 1;
         }
 
         public async Task<int> ResetComplianceStatus()
