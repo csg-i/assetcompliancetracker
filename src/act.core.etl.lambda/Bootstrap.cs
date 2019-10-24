@@ -60,6 +60,7 @@ namespace act.core.etl.lambda
                 .AddLogging(opt =>
                 {
                     opt.AddConfiguration(config);
+                    opt.SetMinimumLevel(LogLevel.Debug);
                     opt.AddConsole();
                 })
                 .AddDefaultAWSOptions(config.GetAWSOptions())

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace act.core.web.Extensions
 {
@@ -27,7 +28,7 @@ namespace act.core.web.Extensions
 
             using (var scope = helper.ActionContext.HttpContext.RequestServices.CreateScope())
             {
-                var hosting = scope.ServiceProvider.GetRequiredService<IHostingEnvironment>();
+                var hosting = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
                 
                 return string.Join("\n", p.Select(q => string.Format(format, q, hosting.IsDevelopment() ? DateTime.Now.Ticks : DateTime.Today.Ticks)));
             }

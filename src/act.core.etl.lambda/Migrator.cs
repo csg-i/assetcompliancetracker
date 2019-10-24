@@ -5,7 +5,9 @@ using System.Linq;
 using System.Runtime.Loader;
 using System.Threading.Tasks;
 using Amazon.Lambda.Core;
+using Amazon.Lambda.RuntimeSupport;
 using Amazon.Lambda.Serialization.Json;
+using Amazon.S3.Util;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -72,7 +74,36 @@ namespace act.core.etl.lambda
             _serviceProvider = null;
         }
 
-        [LambdaSerializer(typeof(JsonSerializer))]
+        public async Task RunLambda()
+        {
+            using (var handlerWrapper =
+                HandlerWrapper.GetHandlerWrapper((Func<Argument, ILambdaContext, Task>) Run, new JsonSerializer()))
+            {
+                // Instantiate a LambdaBootstrap and run it.
+                // It will wait for invocations from AWS Lambda and call
+                // the handler function for each one.
+                using (var bootstrap = new LambdaBootstrap(handlerWrapper))
+                {
+                    await bootstrap.RunAsync();
+                }
+            }
+        }
+
+        private async Task Run(Argument @event, ILambdaContext context)
+        {
+            try
+            {
+                context.Logger.Log($"Handler Wrapper called with argument Name: {@event?.Name} and Index: {@event?.Index}.");
+                var ret = await Migrate(@event);
+                context.Logger.Log($"Returned: {ret}");
+            }
+            catch (Exception ex)
+            {
+                context.Logger.Log($"Exception occurred : {ex}");
+                throw;
+            }
+        }
+        
         public async Task<int> Migrate(Argument @event)
         {
             if (@event?.Name == null)

@@ -3,6 +3,7 @@ using act.core.web.Framework;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace act.core.web
 {

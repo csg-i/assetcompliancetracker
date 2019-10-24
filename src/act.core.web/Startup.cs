@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace act.core.web
@@ -98,6 +99,7 @@ namespace act.core.web
                 }).Services
                 .Configure<MvcOptions>(o =>
                 {
+                    o.EnableEndpointRouting = false;
                     o.Filters.Add(new RequireHttpsAttribute());
                 })
                 .AddMvc(o => //require auth user by default
@@ -106,10 +108,10 @@ namespace act.core.web
                         .RequireAuthenticatedUser()
                         .Build();
                     o.Filters.Add(new AuthorizeFilter(policy));
-                });
+                }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
         }
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {

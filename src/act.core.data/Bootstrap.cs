@@ -17,8 +17,7 @@ namespace act.core.data
                     {
                         o.ServerVersion(new Version(5, 6, 10), ServerType.MySql);
                         o.CommandTimeout(commandTimeout);
-                    })
-                    .ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning)));
+                    }));
 
         }
         public static IServiceCollection AddActDbContextPool(this IServiceCollection services, IConfiguration configuration, int commandTimeout=30, string connectionStringName = "ActDb")
@@ -28,8 +27,7 @@ namespace act.core.data
                     {
                         o.ServerVersion(new Version(5, 6, 10), ServerType.MySql);
                         o.CommandTimeout(commandTimeout);
-                    })
-                    .ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning)));
+                    }));
         }
     }
 }
