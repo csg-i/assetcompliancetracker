@@ -8,7 +8,7 @@ namespace act.core.etl.lambda
         {
             var mig = new Migrator();
 #if DEBUG
-            await mig.Migrate(new Argument {Name = "products"});
+            await mig.Migrate(new Argument {Name = "gather", Index = 12});
 #else
             await mig.RunLambda();
 #endif
