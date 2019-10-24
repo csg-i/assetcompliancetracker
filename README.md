@@ -28,8 +28,8 @@ This cookbook is a simple wrapper around CHEF's audit cookbook.  its sole recipe
 
 It then sets the list returned into the nodes attributes where they can be retrieved by the CHEF Inspec compliance tests.
 
-## .NET Core 2.1 AWS Lambda
-Lambda is an AWS serverless offering. The Lambda component is used to Gather information from the various CHEF Automate servers configured in the database.  It is also an extensible framework allowing for configuration based lamda functions to be added.  There is only one Lambda that need be deployed, but it takes as single JSON argument in the form of
+## .NET Core 3.0 AWS Lambda
+Lambda is an AWS serverless offering. The Lambda component is used to Gather information from the various CHEF Automate servers configured in the database.  It is also an extensible framework allowing for configuration based lambda functions to be added.  There is only one Lambda that need be deployed, but it takes as single JSON argument in the form of
 
     {"name":"function to run", "index":0}
 
@@ -81,7 +81,7 @@ You can then edit the appsettings.json file you add your component:
 
 **Important**: You must also include the compiled DLL and all of its **dependencies** in the Lambda binaries folder as as sibling to *act.core.etl.lambda.dll*
 
-## .NET Core 2.1 MVC Website for AWS Elastic Beanstalk
+## .NET Core 3.0 MVC Website for Docker on AWS Fargate
 The website is a response UI based on the [jayMVC](https://github.com/unscrum/jaymvc) framework.  It interfaces with an ADFS Server via FederationMetaData for logins and allows users to be able to add *Build Specs* for servers. The website is built to be a central repository for housing specs for all nodes across all environments, including Windows/Linux Servers as well as Appliances, UNIX, Mainframes and any other types.  Although we only have Compliance Specs created for Linux and Windows the website can be a one stop shop for every type of server during a PCI Audit.
 
 ### Concepts
