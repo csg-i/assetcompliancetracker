@@ -11,14 +11,7 @@ namespace act.core.web
     {
         public static void Main(string[] args)
         {
-            try
-            {
-                BuildWebHost(args).Build().Run();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error Running WebHost ${ex}");
-            }
+            BuildWebHost(args).Build().Run();
         }
 
         private static IWebHostBuilder BuildWebHost(string[] args) =>
@@ -34,9 +27,12 @@ namespace act.core.web
                     logging.ClearProviders();
                     logging.AddAWSProvider();
                     logging.SetMinimumLevel(LogLevel.Debug);
-                    if (context.HostingEnvironment.IsDevelopment())
+                    if (!context.HostingEnvironment.IsProduction())
                     {
                         logging.AddConsole();
+                    }
+                    if(context.HostingEnvironment.IsDevelopment()){
+                    
                         logging.AddDebug();
                     }
                 })
