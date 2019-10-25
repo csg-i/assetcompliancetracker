@@ -140,6 +140,7 @@ namespace act.core.web
             });
             app
                 .UseAuthentication()
+                .UseAuthorization()
                 .Use(next =>
                 {
                     return async context =>
@@ -157,13 +158,10 @@ namespace act.core.web
                         name: "default",
                         template: "{controller=Home}/{action=Index}/{id?}");
                 });
+            
             try
             {
-                loggerFactory
-                    .AddAWSProvider(_configuration.GetAWSLoggingConfigSection(),
-                        (logLevel, message, ex) => $"[{DateTime.UtcNow}] {logLevel}: {message} {ex}");
                 var logger = loggerFactory.CreateLogger<Startup>();
-
                 logger.LogInformation(
                     $"Startup of ACT Web Version {FileVersionInfo.GetVersionInfo(GetType().Assembly.Location).ProductVersion}");
             }

@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using act.core.web.Framework;
+﻿using System;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace act.core.web
 {
@@ -11,21 +11,40 @@ namespace act.core.web
     {
         public static void Main(string[] args)
         {
-            BuildWebHost(args).Run();
+            try
+            {
+                BuildWebHost(args).Build().Run();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error Running WebHost ${ex}");
+            }
         }
-       
-        private static IWebHost BuildWebHost(string[] args) =>
+
+        private static IWebHostBuilder BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration( (hostingContext,builder) =>
+                .ConfigureAppConfiguration((hostingContext, builder) =>
                 {
                     var hostingEnvironment = hostingContext.HostingEnvironment;
                     var path = hostingEnvironment.IsProduction() ? "Production" : "NonProd";
                     builder.AddSystemsManager($"/ACT/{path}");
                 })
-                .UseStartup<Startup>()
-                .Build();
+                .ConfigureLogging((context, logging) =>
+                {
+                    logging.ClearProviders();
+                    logging.AddAWSProvider();
+                    logging.SetMinimumLevel(LogLevel.Debug);
+                    if (context.HostingEnvironment.IsDevelopment())
+                    {
+                        logging.AddConsole();
+                        logging.AddDebug();
+                    }
+                })
+                .ConfigureKestrel(o => o.ConfigurationLoader.Load())
+                .UseStartup<Startup>();
 
-  
+
+
     }
 
 }
