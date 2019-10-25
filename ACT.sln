@@ -11,6 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "act.core.web", "src\act.cor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "act.core.etl.lambda", "src\act.core.etl.lambda\act.core.etl.lambda.csproj", "{DEC6A78A-8473-4BDB-95D5-5FC2A5338BA0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docker", "Docker", "{9B613ABE-7A01-4E28-B5E5-57A631D52A55}"
+ProjectSection(SolutionItems) = preProject
+	Docker\Dockerfile = Docker\Dockerfile
+EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
