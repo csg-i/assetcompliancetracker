@@ -43,7 +43,7 @@ namespace act.core.etl.lambda
             {
                 foreach (var addin in addins)
                 {
-                    var ass = AssemblyLoader.LoadFromAssemblyPath(
+                    var ass = AssemblyLoadContext.Default.LoadFromAssemblyPath(
                         Path.Combine(runningPath, $"{addin}.dll"));
                     var assTypes =
                         ass.DefinedTypes.Where(p => p.IsSubclassOf(addinBase) && p.IsPublic && !p.IsAbstract);
