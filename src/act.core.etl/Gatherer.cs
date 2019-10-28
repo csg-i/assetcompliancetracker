@@ -458,6 +458,7 @@ namespace act.core.etl
             if (node != null)
             {
                 node.DeactivatedDate = DateTime.Now;
+                node.IsActive = false;
                 await _ctx.SaveChangesAsync();
                 return 1;
             }
