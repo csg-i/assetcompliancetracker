@@ -450,6 +450,20 @@ namespace act.core.etl
 
             return count;
         }
+
+        public async Task<int> DeactivateNode(int id)
+        {
+            _logger.LogDebug($"Deactivating node with id {id}");
+            var node = await _ctx.Nodes.ById(id);
+            if (node != null)
+            {
+                node.DeactivatedDate = DateTime.Now;
+                await _ctx.SaveChangesAsync();
+                return 1;
+            }
+
+            return 0;
+        }
         
         public async Task<int> NotifyUnassignedNodes()
         {

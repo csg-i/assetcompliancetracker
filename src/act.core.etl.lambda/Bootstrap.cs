@@ -47,6 +47,9 @@ namespace act.core.etl.lambda
                         .RegisterProcessorFunction("purgeinactive",
                             async (scope, arg) =>
                                 await scope.ServiceProvider.GetService<IGatherer>().PurgeInactiveNodes())
+                        .RegisterProcessorFunction("deactivate",
+                            async (scope, arg) =>
+                                await scope.ServiceProvider.GetService<IGatherer>().DeactivateNode(arg.Index))
                         .RegisterProcessorFunctions(dictionary);
 
                     return it;

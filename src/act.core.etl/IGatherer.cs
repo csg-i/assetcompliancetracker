@@ -17,6 +17,8 @@ namespace act.core.etl
         Task<int> NotifyUnassignedNodes();
         Task<int> NotifyNotReportingNodes();
         Task<int> PurgeInactiveNodes();
+
+        Task<int> DeactivateNode(int id);
         Task SendMail(string[] emails, string subject, string body);
     }
 }
