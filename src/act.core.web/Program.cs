@@ -24,17 +24,8 @@ namespace act.core.web
                 })
                 .ConfigureLogging((context, logging) =>
                 {
-                    logging.ClearProviders();
                     logging.AddAWSProvider();
                     logging.SetMinimumLevel(LogLevel.Debug);
-                    if (!context.HostingEnvironment.IsProduction())
-                    {
-                        logging.AddConsole();
-                    }
-                    if(context.HostingEnvironment.IsDevelopment()){
-                    
-                        logging.AddDebug();
-                    }
                 })
                 .ConfigureKestrel(o => o.ConfigurationLoader.Load())
                 .UseStartup<Startup>();
