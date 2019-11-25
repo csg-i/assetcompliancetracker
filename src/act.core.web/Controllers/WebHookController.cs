@@ -23,7 +23,7 @@ namespace act.core.web.Controllers
         {
             using (var reader = new StreamReader(HttpContext.Request.Body))
             {
-                var data = reader.ReadToEnd();
+                var data = await reader.ReadToEndAsync();
                 var result = await _notifier.NotifyComplianceFailure(data);
 
                 return StatusCode(result.StatusCode, result.Exception?.Message);                
