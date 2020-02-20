@@ -86,7 +86,7 @@ namespace act.core.web.Controllers
         {
             try
             {
-                await _nodeFactory.AssignBuildSpecification(id, specId);
+                await _nodeFactory.AssignBuildSpecification(id, specId, UserSecurity.SamAccountName);
                 Logger.LogInformation($"Node with Inventory ID {id} was assigned to build spec {specId.GetValueOrDefault()} by {UserSecurity.SamAccountName}");
                 if (specId.HasValue)
                 {
