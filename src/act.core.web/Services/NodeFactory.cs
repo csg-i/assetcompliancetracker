@@ -6,6 +6,7 @@ using act.core.data;
 using act.core.web.Framework;
 using act.core.web.Models.Nodes;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace act.core.web.Services
 {
@@ -13,7 +14,7 @@ namespace act.core.web.Services
     {
         Task<long?> BuildSpecIdByHost(string fqdnOrHostName);
         Task<NodeSearchResult[]> GetAssignedToBuildSpec(long buildSpecId);
-        Task AssignBuildSpecification(long nodeId, long? buildSpecId);
+        Task AssignBuildSpecification(long nodeId, long? buildSpecId, string userName = null);
         Task<bool> AssignBuildSpecification(string fqdn, long buildSpecId);
         Task<Guid[]> ChefIdsForAppOrOsSpecAndEnvironment(long specId, int environmentId);
 
@@ -28,10 +29,11 @@ namespace act.core.web.Services
     internal class NodeFactory : INodeFactory
     {
         private readonly ActDbContext _ctx;
-
-        public NodeFactory(ActDbContext ctx)
+        private readonly ILogger<NodeFactory> _logger;
+        public NodeFactory(ActDbContext ctx, ILoggerFactory logger)
         {
             _ctx = ctx;
+            _logger = logger.CreateLogger<NodeFactory>();
         }
 
         public async Task<IDictionary<int ,(string name, string color)>> GetEnvironments()
@@ -40,7 +42,7 @@ namespace act.core.web.Services
             return all.ToDictionary(p => p.Id, p=> (p.Name, p.Color));
         }
         
-        public async Task AssignBuildSpecification(long nodeId, long? buildSpecId)
+        public async Task AssignBuildSpecification(long nodeId, long? buildSpecId, string userName = null)
         {
             var it = await _ctx.Nodes.ById(nodeId);
             if (it == null)
@@ -52,6 +54,7 @@ namespace act.core.web.Services
 
             if (!buildSpecExists)
             {
+                _logger.LogDebug($"Adding BuildSpec as null to {it.Fqdn}/{it.InventoryItemId} by {userName}");
                 it.BuildSpecificationId = null;
                 await _ctx.SaveChangesAsync();
             }
