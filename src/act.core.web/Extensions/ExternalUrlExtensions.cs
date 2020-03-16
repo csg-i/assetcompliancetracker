@@ -27,7 +27,8 @@ namespace act.core.web.Extensions
             {
                 var ctx = scope.ServiceProvider.GetRequiredService<ActDbContext>();
                 var env = ctx.Environments.ById(environmentId).GetAwaiter().GetResult();
-                return $"{env.ChefAutomateUrl}/viz/#/compliance/reporting/nodes/{id}";
+                return $"{env.ChefAutomateUrl}/compliance/reports/nodes/{id}";
+                
             }
         }
         
