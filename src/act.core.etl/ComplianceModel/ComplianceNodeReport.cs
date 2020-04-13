@@ -8,13 +8,13 @@ namespace act.core.etl.ComplianceModel
     // ReSharper disable UnusedAutoPropertyAccessor.Global
     public class ComplianceNodeReport
     {
-        public DateTime end_time { get; set; }
-        public Guid id { get; set; }
+        public DateTime? end_time { get; set; }
+        public Guid? id { get; set; }
         public string status { get; set; }
 
         public ComplianceStatusConstant GetComplainceStatus()
         {
-            if (status == "failed")
+            if (status.ToLower() == "failed")
                 return ComplianceStatusConstant.Failed;
 
             return ComplianceStatusConstant.Succeeded;

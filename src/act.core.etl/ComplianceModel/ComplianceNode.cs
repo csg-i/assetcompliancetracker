@@ -10,7 +10,7 @@ namespace act.core.etl.ComplianceModel
     {
         public Guid id { get; set; }
         public string name { get; set; }
-        public ComplianceNodeReport latest_report { get; set; }
+        public ComplianceNodeReport scan_data { get; set; }
 
     }
     // ReSharper restore ClassNeverInstantiated.Global

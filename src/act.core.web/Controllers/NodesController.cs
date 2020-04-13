@@ -8,13 +8,15 @@ using act.core.web.Framework;
 using act.core.web.Models.AppSpecs;
 using act.core.web.Models.Nodes;
 using act.core.web.Services;
+using Amazon.SimpleSystemsManagement.Model;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 namespace act.core.web.Controllers
 {
-    
+
     public class NodesController : PureMvcControllerBase
     {
         private readonly INodeFactory _nodeFactory;
@@ -29,29 +31,14 @@ namespace act.core.web.Controllers
             _gatherer = gatherer;
         }
 
-        [HttpGet]
-        public async Task<ActionResult> Automate(int environmentId)
-        {
-            var url = GetUri().PathAndQuery.Substring(4);
-            var response = await _gatherer.Proxy(environmentId, url);
-            if (response.IsSuccessStatusCode)
-            {
-                var content = await response.Content.ReadAsStringAsync();
-                AddHeaders(response.Headers.Where(p => p.Key.ToLower().StartsWith("x-")));
-                return Content(content, "application/json");
-            }
-            return StatusCode(response.StatusCode, response.ReasonPhrase);
-        }
-
         [HttpPost]
         public async Task<JsonResult> GatherForSpec(long id, int environmentId)
         {
             Logger.LogInformation($"Gather Called for {id} and {environmentId}");
-            var ids = await _nodeFactory.ChefIdsForAppOrOsSpecAndEnvironment(id, environmentId);
-            await _gatherer.Gather(environmentId, ids);            
+            var fqdns = await _nodeFactory.ChefIdsForAppOrOsSpecAndEnvironment(id, environmentId);
+            await _gatherer.Gather(environmentId, fqdns);
             return Json(JsonEnvelope.Success());
         }
-
 
         [HttpPost]
         public async Task<JsonResult> ComplianceReport(long id)
@@ -61,9 +48,9 @@ namespace act.core.web.Controllers
             return Json(JsonEnvelope.Success());
         }
 
-        
+
         [HttpGet]
-        public  async Task<ViewResult> Index()
+        public async Task<ViewResult> Index()
         {
             return View(new NodeSearch(await _nodeFactory.GetEnvironments()));
         }
@@ -104,11 +91,19 @@ namespace act.core.web.Controllers
                 return Json(JsonEnvelope.Error($"A node with the id {id} was not found."));
             }
         }
+
+        [HttpPost]
+        public JsonResult ChefConvergeReportUrlGet(int id, Guid nodeGuid)
+        {
+            var url = Url.ChefAutomateConvergeReport(id, nodeGuid);
+            return Json(JsonEnvelope.Success(new { url }));
+        }
+
         [HttpPost]
         [AllowAnonymous]
         public JsonResult BuildSpecId(string host)
         {
-            return Json(JsonEnvelope.Success(new {id = _nodeFactory.BuildSpecIdByHost(host)}));
+            return Json(JsonEnvelope.Success(new { id = _nodeFactory.BuildSpecIdByHost(host) }));
         }
     }
 }
