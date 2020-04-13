@@ -41,8 +41,8 @@ namespace act.core.web.Extensions
                 var env = ctx.Environments.ById(environmentId).GetAwaiter().GetResult();
                 var node = ctx.Nodes.ById(id).GetAwaiter().GetResult();
                 var gather = scope.ServiceProvider.GetRequiredService<IGatherer>();
-                var result = gather.PostRequest(environmentId, 1, 1, new[] {node.Fqdn}).GetAwaiter().GetResult();
-                return $"{env.ChefAutomateUrl}/infrastructure/client-runs/{id}/runs/{result?.nodes?[0].scan_data?.id}";
+                var result = gather.PostRequest(environmentId, 1, 1, new[] {node?.Fqdn}).GetAwaiter().GetResult();
+                return $"{env.ChefAutomateUrl}/infrastructure/client-runs/{id}/runs/{result?.Nodes?[0].ScanData?.id}";
             }
         }
 

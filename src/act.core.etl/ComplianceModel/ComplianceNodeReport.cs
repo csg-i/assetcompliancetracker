@@ -14,7 +14,7 @@ namespace act.core.etl.ComplianceModel
 
         public ComplianceStatusConstant GetComplainceStatus()
         {
-            if (status.ToLower() == "failed")
+            if (status.Equals("failed", StringComparison.InvariantCultureIgnoreCase))
                 return ComplianceStatusConstant.Failed;
 
             return ComplianceStatusConstant.Succeeded;

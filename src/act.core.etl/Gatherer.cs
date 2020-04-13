@@ -246,29 +246,29 @@ namespace act.core.etl
             var complianceNodes = await PostRequest(environmentId, 100, 1, fqdns);
             if (complianceNodes != null)
             {
-                var saveResult = await SaveAndReturnFailuresAndFound(complianceNodes.nodes);
+                var saveResult = await SaveAndReturnFailuresAndFound(complianceNodes.Nodes);
                 list.AddRange(saveResult.Item2);
                 var found = saveResult.Item1;
 
-                if (complianceNodes.total > 0)
+                if (complianceNodes.Total > 0)
                 {
-                    _logger.LogDebug($"Updated {found} of {complianceNodes.total} nodes from automate.");
-                    var pageCount = complianceNodes.total / 100 + ((complianceNodes.total % 100) > 0 ? 1 : 0);
+                    _logger.LogDebug($"Updated {found} of {complianceNodes.Total} nodes from automate.");
+                    var pageCount = complianceNodes.Total / 100 + ((complianceNodes.Total % 100) > 0 ? 1 : 0);
                     for (var p = 2; p <= pageCount; p++)
                     {
                         complianceNodes = await PostRequest(environmentId, 100, p, fqdns);
                         if (complianceNodes != null)
                         {
-                            saveResult = await SaveAndReturnFailuresAndFound(complianceNodes.nodes);
+                            saveResult = await SaveAndReturnFailuresAndFound(complianceNodes.Nodes);
                             list.AddRange(saveResult.Item2);
                             found += saveResult.Item1;
-                            _logger.LogDebug($"Updated {found} of {complianceNodes.total} nodes from automate.");
+                            _logger.LogDebug($"Updated {found} of {complianceNodes.Total} nodes from automate.");
                         }
                     }
                 }
                 else
                 {
-                    _logger.LogDebug($"Updated {found} of {complianceNodes.total} nodes from automate.");
+                    _logger.LogDebug($"Updated {found} of {complianceNodes.Total} nodes from automate.");
                 }
             }
             return list.ToArray();
@@ -302,20 +302,20 @@ namespace act.core.etl
             var found = 0;
             foreach (var node in nodes)
             {
-                var endTime = (node.scan_data?.end_time).GetValueOrDefault();
-                var id = (node.scan_data?.id).GetValueOrDefault();
+                var endTime = (node.ScanData?.end_time).GetValueOrDefault();
+                var id = (node.ScanData?.id).GetValueOrDefault();
                 var nodeInfo = await _ctx.Nodes.FirstOrDefaultAsync(p =>
-                    p.Fqdn == node.name &&
+                    p.Fqdn == node.Name &&
                     (p.LastComplianceResultId == null || p.LastComplianceResultId != id) &&
                     (p.LastComplianceResultDate == null || p.LastComplianceResultDate < endTime));
                 if (nodeInfo != null && id != Guid.Empty)
                 {
                     found += 1;
-                    nodeInfo.ChefNodeId = node.id;
-                    nodeInfo.ComplianceStatus = (node.scan_data?.GetComplainceStatus()).GetValueOrDefault();
-                    nodeInfo.LastComplianceResultDate = node.scan_data?.end_time;
-                    nodeInfo.LastComplianceResultId = node.scan_data?.id;
-                    if (node.scan_data != null)
+                    nodeInfo.ChefNodeId = node.Id;
+                    nodeInfo.ComplianceStatus = (node.ScanData?.GetComplainceStatus()).GetValueOrDefault();
+                    nodeInfo.LastComplianceResultDate = node.ScanData?.end_time;
+                    nodeInfo.LastComplianceResultId = node.ScanData?.id;
+                    if (node.ScanData != null)
                     {
                         if (nodeInfo.ComplianceStatus == ComplianceStatusConstant.Succeeded)
                         {
@@ -323,17 +323,17 @@ namespace act.core.etl
                             nodeInfo.LastEmailedOn = null;
                             if (!_ctx.ComplianceResults.Any(p =>
                                 p.InventoryItemId == nodeInfo.InventoryItemId &&
-                                p.ResultId == node.scan_data.id))
+                                p.ResultId == node.ScanData.id))
                             {
                                 //for successes enter a record into results table, for graphs,
                                 //for failures we will collect details and add at that time
                                 _ctx.ComplianceResults.Add(new ComplianceResult
                                 {
-                                    EndDate = (node.scan_data.end_time ?? endTime).Date,
-                                    EndTime = (node.scan_data.end_time ?? endTime),
+                                    EndDate = (node.ScanData.end_time ?? endTime).Date,
+                                    EndTime = (node.ScanData.end_time ?? endTime),
                                     InventoryItemId = nodeInfo.InventoryItemId,
                                     Status = ComplianceStatusConstant.Succeeded,
-                                    ResultId = node.scan_data.id.Value,
+                                    ResultId = node.ScanData.id.Value,
                                     OperatingSystemTestPassed = true
                                 });
                             }
@@ -413,13 +413,11 @@ namespace act.core.etl
             if (fqdns != null && fqdns.Length > 0 && fqdns.Length <= 128)
             {
                 var filter = new JObject
-                {
-                    ["filters"] = new JObject
                     {
-                        { "key","id"},
+                        { "key","name"},
                         {"values", new JArray(fqdns) }
-                    }
-                };
+                    };
+                bodyContent["filters"] = filter;
             };
             return bodyContent;
         }

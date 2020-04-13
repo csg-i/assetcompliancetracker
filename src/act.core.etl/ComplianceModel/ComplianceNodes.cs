@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace act.core.etl.ComplianceModel
+﻿namespace act.core.etl.ComplianceModel
 {
     public class ComplianceNodes
     {
-        public ComplianceNode[] nodes { get; set; }
+        public ComplianceNode[] Nodes { get; set; }
 
-        public int total { get; set; }
+        public int Total { get; set; }
     }
 }
