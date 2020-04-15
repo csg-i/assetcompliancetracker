@@ -9,6 +9,7 @@ namespace act.core.etl
     {
         Task<ComplianceNode[]> Gather(int environmentId, string[] fqdns = null);
         Task ComplianceReport(long nodeId);
+        Task<HttpResponseMessage> Proxy(int environmentId, string url);
         Task<int> PurgeOldComplianceRuns();
         Task<int> PurgeOldComplianceDetails();
         Task<int> ResetComplianceStatus();    

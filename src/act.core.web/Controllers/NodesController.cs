@@ -31,6 +31,20 @@ namespace act.core.web.Controllers
             _gatherer = gatherer;
         }
 
+        [HttpGet]
+        public async Task<ActionResult> Automate(int environmentId)
+        {
+            var url = GetUri().PathAndQuery.Substring(4);
+            var response = await _gatherer.Proxy(environmentId, url);
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                AddHeaders(response.Headers.Where(p => p.Key.ToLower().StartsWith("x-")));
+                return Content(content, "application/json");
+            }
+            return StatusCode(response.StatusCode, response.ReasonPhrase);
+        }
+
         [HttpPost]
         public async Task<JsonResult> GatherForSpec(long id, int environmentId)
         {

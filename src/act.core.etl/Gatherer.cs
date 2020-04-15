@@ -35,6 +35,14 @@ namespace act.core.etl
             _logger = logger.CreateLogger<Gatherer>();
         }
 
+        public async Task<HttpResponseMessage> Proxy(int environmentId, string url)
+        {
+            using (var client = new HttpClient())
+            {
+                SetHeaders(client, await _ctx.Environments.ById(environmentId));
+                return await client.GetAsync(url);
+            }
+        }
         private static void SetHeaders(HttpClient client, Environment environment)
         {
             client.BaseAddress = new Uri(environment.ChefAutomateUrl);
@@ -280,14 +288,13 @@ namespace act.core.etl
             {
                 var environment = await _ctx.Environments.ById(environmentId);
                 client.BaseAddress = new Uri(environment.ChefAutomateUrl);
-                //client.DefaultRequestHeaders.Add("Content-Type", "application/json");
                 client.DefaultRequestHeaders.Add("api-token", environment.ChefAutomateToken);
                 var json = JsonConvert.SerializeObject(BuildNodesUrl(perPage, page, fqdns));
                 var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
-                var result = await client.PostAsync("/api/v0/nodes/search", httpContent);
-                if (result.IsSuccessStatusCode)
+                var nodeSearchResponseMessage = await client.PostAsync("/api/v0/nodes/search", httpContent);
+                if (nodeSearchResponseMessage.IsSuccessStatusCode)
                 {
-                    var content = await result.Content.ReadAsStringAsync();
+                    var content = await nodeSearchResponseMessage.Content.ReadAsStringAsync();
                     return JsonConvert.DeserializeObject<ComplianceNodes>(content);
                 }
 
