@@ -9569,3 +9569,6 @@ a.text-dark:hover, a.text-dark:focus {
     clip: rect(0, 0, 0, 0);
     border: 0;
 }
+.text-blue {
+    color: var(--blue);
+}
