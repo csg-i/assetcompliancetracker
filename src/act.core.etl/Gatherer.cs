@@ -503,7 +503,7 @@ namespace act.core.etl
                     var emails = new []{node.Owner.Email, node.AppOwnerEmail, node.OsOwnerEmail};
                     _logger.LogInformation(
                         $"Emailing {name} at email {node.Owner.Email} and {node.AppOwnerEmail} and {node.OsOwnerEmail} about {node.Fqdn} with pci-scope {node.PciScope}");
-                    await SendNotReportingMail(emails, name, node.Fqdn, node.PciScope.ToString(), node.LastComplianceDate?.ToString("MM-dd-yyyy hh:mm tt"));
+                    await SendNotReportingMail(emails, name, node.Fqdn, node.PciScope.ToString(), node.LastComplianceDate);
                 }
             }
 
@@ -522,7 +522,7 @@ namespace act.core.etl
                 builder.ToString());
         }
         
-        private async Task SendNotReportingMail(string[] emails, string name, string fqdn, string pci, string lastComplianceDate)
+        private async Task SendNotReportingMail(string[] emails, string name, string fqdn, string pci, DateTime? lastComplianceDate)
         {
      
             var builder = new StringBuilder()
@@ -530,7 +530,7 @@ namespace act.core.etl
                     $"<p>{name}, you are receiving this email because you are the identified owner of {fqdn} or its Application or OS Specification and this server has not reported to chef within 48 hours.  Please ensure the node is still running the chef-client to resolve this email alert.</p>")
                 .Append("<p>Thank you,<br/>The Asset Compliance Tracker (ACT) Team</p>");
 
-            if (lastComplianceDate != null) builder.Append($"<br/><p><b>Note :</b> Last Compliance run date is {lastComplianceDate} </p>");
+            if (lastComplianceDate.HasValue) builder.Append($"<br/><p><b>Note :</b> Last Compliance run date is {lastComplianceDate?.ToString("MM-dd-yyyy hh:mm tt")} </p>");
 
             await SendMail(emails, $"ACT Not Reporting Failure for a PCI '{pci}' class system - {fqdn}",
                 builder.ToString());
