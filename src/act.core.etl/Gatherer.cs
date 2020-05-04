@@ -233,24 +233,14 @@ namespace act.core.etl
 
         private async Task<ComplianceReport> GetReport(int environmentId, Guid latestReportId)
         {
-            using (var client = new HttpClient())
-            {
-                SetHeaders(client, await _ctx.Environments.ById(environmentId));
-
-                var result = await client.GetAsync(BuildReportsUrl(latestReportId));
-                if (result.IsSuccessStatusCode)
-                {
-                    var json = await result.Content.ReadAsStringAsync();
-                    var obj = JsonConvert.DeserializeObject<ComplianceReport>(json);
-                    return obj;
-                }
-                return null;
-            }
+            return await PostRequest<ComplianceReport>(environmentId, BuildReportsUrl(latestReportId));
+            
         }
         public async Task<ComplianceNode[]> Gather(int environmentId, string[] fqdns = null)
         {
 
             var list = new List<ComplianceNode>();
+
             var complianceNodes = await PostRequest(environmentId, 100, 1, fqdns);
             if (complianceNodes != null)
             {
@@ -284,22 +274,38 @@ namespace act.core.etl
 
         public async Task<ComplianceNodes> PostRequest(int environmentId, int perPage = 100, int page = 1, string[] fqdns = null)
         {
+            var json = JsonConvert.SerializeObject(BuildNodesUrl(perPage, page, fqdns));
+            return await PostRequest<ComplianceNodes>(environmentId, "/api/v0/nodes/search", json);
+
+        }
+
+        private async Task<T> PostRequest<T>(int environmentId, string url, string json = null)
+        {
             using (var client = new HttpClient())
             {
                 var environment = await _ctx.Environments.ById(environmentId);
                 client.BaseAddress = new Uri(environment.ChefAutomateUrl);
                 client.DefaultRequestHeaders.Add("api-token", environment.ChefAutomateToken);
-                var json = JsonConvert.SerializeObject(BuildNodesUrl(perPage, page, fqdns));
-                var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
-                var nodeSearchResponseMessage = await client.PostAsync("/api/v0/nodes/search", httpContent);
-                if (nodeSearchResponseMessage.IsSuccessStatusCode)
+                HttpResponseMessage responseMessage;
+                if (json != null)
                 {
-                    var content = await nodeSearchResponseMessage.Content.ReadAsStringAsync();
-                    return JsonConvert.DeserializeObject<ComplianceNodes>(content);
+                    var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+                    responseMessage = await client.PostAsync(url, httpContent);
+                }
+                else
+                {
+                    responseMessage = await client.PostAsync(url, null);
                 }
 
-                return null;
+                if (responseMessage.IsSuccessStatusCode)
+                {
+                    var content = await responseMessage.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<T>(content);
+                }
             }
+
+            return default(T);
+
         }
 
         private async Task<Tuple<int, ComplianceNode[]>> SaveAndReturnFailuresAndFound(IEnumerable<ComplianceNode> nodes)
@@ -424,7 +430,7 @@ namespace act.core.etl
                         { "key","name"},
                         {"values", new JArray(fqdns) }
                     };
-                bodyContent["filters"] = filter;
+                bodyContent["filters"] = new JArray(filter);
             };
             return bodyContent;
         }
@@ -432,7 +438,7 @@ namespace act.core.etl
         private string BuildReportsUrl(Guid id)
         {
             var builder = new StringBuilder();
-            builder.Append("/compliance/reports/");
+            builder.Append("/api/v0/compliance/reporting/reports/id/");
             builder.Append(id);
             return builder.ToString();
         }
