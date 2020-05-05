@@ -9570,5 +9570,5 @@ a.text-dark:hover, a.text-dark:focus {
     border: 0;
 }
 .text-blue {
-    color: var(--blue);
+    color: #007bff;
 }
