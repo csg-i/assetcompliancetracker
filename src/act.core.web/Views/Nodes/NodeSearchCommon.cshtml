@@ -42,14 +42,16 @@
             </select>
             <select multiple="multiple" data-text="Scopes" data-filter-type="securityClass" id="securityClass" name="securityClass">
                 @foreach (var p in Model.AllSecurityClasses)
-                {                    
-                    <option value="@p">@p</option>               
+                {
+                    <option value="@p">@p</option>
+
                 }
             </select>
             <select multiple="multiple" data-text="States" data-filter-type="compliance" id="compliance" name="compliance">
                 @foreach (var p in Model.AllStates)
-                {                    
-                    <option value="@p">@p</option>               
+                {
+                    <option value="@p">@p</option>
+
                 }
             </select>
         </div>
@@ -84,4 +86,6 @@
         </div>
     </div>
 </div>
-<br/>
+<div class="text-blue"><i>Note: ACT will mark a node not-reporting if last compliance result date is older than 48 hours.</i></div>
+<br />
+<br />

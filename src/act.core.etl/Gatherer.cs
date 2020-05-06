@@ -404,7 +404,6 @@ namespace act.core.etl
                 foreach (var node in list)
                 {
                     node.ComplianceStatus = ComplianceStatusConstant.NotFound;
-                    node.LastComplianceResultDate = null;
                     node.FailingSince = null;
                     node.LastEmailedOn = null;
                     await _ctx.SaveChangesAsync();
@@ -503,7 +502,9 @@ namespace act.core.etl
         public async Task<int> NotifyNotReportingNodes()
         {
             var nodes = await _ctx.Nodes.AsNoTracking().Active().InChefScope().InPciScope().Assigned().ProductIsNotExlcuded().ByComplianceStatus(ComplianceStatusConstant.NotFound)
-                .Select(p => new { p.Owner, p.Fqdn, p.PciScope, AppOwnerEmail = p.BuildSpecification.Owner.Email, OsOwnerEmail = p.BuildSpecification.Parent.Owner.Email })
+
+                .Select(p => new {p.Owner, p.Fqdn, p.PciScope, AppOwnerEmail = p.BuildSpecification.Owner.Email, OsOwnerEmail = p.BuildSpecification.Parent.Owner.Email, LastComplianceDate = p.LastComplianceResultDate})
+
                 .ToArrayAsync();
 
             if (nodes.Length > 0)
@@ -516,7 +517,7 @@ namespace act.core.etl
                     var emails = new[] { node.Owner.Email, node.AppOwnerEmail, node.OsOwnerEmail };
                     _logger.LogInformation(
                         $"Emailing {name} at email {node.Owner.Email} and {node.AppOwnerEmail} and {node.OsOwnerEmail} about {node.Fqdn} with pci-scope {node.PciScope}");
-                    await SendNotReportingMail(emails, name, node.Fqdn, node.PciScope.ToString());
+                    await SendNotReportingMail(emails, name, node.Fqdn, node.PciScope.ToString(), node.LastComplianceDate);
                 }
             }
 
@@ -534,14 +535,16 @@ namespace act.core.etl
             await SendMail(new[] { email }, $"ACT Unassigned Failure for a PCI '{pci}' class system - {fqdn}",
                 builder.ToString());
         }
-
-        private async Task SendNotReportingMail(string[] emails, string name, string fqdn, string pci)
+      
+        private async Task SendNotReportingMail(string[] emails, string name, string fqdn, string pci, DateTime? lastComplianceDate)
         {
 
             var builder = new StringBuilder()
                 .Append(
                     $"<p>{name}, you are receiving this email because you are the identified owner of {fqdn} or its Application or OS Specification and this server has not reported to chef within 48 hours.  Please ensure the node is still running the chef-client to resolve this email alert.</p>")
                 .Append("<p>Thank you,<br/>The Asset Compliance Tracker (ACT) Team</p>");
+
+            if (lastComplianceDate.HasValue) builder.Append($"<br/><p><b>Note :</b> Last Compliance run date is {lastComplianceDate.Value.ToString("MM-dd-yyyy hh:mm tt")} </p>");
 
             await SendMail(emails, $"ACT Not Reporting Failure for a PCI '{pci}' class system - {fqdn}",
                 builder.ToString());

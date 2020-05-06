@@ -6,18 +6,19 @@
         <span class="badge float-right badge-pill badge-@Model.ComplianceStatusColor" title="Security Class: @Model.SecurityClass | Compliance Status: @(Model.ComplianceStatus == ComplianceStatusConstant.NotFound ? "Not Found" : Model.ComplianceStatus.ToString()) as of @(Model.LastComplianceDate.HasValue ? Model.LastComplianceDate.Value.ToShortDateString() : "now")">@Model.SecurityClass</span>
         <div class="row">
             <div class="col-12 col-md-6 col-lg-4">
-                <h4><strong>@Model.HostName</strong><small>@Model.Domain</small></h4>  
+                <h4><strong>@Model.HostName</strong><small>@Model.Domain</small></h4>
                 <p>
-                    <a href="#" class="action-unassign-build-spec" data-url="@Url.JsonAssignNode(Model.Id)" title="Delete Application Spec" data-name="@Model.BuildSpecName" style="@(Model.BuildSpecName == null ?"display:none":string.Empty);" data-sibling-text="No Application Spec assigned. Pick one?"><span class="text-danger"><i class="fa fa-trash"></i></span></a> <a href="#" class="action-change-build-spec" data-url="@Url.JsonAppSpecTypeAheadSearch()" data-save-url="@Url.JsonAssignNode(Model.Id)">@(Model.BuildSpecName ?? "No Application Spec assigned. Pick one?")</a>      
+                    <a href="#" class="action-unassign-build-spec" data-url="@Url.JsonAssignNode(Model.Id)" title="Delete Application Spec" data-name="@Model.BuildSpecName" style="@(Model.BuildSpecName == null ?"display:none":string.Empty);" data-sibling-text="No Application Spec assigned. Pick one?"><span class="text-danger"><i class="fa fa-trash"></i></span></a> <a href="#" class="action-change-build-spec" data-url="@Url.JsonAppSpecTypeAheadSearch()" data-save-url="@Url.JsonAssignNode(Model.Id)">@(Model.BuildSpecName ?? "No Application Spec assigned. Pick one?")</a>
                 </p>
             </div>
-            <div class="col-12 col-md-6 col-lg-8">
-                
-                <ul class="d-none float-right d-lg-block ml-1">
-                    <li class="text-right text-muted" title="Owned by @Model.Owner">@Model.Owner</li>
-                    <li class="text-right text-muted" title="Product @Model.Product / Function @Model.Function"><small><em>@Model.Product - @Model.Function</em></small></li>
+            <div class="col-12 col-md-3 col-lg-5">
+                <ul class="d-none d-lg-block ml-1 float-right">
+                    <li class="text-right text-muted">
+                        <div class="text-blue">Last Compliance Result Date</div>
+                    </li>
+                    <li class="text-center text-muted"><small>@(Model.LastComplianceDate.HasValue? Model.LastComplianceDate.Value.ToString("MM-dd-yyyy hh:mm tt"): "Not Available")</small></li>
                 </ul>
-                
+
                 <div class="btn-group float-left">
                     <a href="@Url.InventorySystemLink(Model.Id)" class="btn btn-outline-secondary" title="View In External Inventory System" target="_blank"><i class="fa fa-address-book-o"></i></a>
                     @if (Model.BuildSpecId.HasValue)
@@ -41,24 +42,33 @@
                     {
                         <a href="#" class="btn btn-outline-secondary disabled" title="Chef Converge Report" disabled="disabled"><i class="fa fa-cutlery"></i></a>
                         <a href="#" class="btn btn-outline-secondary disabled" title="Chef Compliance Report" disabled="disabled"><i class="fa fa-bar-chart"></i></a>
-    
+
                     }
                 </div>
             </div>
+            <div class="col-12 col-md-3 col-lg-3">
+
+                <ul class="d-none float-right d-lg-block ml-1">
+                    <li class="text-right text-muted" title="Owned by @Model.Owner">@Model.Owner</li>
+                    <li class="text-right text-muted" title="Product @Model.Product / Function @Model.Function"><small><em>@Model.Product - @Model.Function</em></small></li>
+                </ul>
+
+
+            </div>
         </div>
-        
+
     }
     else
     {
         <div class="float-left">
-            <h4><strong>@Model.HostName</strong><small>@Model.Domain</small></h4> 
+            <h4><strong>@Model.HostName</strong><small>@Model.Domain</small></h4>
             <p>@(Model.BuildSpecName ?? "No Application Spec assigned.")</p>
         </div>
         <span class="badge float-right badge-pill badge-@Model.ComplianceStatusColor" title="Security Class: @Model.SecurityClass | Compliance Status: @(Model.ComplianceStatus == ComplianceStatusConstant.NotFound ? "Not Found" : Model.ComplianceStatus.ToString()) as of @(Model.LastComplianceDate.HasValue ? Model.LastComplianceDate.Value.ToShortDateString() : "now")">@Model.SecurityClass</span>
         <ul class="d-none float-right d-lg-block mx-2">
             <li class="text-right text-muted" title="Owned by @Model.Owner">@Model.Owner</li>
             <li class="text-right text-muted" title="Product @Model.Product / Function @Model.Function"><small><em>@Model.Product - @Model.Function</em></small></li>
-        </ul>    
+        </ul>
     }
-    
+
 </div>
