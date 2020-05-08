@@ -1,6 +1,5 @@
 ﻿using System;
 using act.core.data;
-using act.core.etl;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,8 +27,7 @@ namespace act.core.web.Extensions
             {
                 var ctx = scope.ServiceProvider.GetRequiredService<ActDbContext>();
                 var env = ctx.Environments.ById(environmentId).GetAwaiter().GetResult();
-                return $"{env.ChefAutomateUrl}/compliance/reports/nodes/{id}";
-                
+                return $"{env.ChefAutomateUrl}/viz/#/compliance/reporting/nodes/{id}";
             }
         }
         
@@ -39,10 +37,7 @@ namespace act.core.web.Extensions
             {
                 var ctx = scope.ServiceProvider.GetRequiredService<ActDbContext>();
                 var env = ctx.Environments.ById(environmentId).GetAwaiter().GetResult();
-                var node = ctx.Nodes.ById(id).GetAwaiter().GetResult();
-                var gather = scope.ServiceProvider.GetRequiredService<IGatherer>();
-                var result = gather.PostRequest(environmentId, 1, 1, new[] {node?.Fqdn}).GetAwaiter().GetResult();
-                return $"{env.ChefAutomateUrl}/infrastructure/client-runs/{id}/runs/{result?.Nodes?[0].ScanData?.id}";
+                return $"{env.ChefAutomateUrl}/viz/#/nodes/{id}";
             }
         }
 
