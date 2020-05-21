@@ -34,13 +34,13 @@ namespace act.core.web.Controllers
         /// <returns>JSON meant to convert to Ruby Hash</returns>       
         [HttpGet]
         [AllowAnonymous]
-        public ActionResult RetrieveFor(string fqdn)
+        public async Task<ActionResult> RetrieveFor(string fqdn)
         {
             SetNoCacheHeader();
             if (string.IsNullOrWhiteSpace(fqdn))
                 return StatusCode(HttpStatusCode.BadRequest, "fqdn is required.");
 
-            return Json(_buildSpecificationFactory.InspecForFqdn(fqdn));
+            return Json(await _buildSpecificationFactory.InspecForFqdn(fqdn));
         }
         
         /// <summary>
