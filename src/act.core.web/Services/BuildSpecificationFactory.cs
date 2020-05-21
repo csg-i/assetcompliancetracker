@@ -41,9 +41,9 @@ namespace act.core.web.Services
     internal class BuildSpecificationFactory : IBuildSpecificationFactory
     {
         private readonly ActDbContext _ctx;
-        private readonly MemoryCache _cache = new MemoryCache(new MemoryCacheOptions
+        private static readonly MemoryCache _cache = new MemoryCache(new MemoryCacheOptions
         {
-            SizeLimit = 1024
+            SizeLimit = 10
         });
 
         private async Task<IQueryable<SoftwareComponent>> GetOrCreateSoftwareComponent()
@@ -56,7 +56,7 @@ namespace act.core.web.Services
 
                 var cacheEntryOptions = new MemoryCacheEntryOptions()
                     .SetPriority(CacheItemPriority.High)
-
+                    .SetSize(1)
                     .SetSlidingExpiration(TimeSpan.FromMinutes(30))
                     .SetAbsoluteExpiration(TimeSpan.FromMinutes(60));
 
@@ -474,7 +474,6 @@ namespace act.core.web.Services
 
         public JsonInspecAttributes InspecForFqdn(string fqdn)
         {
-            var softwareComponent = await GetOrCreateSoftwareComponent();
             var node = await _ctx.Nodes.AsNoTracking()
                 .Include(p => p.BuildSpecification)
                 .Include(p => p.BuildSpecification.Parent)
@@ -485,11 +484,12 @@ namespace act.core.web.Services
             if (node?.BuildSpecificationId == null)
                 return JsonInspecAttributes.Empty(fqdn);
 
+            var softwareComponent = await GetOrCreateSoftwareComponent();
             node.BuildSpecification.SoftwareComponents =
-                (ICollection<SoftwareComponent>)softwareComponent.Where(x => x.BuildSpecificationId == node.BuildSpecification.Id);
+                softwareComponent.Where(x => x.BuildSpecificationId == node.BuildSpecification.Id).ToList();
 
             node.BuildSpecification.Parent.SoftwareComponents =
-                (ICollection<SoftwareComponent>)softwareComponent.Where(x => x.BuildSpecificationId == node.BuildSpecification.Parent.Id);
+                softwareComponent.Where(x => x.BuildSpecificationId == node.BuildSpecification.Parent.Id).ToList();
 
             var pt = node.Platform;
             var spec = node.BuildSpecification;
