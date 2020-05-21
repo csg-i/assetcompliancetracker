@@ -13,7 +13,7 @@ namespace act.core.web.Services
 {
     public interface IBuildSpecificationFactory
     {
-        JsonInspecAttributes InspecForFqdn(string fqdn);
+        Task<JsonInspecAttributes> InspecForFqdn(string fqdn);
         Task<BuildSpec> BuildSpecification(long specId);
         Task<PortReportItems> PortReport(long specId);
         Task<SpecByOwners> ByOwnersReport();
@@ -472,7 +472,7 @@ namespace act.core.web.Services
         }
 
 
-        public JsonInspecAttributes InspecForFqdn(string fqdn)
+        public async Task<JsonInspecAttributes> InspecForFqdn(string fqdn)
         {
             var node = await _ctx.Nodes.AsNoTracking()
                 .Include(p => p.BuildSpecification)
