@@ -12,7 +12,7 @@ namespace act.core.web.Services
 {
     public interface IBuildSpecificationFactory
     {
-        Task<JsonInspecAttributes> InspecForFqdn(string fqdn);
+        JsonInspecAttributes InspecForFqdn(string fqdn);
         Task<BuildSpec> BuildSpecification(long specId);
         Task<PortReportItems> PortReport(long specId);
         Task<SpecByOwners> ByOwnersReport();
@@ -449,50 +449,51 @@ namespace act.core.web.Services
         }
 
 
-        public async Task<JsonInspecAttributes> InspecForFqdn(string fqdn)
+        public JsonInspecAttributes InspecForFqdn(string fqdn)
         {
-            var node = await _ctx.Nodes.AsNoTracking()
-                .Include(p => p.BuildSpecification)
-                .Include(p => p.BuildSpecification.Parent)
-                .Include(p => p.BuildSpecification.Parent.SoftwareComponents).ThenInclude(s=>s.SoftwareComponentEnvironments)
-                .Include(p => p.BuildSpecification.Parent.Ports)
-                .Include(p => p.BuildSpecification.SoftwareComponents).ThenInclude(s=>s.SoftwareComponentEnvironments)
-                .Include(p => p.BuildSpecification.Ports)
-                .Active().AsNoTracking().NodeByFqdnOrHostName(fqdn);
-            if (node?.BuildSpecificationId == null)
-                return JsonInspecAttributes.Empty(fqdn);
-            var pt = node.Platform;
-            var spec = node.BuildSpecification;
+            return JsonInspecAttributes.Empty(fqdn);
+            //var node = await _ctx.Nodes.AsNoTracking()
+            //    .Include(p => p.BuildSpecification)
+            //    .Include(p => p.BuildSpecification.Parent)
+            //    .Include(p => p.BuildSpecification.Parent.SoftwareComponents).ThenInclude(s=>s.SoftwareComponentEnvironments)
+            //    .Include(p => p.BuildSpecification.Parent.Ports)
+            //    .Include(p => p.BuildSpecification.SoftwareComponents).ThenInclude(s=>s.SoftwareComponentEnvironments)
+            //    .Include(p => p.BuildSpecification.Ports)
+            //    .Active().AsNoTracking().NodeByFqdnOrHostName(fqdn);
+            //if (node?.BuildSpecificationId == null)
+            //    return JsonInspecAttributes.Empty(fqdn);
+            //var pt = node.Platform;
+            //var spec = node.BuildSpecification;
 
-            RecurseSpecs(spec, spec.RunningCoreOs, node.PciScope, node.EnvironmentId, out var portList,
-                out var software,
-                out var osName, out var osVersion, ref pt);
-            var ports = BreakUpPorts(portList);
-            switch (pt)
-            {
-                case PlatformConstant.Other:
-                case PlatformConstant.Appliance:
-                    return JsonInspecAttributes.ForOther(fqdn, osName, osVersion,
-                        PortsOfType(ports, PortTypeConstant.Tcp),
-                        PortsOfType(ports, PortTypeConstant.Udp));
-                case PlatformConstant.Linux:
-                case PlatformConstant.Unix:
-                    return JsonInspecAttributes.ForNix(fqdn, osName, osVersion,
-                        PortsOfType(ports, PortTypeConstant.Tcp),
-                        PortsOfType(ports, PortTypeConstant.Udp),
-                        PortsOfType(ports, PortTypeConstant.Tcp6),
-                        PortsOfType(ports, PortTypeConstant.Udp6),
-                        SoftwareComponentsOfType(software, JustificationTypeConstant.Package));
-                case PlatformConstant.WindowsClient:
-                case PlatformConstant.WindowsServer:
-                    return JsonInspecAttributes.ForWindows(fqdn, osName, osVersion,
-                        PortsOfType(ports, PortTypeConstant.Tcp),
-                        PortsOfType(ports, PortTypeConstant.Udp),
-                        SoftwareComponentsOfType(software, JustificationTypeConstant.Feature),
-                        SoftwareComponentsOfType(software, JustificationTypeConstant.Application));
-                default:
-                    return JsonInspecAttributes.Empty(fqdn);
-            }
+            //RecurseSpecs(spec, spec.RunningCoreOs, node.PciScope, node.EnvironmentId, out var portList,
+            //    out var software,
+            //    out var osName, out var osVersion, ref pt);
+            //var ports = BreakUpPorts(portList);
+            //switch (pt)
+            //{
+            //    case PlatformConstant.Other:
+            //    case PlatformConstant.Appliance:
+            //        return JsonInspecAttributes.ForOther(fqdn, osName, osVersion,
+            //            PortsOfType(ports, PortTypeConstant.Tcp),
+            //            PortsOfType(ports, PortTypeConstant.Udp));
+            //    case PlatformConstant.Linux:
+            //    case PlatformConstant.Unix:
+            //        return JsonInspecAttributes.ForNix(fqdn, osName, osVersion,
+            //            PortsOfType(ports, PortTypeConstant.Tcp),
+            //            PortsOfType(ports, PortTypeConstant.Udp),
+            //            PortsOfType(ports, PortTypeConstant.Tcp6),
+            //            PortsOfType(ports, PortTypeConstant.Udp6),
+            //            SoftwareComponentsOfType(software, JustificationTypeConstant.Package));
+            //    case PlatformConstant.WindowsClient:
+            //    case PlatformConstant.WindowsServer:
+            //        return JsonInspecAttributes.ForWindows(fqdn, osName, osVersion,
+            //            PortsOfType(ports, PortTypeConstant.Tcp),
+            //            PortsOfType(ports, PortTypeConstant.Udp),
+            //            SoftwareComponentsOfType(software, JustificationTypeConstant.Feature),
+            //            SoftwareComponentsOfType(software, JustificationTypeConstant.Application));
+            //    default:
+            //        return JsonInspecAttributes.Empty(fqdn);
+            //}
         }
 
         private async Task<ReportingNodes> ToReportingNode(IQueryable<Node> nodes)
