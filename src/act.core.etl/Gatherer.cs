@@ -17,18 +17,18 @@ using Newtonsoft.Json;
 using Environment = act.core.data.Environment;
 
 
-namespace act.core.etl
+namespace act.core.etl 
 {
     class Gatherer : IGatherer
     {
-
+        
         private readonly ActDbContext _ctx;
         private readonly ILogger _logger;
         private readonly MailSettings _mailSettings;
 
         public Gatherer(ActDbContext ctx, ILoggerFactory logger, IConfiguration configuration)
         {
-            _ctx = ctx;
+            _ctx = ctx;    
             _mailSettings = new MailSettings();
             configuration.GetSection("Mail").Bind(_mailSettings);
             _logger = logger.CreateLogger<Gatherer>();
@@ -50,7 +50,7 @@ namespace act.core.etl
             client.DefaultRequestHeaders.Add("x-data-collector-token", environment.ChefAutomateToken);
         }
 
-        private static readonly HashSet<string> PciProfiles = new HashSet<string> { "csg_windows_compliant_server", "csg_linux_compliant_server" };
+        private static readonly HashSet<string> PciProfiles = new HashSet<string>{"csg_windows_compliant_server", "csg_linux_compliant_server"};
         private static readonly HashSet<string> ShouldNotControls = new HashSet<string> { "csg-windows-7.3", "csg-windows-7.1", "csg-linux-7.3" };
         private static readonly HashSet<string> ErrorControls = new HashSet<string> { "csg-windows-7.5", "csg-windows-7.6" };
         private static readonly HashSet<string> ShouldControls = new HashSet<string> { "csg-windows-7.4", "csg-windows-7.2", "csg-linux-7.4" };
@@ -65,7 +65,7 @@ namespace act.core.etl
             {
                 var type = result.GetPortType();
                 var status = result.GetComplainceStatus();
-                if (status == ComplianceStatusConstant.Failed)
+                if(status == ComplianceStatusConstant.Failed)
                     yield return new ComplianceResultTest
                     {
                         ComplianceResultId = id,
@@ -77,7 +77,7 @@ namespace act.core.etl
                     };
             }
         }
-
+      
         private static bool ParseOsTest(ComplianceReportProfile profile)
         {
             var control = profile.controls.FirstOrDefault(p => OsVersionControls.Contains(p.id));
@@ -87,11 +87,11 @@ namespace act.core.etl
             return true;
         }
 
-
+       
         private static IEnumerable<ComplianceResultTest> ParseSoftwareShouldNots(ComplianceReportProfile profile, long id)
         {
-            var results = profile.controls.Where(p => ShouldNotControls.Contains(p.id)).Where(p => p.results != null).SelectMany(p => p.results);
-            return ParseSoftware(results, false, id);
+            var results = profile.controls.Where(p => ShouldNotControls.Contains(p.id)).Where(p=>p.results != null).SelectMany(p=>p.results);
+            return ParseSoftware(results, false, id);            
         }
         private static IEnumerable<ComplianceResultTest> ParseSoftwareShoulds(ComplianceReportProfile profile, long id)
         {
@@ -114,7 +114,7 @@ namespace act.core.etl
                             ComplianceResultId = id,
                             Name = control.desc,
                             Code = result.code_desc,
-                            LongMessage = result.message,
+                            LongMessage  = result.message,
                             Status = ComplianceStatusConstant.Failed
                         };
                     }
@@ -144,7 +144,7 @@ namespace act.core.etl
         {
             var node = await _ctx.Nodes.Active().ById(message.node_uuid);
             var text = node == null ? "did not find" : "found";
-            _logger.LogInformation($"NotifyComplianceFailure WebHook got a compliance failure message for chef node id {message.node_uuid} and {text} a matching node {node?.Fqdn}.");
+            _logger.LogTrace($"NotifyComplianceFailure WebHook got a compliance failure message for chef node id {message.node_uuid} and {text} a matching node {node?.Fqdn}.");
             if (node != null)
             {
                 var run = await SaveComplianceData(node.InventoryItemId, message);
@@ -164,9 +164,9 @@ namespace act.core.etl
         private async Task<ComplianceResult> SaveComplianceData(long inventoryItemId, IComplianceReport rpt)
         {
             var csgProfile = rpt?.profiles.FirstOrDefault(p => PciProfiles.Contains(p.name ?? string.Empty));
-            if (csgProfile == null || await _ctx.ComplianceResults.Exists(inventoryItemId, rpt.id))
+            if (csgProfile == null || await _ctx.ComplianceResults.Exists(inventoryItemId, rpt.id)) 
                 return null;
-
+            
             var run = _ctx.ComplianceResults.Add(new ComplianceResult
             {
                 InventoryItemId = inventoryItemId,
@@ -176,7 +176,7 @@ namespace act.core.etl
                 OperatingSystemTestPassed = ParseOsTest(csgProfile),
                 Status = rpt.GetComplianceStatus(),
             }).Entity;
-
+            
             await _ctx.SaveChangesAsync(); //save to get Id
 
             var failedTests = ParseSoftwareShouldNots(csgProfile, run.Id).ToList();
@@ -207,11 +207,11 @@ namespace act.core.etl
         {
             await ComplianceReport(await _ctx.Nodes.ById(nodeId));
         }
-
+        
         private async Task ComplianceReport(Node node)
         {
             if (node?.LastComplianceResultId != null && node.ChefNodeId.HasValue &&
-                !(await _ctx.ComplianceResults.Exists(node.InventoryItemId, node.LastComplianceResultId.Value)))
+                ! (await _ctx.ComplianceResults.Exists(node.InventoryItemId, node.LastComplianceResultId.Value)))
             {
                 var rpt = await GetReport(node.EnvironmentId, node.LastComplianceResultId.Value);
 
@@ -221,7 +221,7 @@ namespace act.core.etl
             }
 
         }
-
+        
         public async Task<HttpResponseMessage> Proxy(int environmentId, string url)
         {
             using (var client = new HttpClient())
@@ -264,10 +264,10 @@ namespace act.core.etl
                     var saveResult = await SaveAndReturnFailuresAndFound(obj);
                     list.AddRange(saveResult.Item2);
                     var found = saveResult.Item1;
-
+                    
                     if (!string.IsNullOrWhiteSpace(countHeader) && int.TryParse(countHeader, out var totalCount))
                     {
-                        _logger.LogInformation($"Updated {found} of {totalCount} nodes from automate.");
+                        _logger.LogDebug($"Updated {found} of {totalCount} nodes from automate.");
                         var pageCount = totalCount / 100 + ((totalCount % 100) > 0 ? 1 : 0);
                         for (var p = 2; p <= pageCount; p++)
                         {
@@ -279,22 +279,22 @@ namespace act.core.etl
                                 saveResult = await SaveAndReturnFailuresAndFound(obj);
                                 list.AddRange(saveResult.Item2);
                                 found += saveResult.Item1;
-                                _logger.LogInformation($"Updated {found} of {totalCount} nodes from automate.");
+                                _logger.LogDebug($"Updated {found} of {totalCount} nodes from automate.");
                             }
                         }
                     }
                     else
                     {
-                        _logger.LogInformation($"Updated {found} of {obj.Length} nodes from automate.");
+                        _logger.LogDebug($"Updated {found} of {obj.Length} nodes from automate.");
                     }
                 }
             }
             return list.ToArray();
         }
 
-        private async Task<Tuple<int, ComplianceNode[]>> SaveAndReturnFailuresAndFound(IEnumerable<ComplianceNode> array)
+        private async Task<Tuple<int,ComplianceNode[]>> SaveAndReturnFailuresAndFound(IEnumerable<ComplianceNode> array)
         {
-
+            
             var list = new List<ComplianceNode>();
             var found = 0;
             foreach (var obj in array)
@@ -302,8 +302,8 @@ namespace act.core.etl
                 var endtime = (obj.latest_report?.end_time).GetValueOrDefault();
                 var id = (obj.latest_report?.id).GetValueOrDefault();
                 var node = await _ctx.Nodes.FirstOrDefaultAsync(p =>
-                    p.Fqdn == obj.name &&
-                    (p.LastComplianceResultId == null || p.LastComplianceResultId != id) &&
+                    p.Fqdn == obj.name && 
+                    (p.LastComplianceResultId == null || p.LastComplianceResultId != id) && 
                     (p.LastComplianceResultDate == null || p.LastComplianceResultDate < endtime));
                 if (node != null)
                 {
@@ -319,7 +319,7 @@ namespace act.core.etl
                             node.FailingSince = null;
                             node.LastEmailedOn = null;
                             if (!_ctx.ComplianceResults.Any(p =>
-                                p.InventoryItemId == node.InventoryItemId &&
+                                p.InventoryItemId == node.InventoryItemId && 
                                 p.ResultId == obj.latest_report.id))
                             {
                                 //for successes enter a record into results table, for graphs,
@@ -335,7 +335,7 @@ namespace act.core.etl
                                 });
                             }
                         }
-                        else if (node.ComplianceStatus == ComplianceStatusConstant.Failed)
+                        else if(node.ComplianceStatus == ComplianceStatusConstant.Failed)
                         {
                             list.Add(obj);
                         }
@@ -352,25 +352,25 @@ namespace act.core.etl
         {
             var date = DateTime.Today.AddDays(-28);
             var count = 0;
-            _logger.LogInformation($"Gathering Old Compliance runs to purge prior to {date.ToShortDateString()}");
+            _logger.LogDebug($"Gathering Old Compliance runs to purge prior to {date.ToShortDateString()}");
             var maxQ = _ctx.ComplianceResults.Where(p => p.EndDate < date).Select(p => p.Id);
-
+            
             var max = (await maxQ.AnyAsync()) ? (await maxQ.MaxAsync()) : -1;
-
-            _logger.LogInformation("Purging Old Compliance Runs");
+            
+            _logger.LogDebug("Purging Old Compliance Runs");
             if (max > 0)
             {
                 count += await _ctx.ExecuteCommandAsync(
                     "DELETE r FROM ComplianceResult r where Id < @max",
-                    new MySqlParameter("@max", MySqlDbType.Int64) { Value = max });
+                    new MySqlParameter("@max", MySqlDbType.Int64){Value=max});
             }
-            _logger.LogInformation("Purging Compliance Runs from inactive nodes");
+            _logger.LogDebug("Purging Compliance Runs from inactive nodes");
 
             count += await _ctx.ExecuteCommandAsync("DELETE r FROM ComplianceResult r JOIN Node n ON r.InventoryItemId = n.InventoryItemId WHERE n.IsActive = 0");
-
+            
             return count;
         }
-
+        
         public async Task<int> PurgeOldComplianceDetails()
         {
             await _ctx.ExecuteCommandAsync("TRUNCATE TABLE ComplianceResultTest");
@@ -380,11 +380,11 @@ namespace act.core.etl
 
         public async Task<int> ResetComplianceStatus()
         {
-            _logger.LogInformation("Gathering Nodes with Stale Compliance Status");
+            _logger.LogDebug("Gathering Nodes with Stale Compliance Status");
             var list = await _ctx.Nodes.WithStaleComplianceStatus().ToArrayAsync();
             if (list.Length > 0)
             {
-                _logger.LogInformation($"Resetting Compliance Status on  {list.Length} Nodes");
+                _logger.LogDebug($"Resetting Compliance Status on  {list.Length} Nodes");
                 foreach (var node in list)
                 {
                     node.ComplianceStatus = ComplianceStatusConstant.NotFound;
@@ -392,7 +392,7 @@ namespace act.core.etl
                     node.LastEmailedOn = null;
                     await _ctx.SaveChangesAsync();
                     _logger.LogInformation($"Reset Compliance status on Node {node.Fqdn}.");
-
+                 
                 }
             }
 
@@ -403,7 +403,7 @@ namespace act.core.etl
             var builder = new StringBuilder();
             builder.Append("/compliance/nodes");
             string nodeFilter = string.Empty;
-            if (nodes != null && nodes.Length <= 128)
+            if (nodes != null &&  nodes.Length <= 128)
             {
                 nodeFilter = $"+node_id:{string.Join("+node_id:", nodes)}";
             }
@@ -429,32 +429,20 @@ namespace act.core.etl
         {
             return "?" + string.Join("&", nvc.Select(p => $"{p.Key}={p.Value}"));
         }
-
-
+        
+        
         public async Task<int> PurgeInactiveNodes()
         {
             var date = DateTime.Today.AddDays(-7);
             var count = 0;
-            _logger.LogInformation($"Getting Nodes Deactivated prior to {date.ToShortDateString()}");
-
-            var nodes = await _ctx.Nodes.Inactive().Where(p => p.DeactivatedDate < date)
-                .Select(p => new { p.Fqdn, p.DeactivatedDate, p.BuildSpecification.Id })
-                .ToArrayAsync();
-
-            if (nodes.Length > 0)
-            {
-                foreach (var node in nodes)
-                {
-                    _logger.LogInformation($"Deactivated Node : fqdn {node.Fqdn}, deactivated date : {node.DeactivatedDate} , buildspecid : {node.Id}");
-                }
-            }
+            _logger.LogDebug($"Getting Nodes Deactivated prior to {date.ToShortDateString()}");
             while (await _ctx.Nodes.Inactive().AnyAsync(p => p.DeactivatedDate < date))
             {
-                _logger.LogInformation("Purging 1000 Deactivated Nodes");
+                _logger.LogDebug("Purging 1000 Deactivated Nodes");
                 await _ctx.ExecuteCommandAsync(
                     "DELETE FROM Node WHERE DeactivatedDate < @date or IsActive = 0 ORDER BY InventoryItemId limit 1000",
-                    new MySqlParameter("@date", MySqlDbType.Date) { Value = date });
-
+                    new MySqlParameter("@date", MySqlDbType.Date) {Value = date});
+                
 
                 count += 1000;
             }
@@ -464,7 +452,7 @@ namespace act.core.etl
 
         public async Task<int> DeactivateNode(int id)
         {
-            _logger.LogInformation($"Deactivating node with id {id}");
+            _logger.LogDebug($"Deactivating node with id {id}");
             var node = await _ctx.Nodes.ById(id);
             if (node != null)
             {
@@ -476,16 +464,16 @@ namespace act.core.etl
 
             return 0;
         }
-
+        
         public async Task<int> NotifyUnassignedNodes()
         {
             var nodes = await _ctx.Nodes.AsNoTracking().Active().InPciScope().Unassigned().ProductIsNotExlcuded()
-                .Select(p => new { p.Owner, p.Fqdn, p.PciScope })
+                .Select(p => new {p.Owner, p.Fqdn, p.PciScope})
                 .ToArrayAsync();
 
             if (nodes.Length > 0)
             {
-                _logger.LogInformation($"Emailing {nodes.Length} Unassigned Nodes");
+                _logger.LogDebug($"Emailing {nodes.Length} Unassigned Nodes");
 
                 foreach (var node in nodes)
                 {
@@ -507,12 +495,12 @@ namespace act.core.etl
 
             if (nodes.Length > 0)
             {
-                _logger.LogInformation($"Emailing {nodes.Length} Not Reporting Nodes");
+                _logger.LogDebug($"Emailing {nodes.Length} Not Reporting Nodes");
 
                 foreach (var node in nodes)
                 {
                     var name = node.Owner.OwnerText(false);
-                    var emails = new[] { node.Owner.Email, node.AppOwnerEmail, node.OsOwnerEmail };
+                    var emails = new []{node.Owner.Email, node.AppOwnerEmail, node.OsOwnerEmail};
                     _logger.LogInformation(
                         $"Emailing {name} at email {node.Owner.Email} and {node.AppOwnerEmail} and {node.OsOwnerEmail} about {node.Fqdn} with pci-scope {node.PciScope}");
                     await SendNotReportingMail(emails, name, node.Fqdn, node.PciScope.ToString(), node.LastComplianceDate);
@@ -524,19 +512,19 @@ namespace act.core.etl
 
         private async Task SendUnassignedMail(string email, string name, string fqdn, string pci)
         {
-
+          
             var builder = new StringBuilder()
                 .Append(
                     $"<p>{name}, you are receiving this email because you are the identified owner of {fqdn} and this server is not assigned to an Application specification within ACT.  Please assign this server to an Application Specification to resolve this email alert.</p>")
                 .Append("<p>Thank you,<br/>The Asset Compliance Tracker (ACT) Team</p>");
-
-            await SendMail(new[] { email }, $"ACT Unassigned Failure for a PCI '{pci}' class system - {fqdn}",
+            
+            await SendMail(new []{email}, $"ACT Unassigned Failure for a PCI '{pci}' class system - {fqdn}",
                 builder.ToString());
         }
-
+        
         private async Task SendNotReportingMail(string[] emails, string name, string fqdn, string pci, DateTime? lastComplianceDate)
         {
-
+     
             var builder = new StringBuilder()
                 .Append(
                     $"<p>{name}, you are receiving this email because you are the identified owner of {fqdn} or its Application or OS Specification and this server has not reported to chef within 48 hours.  Please ensure the node is still running the chef-client to resolve this email alert.</p>")
@@ -547,7 +535,7 @@ namespace act.core.etl
             await SendMail(emails, $"ACT Not Reporting Failure for a PCI '{pci}' class system - {fqdn}",
                 builder.ToString());
         }
-
+        
         public async Task SendMail(string[] emails, string subject, string body)
         {
             if (emails == null || emails.Length == 0)
@@ -565,9 +553,9 @@ namespace act.core.etl
                     IsBodyHtml = true,
                     From = new MailAddress(_mailSettings.From)
                 };
-                foreach (var email in emails)
+                foreach (var email in emails) 
                     mm.To.Add(email);
-
+                
                 await smtp.SendMailAsync(mm);
             }
         }
