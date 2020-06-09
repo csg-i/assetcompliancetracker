@@ -6,7 +6,6 @@ using act.core.data;
 using act.core.web.Extensions;
 using act.core.web.Models.BuildSpec;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using Justification = act.core.web.Models.BuildSpec.Justification;
 
 namespace act.core.web.Services
@@ -41,29 +40,7 @@ namespace act.core.web.Services
     internal class BuildSpecificationFactory : IBuildSpecificationFactory
     {
         private readonly ActDbContext _ctx;
-        private static readonly MemoryCache _cache = new MemoryCache(new MemoryCacheOptions
-        {
-            SizeLimit = 10
-        });
 
-        private async Task<IQueryable<SoftwareComponent>> GetOrCreateSoftwareComponent()
-        {
-            const string key = "softwareComponent";
-            if (!_cache.TryGetValue(key, out IQueryable<SoftwareComponent> softwareComponents))
-            {
-                softwareComponents = await Task.Run(() => _ctx.SoftwareComponents.AsNoTracking()
-                    .Include(a => a.SoftwareComponentEnvironments).AsNoTracking());
-
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                    .SetPriority(CacheItemPriority.High)
-                    .SetSize(1)
-                    .SetSlidingExpiration(TimeSpan.FromMinutes(30))
-                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(60));
-
-                _cache.Set(key, softwareComponents, cacheEntryOptions);
-            }
-            return softwareComponents;
-        }
         public BuildSpecificationFactory(ActDbContext ctx)
         {
             _ctx = ctx;
@@ -95,7 +72,7 @@ namespace act.core.web.Services
         public async Task<AssignedNodes> AssignedNodesReport()
         {
             var all = (await _ctx.Nodes.AsNoTracking().Assigned()
-                    .Select(p => new { p.BuildSpecification.Name, p.Fqdn }).OrderBy(p => p.Name).ThenBy(p => p.Fqdn)
+                    .Select(p => new {p.BuildSpecification.Name, p.Fqdn}).OrderBy(p => p.Name).ThenBy(p => p.Fqdn)
                     .ToArrayAsync())
                 .Select(p => new AssignedNode(p.Name, p.Fqdn));
             return new AssignedNodes(all);
@@ -139,9 +116,9 @@ namespace act.core.web.Services
                 .ForEnvironment(environmentId)
                 .Where(p => p.LastComplianceResultId != null && p.LastComplianceResultDate > date)
                 .Join(_ctx.ComplianceResults.AsNoTracking(),
-                    n => new { n.InventoryItemId, ResultId = (Guid)n.LastComplianceResultId },
-                    c => new { c.InventoryItemId, c.ResultId },
-                    (n, c) => new { Run = c, Node = n }
+                    n => new {n.InventoryItemId, ResultId = (Guid) n.LastComplianceResultId},
+                    c => new {c.InventoryItemId, c.ResultId},
+                    (n, c) => new {Run = c, Node = n}
                 )
                 .Where(p => p.Run.OperatingSystemTestPassed == false)
                 .Select(p => new
@@ -176,12 +153,12 @@ namespace act.core.web.Services
                 .ForEnvironment(environmentId)
                 .Where(p => p.LastComplianceResultId != null && p.LastComplianceResultDate > date)
                 .Join(_ctx.ComplianceResults.AsNoTracking(),
-                    n => new { n.InventoryItemId, ResultId = (Guid)n.LastComplianceResultId },
-                    c => new { c.InventoryItemId, c.ResultId },
-                    (n, c) => new { Run = c, Node = n }
+                    n => new {n.InventoryItemId, ResultId = (Guid) n.LastComplianceResultId},
+                    c => new {c.InventoryItemId, c.ResultId},
+                    (n, c) => new {Run = c, Node = n}
                 )
                 .SelectMany(p => p.Run.Errors.Where(c => c.Name == name && c.Code == code))
-                .Select(p => new { p.LongMessage, p.ComplianceResult.Node.Fqdn })
+                .Select(p => new {p.LongMessage, p.ComplianceResult.Node.Fqdn})
                 .ToArrayAsync();
 
             return new ReviewErrorDetails(name, code, errors.Select(p => $"{p.Fqdn}=>{p.LongMessage}"));
@@ -198,9 +175,9 @@ namespace act.core.web.Services
                 .ForEnvironment(environmentId)
                 .Where(p => p.LastComplianceResultId != null && p.LastComplianceResultDate > date)
                 .Join(_ctx.ComplianceResults.AsNoTracking(),
-                    n => new { n.InventoryItemId, ResultId = (Guid)n.LastComplianceResultId },
-                    c => new { c.InventoryItemId, c.ResultId },
-                    (n, c) => new { Run = c, Node = n }
+                    n => new {n.InventoryItemId, ResultId = (Guid) n.LastComplianceResultId},
+                    c => new {c.InventoryItemId, c.ResultId},
+                    (n, c) => new {Run = c, Node = n}
                 )
                 .Where(p => p.Run.Errors.Any(c => c.Name == name && c.Code == code))
                 .Select(p => new
@@ -235,9 +212,9 @@ namespace act.core.web.Services
                 .ForEnvironment(environmentId)
                 .Where(p => p.LastComplianceResultId != null && p.LastComplianceResultDate > date)
                 .Join(_ctx.ComplianceResults.AsNoTracking(),
-                    n => new { n.InventoryItemId, ResultId = (Guid)n.LastComplianceResultId },
-                    c => new { c.InventoryItemId, c.ResultId },
-                    (n, c) => new { Run = c, Node = n }
+                    n => new {n.InventoryItemId, ResultId = (Guid) n.LastComplianceResultId},
+                    c => new {c.InventoryItemId, c.ResultId},
+                    (n, c) => new {Run = c, Node = n}
                 )
                 .Where(p => p.Run.Tests.Any(c =>
                     c.ResultType == resultType && c.PortType == portType && c.Name == name &&
@@ -275,11 +252,11 @@ namespace act.core.web.Services
                 .ForEnvironment(environmentId)
                 .Where(p => p.LastComplianceResultId != null && p.LastComplianceResultDate > date)
                 .Join(_ctx.ComplianceResults.AsNoTracking(),
-                    n => new { n.InventoryItemId, ResultId = (Guid)n.LastComplianceResultId },
-                    c => new { c.InventoryItemId, c.ResultId },
+                    n => new {n.InventoryItemId, ResultId = (Guid) n.LastComplianceResultId},
+                    c => new {c.InventoryItemId, c.ResultId},
                     (n, c) => c
                 );
-
+            
             var osFailures = await nodePart
                .CountAsync(p => !p.OperatingSystemTestPassed);
 
@@ -290,7 +267,7 @@ namespace act.core.web.Services
                     t => t.ComplianceResultId,
                     (c, t) => t
                 )
-                .GroupBy(t => new { t.ResultType, t.ShouldExist, t.PortType, t.Name })
+                .GroupBy(t => new {t.ResultType, t.ShouldExist, t.PortType, t.Name})
                 .Select(g => new FailedTest
                 {
                     ResultType = g.Key.ResultType,
@@ -307,12 +284,12 @@ namespace act.core.web.Services
                     t => t.ComplianceResultId,
                     (c, t) => t
                 )
-                .GroupBy(p => new { p.Name, p.Code })
-                .Select(g => new Error { Name = g.Key.Name, Code = g.Key.Code, Count = g.Count() })
+                .GroupBy(p => new {p.Name, p.Code})
+                .Select(g => new Error {Name = g.Key.Name, Code = g.Key.Code, Count = g.Count()})
                 .ToArrayAsync();
 
             var env = await _ctx.Environments.ById(environmentId);
-            return new ReviewData(specId, spec, environmentId, env.Name, osFailures, errors, collection);
+            return new ReviewData(specId, spec, environmentId, env.Name , osFailures, errors, collection);
         }
 
         public async Task<PortReportItems> PortReport(long specId)
@@ -328,7 +305,7 @@ namespace act.core.web.Services
                     throw new ArgumentException(nameof(specId));
             }
 
-            var ids = new HashSet<long> { spec.Id };
+            var ids = new HashSet<long> {spec.Id};
             if (spec.ParentId.HasValue) ids.Add(spec.ParentId.Value);
 
 
@@ -353,24 +330,24 @@ namespace act.core.web.Services
                 .BuildSpecifications.AsNoTracking()
                 .GroupBy(b => new
                 {
-                    b.Owner.Id,
-                    b.Owner.FirstName,
-                    b.Owner.LastName,
-                    b.Owner.PreferredName,
-                    b.Owner.SamAccountName,
+                    b.Owner.Id, 
+                    b.Owner.FirstName, 
+                    b.Owner.LastName, 
+                    b.Owner.PreferredName, 
+                    b.Owner.SamAccountName, 
                     b.BuildSpecificationType
                 })
                 .Select(g => new
                 {
-                    g.Key.Id,
-                    Owner = string.IsNullOrWhiteSpace(g.Key.PreferredName) ? g.Key.FirstName + g.Key.LastName : g.Key.PreferredName,
-                    g.Key.SamAccountName,
-                    g.Key.BuildSpecificationType,
+                    g.Key.Id, 
+                    Owner = string.IsNullOrWhiteSpace(g.Key.PreferredName)? g.Key.FirstName + g.Key.LastName : g.Key.PreferredName, 
+                    g.Key.SamAccountName, 
+                    g.Key.BuildSpecificationType, 
                     Count = g.Count()
                 })
                 .ToArrayAsync();
 
-
+            
             var dict = new Dictionary<long, SpecByOwner>();
             foreach (var r in results)
             {
@@ -477,20 +454,13 @@ namespace act.core.web.Services
             var node = await _ctx.Nodes.AsNoTracking()
                 .Include(p => p.BuildSpecification)
                 .Include(p => p.BuildSpecification.Parent)
+                .Include(p => p.BuildSpecification.Parent.SoftwareComponents).ThenInclude(s=>s.SoftwareComponentEnvironments)
                 .Include(p => p.BuildSpecification.Parent.Ports)
+                .Include(p => p.BuildSpecification.SoftwareComponents).ThenInclude(s=>s.SoftwareComponentEnvironments)
                 .Include(p => p.BuildSpecification.Ports)
                 .Active().AsNoTracking().NodeByFqdnOrHostName(fqdn);
-
             if (node?.BuildSpecificationId == null)
                 return JsonInspecAttributes.Empty(fqdn);
-
-            var softwareComponent = await GetOrCreateSoftwareComponent();
-            node.BuildSpecification.SoftwareComponents =
-                softwareComponent.Where(x => x.BuildSpecificationId == node.BuildSpecification.Id).ToList();
-
-            node.BuildSpecification.Parent.SoftwareComponents =
-                softwareComponent.Where(x => x.BuildSpecificationId == node.BuildSpecification.Parent.Id).ToList();
-
             var pt = node.Platform;
             var spec = node.BuildSpecification;
 
@@ -528,7 +498,7 @@ namespace act.core.web.Services
         private async Task<ReportingNodes> ToReportingNode(IQueryable<Node> nodes)
         {
             var all = (await nodes.AsNoTracking()
-                    .Select(p => new { p.Owner, p.Owner.ReportingDirector, p.Fqdn, p.PciScope })
+                    .Select(p => new {p.Owner, p.Owner.ReportingDirector, p.Fqdn, p.PciScope})
                     .OrderBy(p => p.Owner.PreferredName ?? p.Owner.FirstName).ThenBy(p => p.Owner.LastName)
                     .ThenBy(p => p.Fqdn)
                     .ToArrayAsync())
@@ -554,7 +524,7 @@ namespace act.core.web.Services
                     ? it.SoftwareComponents.Where(p => !p.NonCore)
                     : it.SoftwareComponents;
                 softToAdd = softToAdd.Where(p => p.PciScope == null || (p.PciScope & pciScope) != 0);
-                softToAdd = softToAdd.Where(p => !p.SoftwareComponentEnvironments.Any() || p.SoftwareComponentEnvironments.Any(q => q.EnvironmentId == environmentId));
+                softToAdd = softToAdd.Where(p => !p.SoftwareComponentEnvironments.Any() || p.SoftwareComponentEnvironments.Any(q=>q.EnvironmentId == environmentId));
                 softwares.AddRange(softToAdd);
                 ports.AddRange(it.Ports.Where(p => !p.IsOutgoing));
                 if (it.Platform.HasValue)
