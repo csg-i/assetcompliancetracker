@@ -110,7 +110,7 @@ namespace act.core.web.Controllers
         public JsonResult ChefConvergeReportUrlGet(int id, Guid nodeGuid)
         {
             var url = Url.ChefAutomateConvergeReport(id, nodeGuid);
-            return Json(JsonEnvelope.Success(new { url }));
+            return Json(data: string.IsNullOrEmpty(url)? JsonEnvelope.Error("Node Converge report not Available ") : JsonEnvelope.Success(new { url }));
         }
 
         [HttpPost]
