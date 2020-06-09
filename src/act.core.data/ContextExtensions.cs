@@ -394,9 +394,5 @@ namespace act.core.data
             return scs.Where(p => p.EnvironmentId == id);
         }
 
-        public static async Task<Employee> BySamAccountName(this IQueryable<Employee> queryable, string name)
-        {
-            return await queryable.FirstOrDefaultAsync(p => p.SamAccountName == name);
-        }
     }
 }
