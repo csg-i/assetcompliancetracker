@@ -384,9 +384,9 @@ namespace act.core.data
             return scs.Where(p => p.SoftwareComponentId == id);
         }
         
-        public static async Task<string> GetEnvironmentNames(this IQueryable<SoftwareComponentEnvironment> scs)
+        public static string GetEnvironmentNames(this IEnumerable<SoftwareComponentEnvironment> scs)
         {
-            return string.Join("/", await scs.OrderBy(p=>p.Environment.Name).Select(p=>p.Environment.Name).Distinct().ToArrayAsync());
+            return string.Join("/", scs.OrderBy(p=>p.Environment.Name).Select(p=>p.Environment.Name).Distinct());
         }
         
         public static IQueryable<SoftwareComponentEnvironment> ByEnvironment(this IQueryable<SoftwareComponentEnvironment> scs, int id)
@@ -394,5 +394,9 @@ namespace act.core.data
             return scs.Where(p => p.EnvironmentId == id);
         }
 
+        public static async Task<Employee> BySamAccountName(this IQueryable<Employee> queryable, string name)
+        {
+            return await queryable.FirstOrDefaultAsync(p => p.SamAccountName == name);
+        }
     }
 }
