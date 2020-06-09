@@ -384,9 +384,9 @@ namespace act.core.data
             return scs.Where(p => p.SoftwareComponentId == id);
         }
         
-        public static string GetEnvironmentNames(this IEnumerable<SoftwareComponentEnvironment> scs)
+        public static async Task<string> GetEnvironmentNames(this IQueryable<SoftwareComponentEnvironment> scs)
         {
-            return string.Join("/", scs.OrderBy(p=>p.Environment.Name).Select(p=>p.Environment.Name).Distinct());
+            return string.Join("/", await scs.OrderBy(p=>p.Environment.Name).Select(p=>p.Environment.Name).Distinct().ToArrayAsync());
         }
         
         public static IQueryable<SoftwareComponentEnvironment> ByEnvironment(this IQueryable<SoftwareComponentEnvironment> scs, int id)

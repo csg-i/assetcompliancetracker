@@ -350,7 +350,7 @@ namespace act.core.web.Services
             if (toRet != null)
             {
                 var envIds = await envQuery.Select(p => p.EnvironmentId).Distinct().ToArrayAsync();
-                var desc = envQuery.GetEnvironmentNames();
+                var desc = await envQuery.GetEnvironmentNames();
                
                 return new Package(toRet.BuildSpecification.BuildSpecificationType, toRet.JustificationType, id,
                     toRet.Name, toRet.Description, toRet.NonCore, toRet.JustificationId, toRet.PciScope, envIds, desc);
