@@ -2,6 +2,7 @@
 using act.core.data;
 using act.core.etl;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -42,6 +43,10 @@ namespace act.core.web.Extensions
                 var node = ctx.Nodes.ById(id).GetAwaiter().GetResult();
                 var gather = scope.ServiceProvider.GetRequiredService<IGatherer>();
                 var result = gather.PostRequest(environmentId, 1, 1, new[] {node?.Fqdn}).GetAwaiter().GetResult();
+                if (result?.Nodes == null || result.Nodes.Length == 0)
+                {
+                    return string.Empty;
+                }
                 return $"{env.ChefAutomateUrl}/infrastructure/client-runs/{id}/runs/{result?.Nodes?[0].ScanData?.id}";
             }
         }

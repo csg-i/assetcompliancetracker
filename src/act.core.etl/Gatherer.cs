@@ -250,7 +250,7 @@ namespace act.core.etl
 
                 if (complianceNodes.Total > 0)
                 {
-                    _logger.LogDebug($"Updated {found} of {complianceNodes.Total} nodes from automate.");
+                    _logger.LogInformation($"Updated {found} of {complianceNodes.Total} nodes from automate.");
                     var pageCount = complianceNodes.Total / 100 + ((complianceNodes.Total % 100) > 0 ? 1 : 0);
                     for (var p = 2; p <= pageCount; p++)
                     {
@@ -260,13 +260,13 @@ namespace act.core.etl
                             saveResult = await SaveAndReturnFailuresAndFound(complianceNodes.Nodes);
                             list.AddRange(saveResult.Item2);
                             found += saveResult.Item1;
-                            _logger.LogDebug($"Updated {found} of {complianceNodes.Total} nodes from automate.");
+                            _logger.LogInformation($"Updated {found} of {complianceNodes.Total} nodes from automate.");
                         }
                     }
                 }
                 else
                 {
-                    _logger.LogDebug($"Updated {found} of {complianceNodes.Total} nodes from automate.");
+                    _logger.LogInformation($"Updated {found} of {complianceNodes.Total} nodes from automate.");
                 }
             }
             return list.ToArray();
@@ -441,8 +441,7 @@ namespace act.core.etl
             builder.Append(id);
             return builder.ToString();
         }
-
-
+        
         public async Task<int> PurgeInactiveNodes()
         {
             var date = DateTime.Today.AddDays(-7);
@@ -535,7 +534,6 @@ namespace act.core.etl
             await SendMail(new[] { email }, $"ACT Unassigned Failure for a PCI '{pci}' class system - {fqdn}",
                 builder.ToString());
         }
-      
         private async Task SendNotReportingMail(string[] emails, string name, string fqdn, string pci, DateTime? lastComplianceDate)
         {
 
@@ -575,3 +573,4 @@ namespace act.core.etl
         }
     }
 }
+
