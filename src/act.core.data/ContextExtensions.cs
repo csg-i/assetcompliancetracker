@@ -9,6 +9,12 @@ namespace act.core.data
 {
     public static class ContextExtensions
     {
+        private enum EnvironmentList
+        {
+            NonProd = 1,
+            Production = 12,
+            CTE = 19
+        }
         public static T? ConvertToFlag<T>(this T[] flags) where T : struct, IConvertible
         {
             if (flags == null || flags.Length == 0)
@@ -386,7 +392,13 @@ namespace act.core.data
         
         public static string GetEnvironmentNames(this IEnumerable<SoftwareComponentEnvironment> scs)
         {
-            return string.Join("/", scs.OrderBy(p => p.Environment?.Name).Select(p => p.Environment?.Name).Distinct());
+            foreach (var component in scs)
+                    component.Environment = new Environment
+                    {
+                        Name = ((EnvironmentList) component.EnvironmentId).ToString()
+                    };
+
+                return string.Join("/", scs.OrderBy(p => p.Environment.Name).Select(p => p.Environment.Name).Distinct());
         }
         
         public static IQueryable<SoftwareComponentEnvironment> ByEnvironment(this IQueryable<SoftwareComponentEnvironment> scs, int id)
