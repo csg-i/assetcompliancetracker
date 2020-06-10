@@ -7,7 +7,7 @@ namespace act.core.etl
 {
     public interface IGatherer
     {
-        Task<ComplianceNode[]> Gather(int environmentId, Guid[] nodeIds = null);
+        Task<ComplianceNode[]> Gather(int environmentId, string[] fqdns = null);
         Task ComplianceReport(long nodeId);
         Task<HttpResponseMessage> Proxy(int environmentId, string url);
         Task<int> PurgeOldComplianceRuns();
@@ -20,5 +20,8 @@ namespace act.core.etl
 
         Task<int> DeactivateNode(int id);
         Task SendMail(string[] emails, string subject, string body);
+
+        Task<ComplianceNodes> PostRequest(int environmentId, int perPage = 100, int page = 1,
+            string[] fqdns = null);
     }
 }
