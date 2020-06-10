@@ -387,10 +387,9 @@ namespace act.core.web.Services
             var type = BuildSpecificationTypeConstant.Application;
             var appSpec = await _ctx.BuildSpecifications.AsNoTracking()
                 .Include(p => p.Parent)
-                .Include(p => p.Parent.SoftwareComponents)
-                .Include(p => p.SoftwareComponents)
                 .Include(p => p.Nodes)
                 .ById(type, specId);
+            var softwareComponent = await GetOrCreateSoftwareComponent();
             BuildSpecification osSpec;
             if (appSpec == null)
             {
@@ -412,6 +411,12 @@ namespace act.core.web.Services
             }
             else
             {
+                
+                appSpec.SoftwareComponents =
+                    softwareComponent.Where(x => x.BuildSpecificationId == appSpec.Id).ToList();
+
+                appSpec.Parent.SoftwareComponents =
+                    softwareComponent.Where(x => x.BuildSpecificationId == appSpec.Parent.Id).ToList();
                 osSpec = appSpec.Parent;
             }
 
@@ -456,13 +461,13 @@ namespace act.core.web.Services
                     j.BuildSpecificationType, apps.Where(p => p.JustificationId == j.Id)
                         .OrderBy(p => p.JustificationType)
                         .Select(p => new Software(p.Name, p.Description, p.JustificationType, p.NonCore, p.PciScope,
-                            _ctx.SoftwareComponentEnvironments.BySoftwareComponent(p.Id).GetEnvironmentNames().GetAwaiter().GetResult()))))
+                            p.SoftwareComponentEnvironments.GetEnvironmentNames()))))
                 .ToArray();
 
             var uList = apps.Where(p => p.JustificationId == null && sofwareJts.Contains(p.JustificationType))
                 .OrderBy(p => p.JustificationType)
                 .Select(p => new Software(p.Name, p.Description, p.JustificationType, p.NonCore, p.PciScope,
-                    _ctx.SoftwareComponentEnvironments.BySoftwareComponent(p.Id).GetEnvironmentNames().GetAwaiter().GetResult()))
+                    p.SoftwareComponentEnvironments.GetEnvironmentNames()))
                 .ToArray();
             var nodes = appSpec.Nodes.Select(p => new InventorySystemNode(p.InventoryItemId, p.Fqdn)).ToArray();
 
@@ -490,7 +495,6 @@ namespace act.core.web.Services
 
             node.BuildSpecification.Parent.SoftwareComponents =
                 softwareComponent.Where(x => x.BuildSpecificationId == node.BuildSpecification.Parent.Id).ToList();
-
             var pt = node.Platform;
             var spec = node.BuildSpecification;
 
