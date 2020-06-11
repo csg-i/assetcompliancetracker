@@ -393,12 +393,13 @@ namespace act.core.data
         public static string GetEnvironmentNames(this IEnumerable<SoftwareComponentEnvironment> scs)
         {
             foreach (var component in scs)
+            {
                     component.Environment = new Environment
                     {
                         Name = ((EnvironmentList) component.EnvironmentId).ToString()
                     };
-
-                return string.Join("/", scs.OrderBy(p => p.Environment.Name).Select(p => p.Environment.Name).Distinct());
+            }
+            return string.Join("/", scs.OrderBy(p => p.Environment.Name).Select(p => p.Environment.Name).Distinct());
         }
         
         public static IQueryable<SoftwareComponentEnvironment> ByEnvironment(this IQueryable<SoftwareComponentEnvironment> scs, int id)
