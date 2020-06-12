@@ -96,5 +96,15 @@
     <script src="~/js/jaymvc.min.js" asp-append-version="true"></script>
 </environment>
 @RenderSection("scripts", false)
+
+<script type="text/javascript">
+    if (!cookieExists("_timeZoneOffset")) {
+        var now = new Date();
+
+        var timeZoneOffset = -now.getTimezoneOffset();  // in minutes
+        now.setTime(now.getTime() + 12*60*60*1000); // keep it for 12 Hours
+        document.cookie = "_timeZoneOffset=" + timeZoneOffset.toString() + ";expires=" + now.toGMTString() + ";path=/;" + document.cookie;
+    }
+</script>
 </body>
 </html>
