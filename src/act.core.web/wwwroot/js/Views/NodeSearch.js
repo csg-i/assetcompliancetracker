@@ -121,21 +121,3 @@ $.onAction('changeBuildSpec',
                 $clone.remove();
             });
     });
-
-$.onAction('convergeReport',
-    function (evt, data) {
-        jay.ajax({
-            url: data.url,
-            data: {
-                nodeGuid: data.id
-            }
-        }).done(function (json) {
-            var win = window.open(json.url, '_blank');
-            if (win) {
-                win.focus();
-            } else {
-                alert('Please allow popups for this website');
-            }
-        });
-    }
-);
