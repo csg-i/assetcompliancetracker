@@ -605,7 +605,7 @@ namespace act.core.etl
             var caExpirationDate = DateTime.Parse(certificateAuthority.GetExpirationDateString());
 
             // Check if CA certificate is valid.
-            if (now <= caEffectiveDate
+            if (now < caEffectiveDate
                 || now > caExpirationDate)
                 return false;
 
