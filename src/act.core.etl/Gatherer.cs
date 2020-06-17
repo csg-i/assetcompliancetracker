@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using MySql.Data.MySqlClient;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mail;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -14,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Environment = act.core.data.Environment;
 
 
@@ -34,6 +38,14 @@ namespace act.core.etl
             _logger = logger.CreateLogger<Gatherer>();
         }
 
+        public async Task<HttpResponseMessage> Proxy(int environmentId, string url)
+        {
+            using (var client = new HttpClient())
+            {
+                SetHeaders(client, await _ctx.Environments.ById(environmentId));
+                return await client.GetAsync(url);
+            }
+        }
         private static void SetHeaders(HttpClient client, Environment environment)
         {
             client.BaseAddress = new Uri(environment.ChefAutomateUrl);
@@ -222,122 +234,133 @@ namespace act.core.etl
 
         }
 
-        public async Task<HttpResponseMessage> Proxy(int environmentId, string url)
-        {
-            using (var client = new HttpClient())
-            {
-                SetHeaders(client, await _ctx.Environments.ById(environmentId));
-                return await client.GetAsync(url);
-            }
-        }
         private async Task<ComplianceReport> GetReport(int environmentId, Guid latestReportId)
         {
-            using (var client = new HttpClient())
-            {
-                SetHeaders(client, await _ctx.Environments.ById(environmentId));
-
-                var result = await client.GetAsync(BuildReportsUrl(latestReportId));
-                if (result.IsSuccessStatusCode)
-                {
-                    var json = await result.Content.ReadAsStringAsync();
-                    var obj = JsonConvert.DeserializeObject<ComplianceReport>(json);
-                    return obj;
-                }
-                return null;
-            }
+            return await PostRequest<ComplianceReport>(environmentId, BuildReportsUrl(latestReportId));
+            
         }
-        public async Task<ComplianceNode[]> Gather(int environmentId, Guid[] nodeIds = null)
+        public async Task<ComplianceNode[]> Gather(int environmentId, string[] fqdns = null)
         {
+
             var list = new List<ComplianceNode>();
-            using (var client = new HttpClient())
+
+            var complianceNodes = await PostRequest(environmentId, 100, 1, fqdns);
+            if (complianceNodes != null)
             {
-                SetHeaders(client, await _ctx.Environments.ById(environmentId));
+                var saveResult = await SaveAndReturnFailuresAndFound(complianceNodes.Nodes);
+                list.AddRange(saveResult.Item2);
+                var found = saveResult.Item1;
 
-                var result = await client.GetAsync(BuildNodesUrl(100, 1, nodeIds));
-
-                var countHeader = result.Headers.Where(p => p.Key == "X-Total-Count").Select(p => p.Value)
-                    .FirstOrDefault()?.FirstOrDefault();
-                if (result.IsSuccessStatusCode)
+                if (complianceNodes.Total > 0)
                 {
-                    var json = await result.Content.ReadAsStringAsync();
-                    var obj = JsonConvert.DeserializeObject<ComplianceNode[]>(json);
-                    var saveResult = await SaveAndReturnFailuresAndFound(obj);
-                    list.AddRange(saveResult.Item2);
-                    var found = saveResult.Item1;
-
-                    if (!string.IsNullOrWhiteSpace(countHeader) && int.TryParse(countHeader, out var totalCount))
+                    _logger.LogInformation($"Updated {found} of {complianceNodes.Total} nodes from automate.");
+                    var pageCount = complianceNodes.Total / 100 + ((complianceNodes.Total % 100) > 0 ? 1 : 0);
+                    for (var p = 2; p <= pageCount; p++)
                     {
-                        _logger.LogInformation($"Updated {found} of {totalCount} nodes from automate.");
-                        var pageCount = totalCount / 100 + ((totalCount % 100) > 0 ? 1 : 0);
-                        for (var p = 2; p <= pageCount; p++)
+                        complianceNodes = await PostRequest(environmentId, 100, p, fqdns);
+                        if (complianceNodes != null)
                         {
-                            result = await client.GetAsync(BuildNodesUrl(100, p, nodeIds));
-                            if (result.IsSuccessStatusCode)
-                            {
-                                json = await result.Content.ReadAsStringAsync();
-                                obj = JsonConvert.DeserializeObject<ComplianceNode[]>(json);
-                                saveResult = await SaveAndReturnFailuresAndFound(obj);
-                                list.AddRange(saveResult.Item2);
-                                found += saveResult.Item1;
-                                _logger.LogInformation($"Updated {found} of {totalCount} nodes from automate.");
-                            }
+                            saveResult = await SaveAndReturnFailuresAndFound(complianceNodes.Nodes);
+                            list.AddRange(saveResult.Item2);
+                            found += saveResult.Item1;
+                            _logger.LogInformation($"Updated {found} of {complianceNodes.Total} nodes from automate.");
                         }
                     }
-                    else
-                    {
-                        _logger.LogInformation($"Updated {found} of {obj.Length} nodes from automate.");
-                    }
+                }
+                else
+                {
+                    _logger.LogInformation($"Updated {found} of {complianceNodes.Total} nodes from automate.");
                 }
             }
             return list.ToArray();
         }
 
-        private async Task<Tuple<int, ComplianceNode[]>> SaveAndReturnFailuresAndFound(IEnumerable<ComplianceNode> array)
+        public async Task<ComplianceNodes> PostRequest(int environmentId, int perPage = 100, int page = 1, string[] fqdns = null)
+        {
+            var json = JsonConvert.SerializeObject(BuildNodesUrl(perPage, page, fqdns));
+            return await PostRequest<ComplianceNodes>(environmentId, "/api/v0/nodes/search", json);
+
+        }
+
+        private async Task<T> PostRequest<T>(int environmentId, string url, string json = null)
+        {
+            var handler = new HttpClientHandler();
+            handler.ClientCertificateOptions = ClientCertificateOption.Manual;
+            handler.ServerCertificateCustomValidationCallback = ValidateServerCertificate;
+                ;
+            using (var client = new HttpClient(handler))
+            {
+                var environment = await _ctx.Environments.ById(environmentId);
+                client.BaseAddress = new Uri(environment.ChefAutomateUrl);
+                client.DefaultRequestHeaders.Add("api-token", environment.ChefAutomateToken);
+                HttpResponseMessage responseMessage;
+                if (json != null)
+                {
+                    var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+                    responseMessage = await client.PostAsync(url, httpContent);
+                }
+                else
+                {
+                    responseMessage = await client.PostAsync(url, null);
+                }
+
+                if (responseMessage.IsSuccessStatusCode)
+                {
+                    var content = await responseMessage.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<T>(content);
+                }
+            }
+
+            return default(T);
+
+        }
+
+        private async Task<Tuple<int, ComplianceNode[]>> SaveAndReturnFailuresAndFound(IEnumerable<ComplianceNode> nodes)
         {
 
             var list = new List<ComplianceNode>();
             var found = 0;
-            foreach (var obj in array)
+            foreach (var node in nodes)
             {
-                var endtime = (obj.latest_report?.end_time).GetValueOrDefault();
-                var id = (obj.latest_report?.id).GetValueOrDefault();
-                var node = await _ctx.Nodes.FirstOrDefaultAsync(p =>
-                    p.Fqdn == obj.name &&
+                var endTime = (node.ScanData?.end_time).GetValueOrDefault();
+                var id = (node.ScanData?.id).GetValueOrDefault();
+                var nodeInfo = await _ctx.Nodes.FirstOrDefaultAsync(p =>
+                    p.Fqdn == node.Name &&
                     (p.LastComplianceResultId == null || p.LastComplianceResultId != id) &&
-                    (p.LastComplianceResultDate == null || p.LastComplianceResultDate < endtime));
-                if (node != null)
+                    (p.LastComplianceResultDate == null || p.LastComplianceResultDate < endTime));
+                if (nodeInfo != null && id != Guid.Empty)
                 {
                     found += 1;
-                    node.ChefNodeId = obj.id;
-                    node.ComplianceStatus = (obj.latest_report?.GetComplainceStatus()).GetValueOrDefault();
-                    node.LastComplianceResultDate = obj.latest_report?.end_time;
-                    node.LastComplianceResultId = obj.latest_report?.id;
-                    if (obj.latest_report != null)
+                    nodeInfo.ChefNodeId = node.Id;
+                    nodeInfo.ComplianceStatus = (node.ScanData?.GetComplainceStatus()).GetValueOrDefault();
+                    nodeInfo.LastComplianceResultDate = node.ScanData?.end_time;
+                    nodeInfo.LastComplianceResultId = node.ScanData?.id;
+                    if (node.ScanData != null)
                     {
-                        if (node.ComplianceStatus == ComplianceStatusConstant.Succeeded)
+                        if (nodeInfo.ComplianceStatus == ComplianceStatusConstant.Succeeded)
                         {
-                            node.FailingSince = null;
-                            node.LastEmailedOn = null;
+                            nodeInfo.FailingSince = null;
+                            nodeInfo.LastEmailedOn = null;
                             if (!_ctx.ComplianceResults.Any(p =>
-                                p.InventoryItemId == node.InventoryItemId &&
-                                p.ResultId == obj.latest_report.id))
+                                p.InventoryItemId == nodeInfo.InventoryItemId &&
+                                p.ResultId == node.ScanData.id))
                             {
                                 //for successes enter a record into results table, for graphs,
                                 //for failures we will collect details and add at that time
                                 _ctx.ComplianceResults.Add(new ComplianceResult
                                 {
-                                    EndDate = obj.latest_report.end_time.Date,
-                                    EndTime = obj.latest_report.end_time,
-                                    InventoryItemId = node.InventoryItemId,
+                                    EndDate = (node.ScanData.end_time ?? endTime).Date,
+                                    EndTime = (node.ScanData.end_time ?? endTime),
+                                    InventoryItemId = nodeInfo.InventoryItemId,
                                     Status = ComplianceStatusConstant.Succeeded,
-                                    ResultId = obj.latest_report.id,
+                                    ResultId = node.ScanData.id.Value,
                                     OperatingSystemTestPassed = true
                                 });
                             }
                         }
-                        else if (node.ComplianceStatus == ComplianceStatusConstant.Failed)
+                        else if (nodeInfo.ComplianceStatus == ComplianceStatusConstant.Failed)
                         {
-                            list.Add(obj);
+                            list.Add(node);
                         }
                     }
 
@@ -398,39 +421,34 @@ namespace act.core.etl
 
             return list.Length;
         }
-        private string BuildNodesUrl(int perPage, int page, Guid[] nodes)
+        private JObject BuildNodesUrl(int perPage, int page, string[] fqdns)
         {
-            var builder = new StringBuilder();
-            builder.Append("/compliance/nodes");
-            string nodeFilter = string.Empty;
-            if (nodes != null && nodes.Length <= 128)
+            var bodyContent = new JObject
             {
-                nodeFilter = $"+node_id:{string.Join("+node_id:", nodes)}";
-            }
-            var keys = new Dictionary<string, string>
-            {
-                {"filters", $"end_time:{HttpUtility.UrlEncode(DateTime.Now.ToString("yyyy-MM-ddTHH:mm:sszzz"))}{nodeFilter}"},
-                {"per_page", perPage.ToString()},
-                {"page", page.ToString()}
+                ["per_page"] = perPage,
+                ["page"] = page
             };
-            builder.Append(ToQueryString(keys));
-            return builder.ToString();
+
+            if (fqdns != null && fqdns.Length > 0 && fqdns.Length <= 128)
+            {
+                var filter = new JObject
+                    {
+                        { "key","name"},
+                        {"values", new JArray(fqdns) }
+                    };
+                bodyContent["filters"] = new JArray(filter);
+            };
+            return bodyContent;
         }
 
         private string BuildReportsUrl(Guid id)
         {
             var builder = new StringBuilder();
-            builder.Append("/compliance/reports/");
+            builder.Append("/api/v0/compliance/reporting/reports/id/");
             builder.Append(id);
             return builder.ToString();
         }
-
-        private static string ToQueryString(IDictionary<string, string> nvc)
-        {
-            return "?" + string.Join("&", nvc.Select(p => $"{p.Key}={p.Value}"));
-        }
-
-
+        
         public async Task<int> PurgeInactiveNodes()
         {
             var date = DateTime.Today.AddDays(-7);
@@ -502,7 +520,9 @@ namespace act.core.etl
         public async Task<int> NotifyNotReportingNodes()
         {
             var nodes = await _ctx.Nodes.AsNoTracking().Active().InChefScope().InPciScope().Assigned().ProductIsNotExlcuded().ByComplianceStatus(ComplianceStatusConstant.NotFound)
+
                 .Select(p => new {p.Owner, p.Fqdn, p.PciScope, AppOwnerEmail = p.BuildSpecification.Owner.Email, OsOwnerEmail = p.BuildSpecification.Parent.Owner.Email, LastComplianceDate = p.LastComplianceResultDate})
+
                 .ToArrayAsync();
 
             if (nodes.Length > 0)
@@ -533,7 +553,6 @@ namespace act.core.etl
             await SendMail(new[] { email }, $"ACT Unassigned Failure for a PCI '{pci}' class system - {fqdn}",
                 builder.ToString());
         }
-
         private async Task SendNotReportingMail(string[] emails, string name, string fqdn, string pci, DateTime? lastComplianceDate)
         {
 
@@ -571,5 +590,31 @@ namespace act.core.etl
                 await smtp.SendMailAsync(mm);
             }
         }
+
+        private static bool ValidateServerCertificate(
+            object sender,
+            X509Certificate certificate,
+            X509Chain chain,
+            SslPolicyErrors sslPolicyErrors)
+        {
+            if (chain.ChainStatus.Length == 0)
+                return true;
+            var now = DateTime.UtcNow;
+            var certificateAuthority = new X509Certificate("CSG.crt");
+            var caEffectiveDate = DateTime.Parse(certificateAuthority.GetEffectiveDateString());
+            var caExpirationDate = DateTime.Parse(certificateAuthority.GetExpirationDateString());
+
+            // Check if CA certificate is valid.
+            if (now < caEffectiveDate
+                || now > caExpirationDate)
+                return false;
+
+            return chain.ChainElements
+                .Cast<X509ChainElement>()
+                .Select(element => element.Certificate)
+                .Where(chainCertificate => chainCertificate.Subject == certificateAuthority.Subject)
+                .Any(chainCertificate => chainCertificate.GetRawCertData().SequenceEqual(certificateAuthority.GetRawCertData()));
+        }
     }
 }
+
