@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using MySql.Data.MySqlClient;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mail;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -281,7 +284,11 @@ namespace act.core.etl
 
         private async Task<T> PostRequest<T>(int environmentId, string url, string json = null)
         {
-            using (var client = new HttpClient())
+            var handler = new HttpClientHandler();
+            handler.ClientCertificateOptions = ClientCertificateOption.Manual;
+            handler.ServerCertificateCustomValidationCallback = ValidateServerCertificate;
+                ;
+            using (var client = new HttpClient(handler))
             {
                 var environment = await _ctx.Environments.ById(environmentId);
                 client.BaseAddress = new Uri(environment.ChefAutomateUrl);
@@ -570,6 +577,31 @@ namespace act.core.etl
 
                 await smtp.SendMailAsync(mm);
             }
+        }
+
+        private static bool ValidateServerCertificate(
+            object sender,
+            X509Certificate certificate,
+            X509Chain chain,
+            SslPolicyErrors sslPolicyErrors)
+        {
+            if (chain.ChainStatus.Length == 0)
+                return true;
+            var now = DateTime.UtcNow;
+            var certificateAuthority = new X509Certificate("CSG.crt");
+            var caEffectiveDate = DateTime.Parse(certificateAuthority.GetEffectiveDateString());
+            var caExpirationDate = DateTime.Parse(certificateAuthority.GetExpirationDateString());
+
+            // Check if CA certificate is valid.
+            if (now < caEffectiveDate
+                || now > caExpirationDate)
+                return false;
+
+            return chain.ChainElements
+                .Cast<X509ChainElement>()
+                .Select(element => element.Certificate)
+                .Where(chainCertificate => chainCertificate.Subject == certificateAuthority.Subject)
+                .Any(chainCertificate => chainCertificate.GetRawCertData().SequenceEqual(certificateAuthority.GetRawCertData()));
         }
     }
 }
