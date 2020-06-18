@@ -81,7 +81,7 @@ namespace act.core.web.Controllers
         {
             var timeZoneCookie = Request.Cookies["_timeZoneOffset"];
             if (timeZoneCookie != null)
-                ViewBag.TimeOffset = Convert.ToInt32(timeZoneCookie);
+                _nodeFactory.AssignLocalTimeOffset(Convert.ToInt32(timeZoneCookie));
 
             return PartialView(await _nodeFactory.Search(platform, environment, securityClass, compliance, searchType, search, hideProductExclusions.GetValueOrDefault(), UserSecurity, pageIndex.GetValueOrDefault(), showButtons.GetValueOrDefault()));
         }
