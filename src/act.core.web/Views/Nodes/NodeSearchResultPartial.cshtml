@@ -35,7 +35,7 @@
                     }
                     @if (Model.ChefId.HasValue)
                     {
-                        <a href="#" class="btn btn-outline-secondary action-converge-report" title="Chef Converge Report" data-id="@Model.ChefId.Value" data-url="@Url.JsonChefUrl(Model.EnvironmentId)" target="_blank"><i class="fa fa-cutlery"></i></a>
+                        <a href="@Url.ChefAutomateConvergeReport(Model.EnvironmentId, Model.ChefId.Value)" class="btn btn-outline-secondary" title="Chef Converge Report" target="_blank"><i class="fa fa-cutlery"></i></a>
                         <a href="@Url.ChefAutomateComplianceReport(Model.EnvironmentId, Model.ChefId.Value)" class="btn btn-outline-secondary" title="Chef Compliance Report" target="_blank"><i class="fa fa-bar-chart"></i></a>
                     }
                     else

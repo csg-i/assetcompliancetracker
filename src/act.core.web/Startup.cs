@@ -126,7 +126,10 @@ namespace act.core.web
             {
                 if (ctx.HttpContext.Request.IsAjaxRequest())
                 {
-                    ctx.HttpContext.Response.ContentType = ctx.HttpContext.Request.IsAjaxHtml() ? "text/html" : "application/json";
+                    if (ctx.HttpContext.Request.IsAjaxHtml())
+                        ctx.HttpContext.Response.ContentType = "text/html";
+                    else
+                        ctx.HttpContext.Response.ContentType = "application/json";
 
                     await ctx.HttpContext.Response.WriteAsync("{}");
                 }
