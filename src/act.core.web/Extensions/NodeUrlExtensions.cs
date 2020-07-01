@@ -27,6 +27,10 @@ namespace act.core.web.Extensions
         {
             return helper.RouteUrl("default", new { controller = "Nodes", action = "Assign", id });
         }
+        public static string JsonChefUrl(this IUrlHelper helper, int id)
+        {
+            return helper.RouteUrl("default", new { controller = "Nodes", action = "ChefConvergeReportUrlGet", id });
+        }
         public static string JsonBuildSpecByHost(this IUrlHelper helper)
         {
             return helper.RouteUrl("default", new { controller = "Nodes", action = "BuildSpecId"});
