@@ -16,7 +16,7 @@ namespace act.core.web.Services
         Task<NodeSearchResult[]> GetAssignedToBuildSpec(long buildSpecId);
         Task AssignBuildSpecification(long nodeId, long? buildSpecId, string userName = null);
         Task<bool> AssignBuildSpecification(string fqdn, long buildSpecId);
-        Task<Guid[]> ChefIdsForAppOrOsSpecAndEnvironment(long specId, int environmentId);
+        Task<string[]> ChefIdsForAppOrOsSpecAndEnvironment(long specId, int environmentId);
 
         Task<NodeSearchResults> Search(PlatformConstant[] platform,
             int[] environment, PciScopeConstant[] pciScope,
@@ -88,14 +88,14 @@ namespace act.core.web.Services
             return false;
         }
 
-        public async Task<Guid[]> ChefIdsForAppOrOsSpecAndEnvironment(long specId, int environmentId)
+        public async Task<string[]> ChefIdsForAppOrOsSpecAndEnvironment(long specId, int environmentId)
         {
             {
                 return (await _ctx.Nodes.AsNoTracking().Active()
                     .FindForAppOrOsSpecAndEnvironmentWithComplianceResult(specId, environmentId)
                     .Where(p => p.ChefNodeId != null)
-                    .Select(p => p.ChefNodeId)
-                    .ToArrayAsync()).Select(p => p.GetValueOrDefault()).ToArray();
+                    .Select(p => p.Fqdn)
+                    .ToArrayAsync()).ToArray();
             }
         }
 
