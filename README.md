@@ -5,8 +5,8 @@ ACT is an hybrid on-prem/cloud PCI monitoring solution for VM's or physical serv
 - CHEF Inspec Compliance Tests
 - CHEF Cookbook
 - .NET Core 2.1 AWS Lambda
-- .NET Core 2.1 MVC Website for AWS Elastic Beanstalk
-- .NET Core 2.1 Entity Framework code-first database for AWS Aurora Serverless with migrations
+- .NET Core 3.1 MVC Website for AWS Elastic Beanstalk
+- .NET Core 3.1 Entity Framework code-first database for AWS Aurora Serverless with migrations
 
 ## CHEF Inspec Compliance Tests
 There are two compliance specs, one for linux and one for windows servers or clients.  Basically the Specs take attributes passed in from the node that include:
