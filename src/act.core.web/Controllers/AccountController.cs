@@ -10,11 +10,11 @@ namespace act.core.web.Controllers
 {
     public class AccountController : PureMvcControllerBase
     {
-     
+
         public AccountController(ILoggerFactory logger) : base(logger)
         {
         }
-        
+
         public RedirectResult SignIn(string returnUrl)
         {
             Logger.LogDebug("Explicit sign-in occurred.");
@@ -25,6 +25,9 @@ namespace act.core.web.Controllers
         public async Task SignOut()
         {
             Logger.LogDebug("Explicit sign-out occurred.");
+            if (HttpContext.Request.Cookies["ACT"] != null)
+                Response.Cookies.Delete("ACT");
+
             SetNoCacheHeader();
             await HttpContext.SignOutAsync(WsFederationDefaults.AuthenticationScheme);
         }
