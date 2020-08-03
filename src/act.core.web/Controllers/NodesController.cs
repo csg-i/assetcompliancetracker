@@ -79,10 +79,6 @@ namespace act.core.web.Controllers
         public async Task<PartialViewResult> Search(PlatformConstant[] platform, int[] environment, PciScopeConstant[] securityClass,
            NodeComplianceSearchTypeConstant[] compliance, NodeSearchTypeConstant searchType, string search, bool? hideProductExclusions, int? pageIndex, bool? showButtons)
         {
-            var timeZoneCookie = Request.Cookies["_timeZoneOffset"];
-            if (timeZoneCookie != null)
-                _nodeFactory.AssignLocalTimeOffset(Convert.ToInt32(timeZoneCookie));
-
             return PartialView(await _nodeFactory.Search(platform, environment, securityClass, compliance, searchType, search, hideProductExclusions.GetValueOrDefault(), UserSecurity, pageIndex.GetValueOrDefault(), showButtons.GetValueOrDefault()));
         }
 

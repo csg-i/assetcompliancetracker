@@ -152,7 +152,7 @@ namespace act.core.etl
         {
             var node = await _ctx.Nodes.Active().ById(message.node_uuid);
             var text = node == null ? "did not find" : "found";
-            _logger.LogTrace($"NotifyComplianceFailure WebHook got a compliance failure message for chef node id {message.node_uuid} and {text} a matching node {node?.Fqdn}.");
+            _logger.LogInformation($"NotifyComplianceFailure WebHook got a compliance failure message for chef node id {message.node_uuid} and {text} a matching node {node?.Fqdn}.");
             if (node != null)
             {
                 var run = await SaveComplianceData(node.InventoryItemId, message);
@@ -368,19 +368,19 @@ namespace act.core.etl
         {
             var date = DateTime.Today.AddDays(-28);
             var count = 0;
-            _logger.LogDebug($"Gathering Old Compliance runs to purge prior to {date.ToShortDateString()}");
+            _logger.LogInformation($"Gathering Old Compliance runs to purge prior to {date.ToShortDateString()}");
             var maxQ = _ctx.ComplianceResults.Where(p => p.EndDate < date).Select(p => p.Id);
 
             var max = (await maxQ.AnyAsync()) ? (await maxQ.MaxAsync()) : -1;
 
-            _logger.LogDebug("Purging Old Compliance Runs");
+            _logger.LogInformation("Purging Old Compliance Runs");
             if (max > 0)
             {
                 count += await _ctx.ExecuteCommandAsync(
                     "DELETE r FROM ComplianceResult r where Id < @max",
                     new MySqlParameter("@max", MySqlDbType.Int64) { Value = max });
             }
-            _logger.LogDebug("Purging Compliance Runs from inactive nodes");
+            _logger.LogInformation("Purging Compliance Runs from inactive nodes");
 
             count += await _ctx.ExecuteCommandAsync("DELETE r FROM ComplianceResult r JOIN Node n ON r.InventoryItemId = n.InventoryItemId WHERE n.IsActive = 0");
 
@@ -396,11 +396,11 @@ namespace act.core.etl
 
         public async Task<int> ResetComplianceStatus()
         {
-            _logger.LogDebug("Gathering Nodes with Stale Compliance Status");
+            _logger.LogInformation("Gathering Nodes with Stale Compliance Status");
             var list = await _ctx.Nodes.WithStaleComplianceStatus().ToArrayAsync();
             if (list.Length > 0)
             {
-                _logger.LogDebug($"Resetting Compliance Status on  {list.Length} Nodes");
+                _logger.LogInformation($"Resetting Compliance Status on  {list.Length} Nodes");
                 foreach (var node in list)
                 {
                     node.ComplianceStatus = ComplianceStatusConstant.NotFound;
@@ -451,10 +451,10 @@ namespace act.core.etl
         {
             var date = DateTime.Today.AddDays(-7);
             var count = 0;
-            _logger.LogDebug($"Getting Nodes Deactivated prior to {date.ToShortDateString()}");
+            _logger.LogInformation($"Getting Nodes Deactivated prior to {date.ToShortDateString()}");
             while (await _ctx.Nodes.Inactive().AnyAsync(p => p.DeactivatedDate < date))
             {
-                _logger.LogDebug("Purging 1000 Deactivated Nodes");
+                _logger.LogInformation("Purging 1000 Deactivated Nodes");
                 await _ctx.ExecuteCommandAsync(
                     "DELETE FROM Node WHERE DeactivatedDate < @date or IsActive = 0 ORDER BY InventoryItemId limit 1000",
                     new MySqlParameter("@date", MySqlDbType.Date) { Value = date });
@@ -468,7 +468,7 @@ namespace act.core.etl
 
         public async Task<int> DeactivateNode(int id)
         {
-            _logger.LogDebug($"Deactivating node with id {id}");
+            _logger.LogInformation($"Deactivating node with id {id}");
             var node = await _ctx.Nodes.ById(id);
             if (node != null)
             {
@@ -489,7 +489,7 @@ namespace act.core.etl
 
             if (nodes.Length > 0)
             {
-                _logger.LogDebug($"Emailing {nodes.Length} Unassigned Nodes");
+                _logger.LogInformation($"Emailing {nodes.Length} Unassigned Nodes");
 
                 foreach (var node in nodes)
                 {
@@ -513,7 +513,7 @@ namespace act.core.etl
 
             if (nodes.Length > 0)
             {
-                _logger.LogDebug($"Emailing {nodes.Length} Not Reporting Nodes");
+                _logger.LogInformation($"Emailing {nodes.Length} Not Reporting Nodes");
 
                 foreach (var node in nodes)
                 {
