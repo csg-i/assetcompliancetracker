@@ -1,23 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using MySql.Data.MySqlClient;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Net.Mail;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
-using act.core.data;
+﻿using act.core.data;
 using act.core.etl.ComplianceModel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Mail;
+using System.Text;
+using System.Threading.Tasks;
 using Environment = act.core.data.Environment;
 
 
@@ -237,7 +233,7 @@ namespace act.core.etl
         private async Task<ComplianceReport> GetReport(int environmentId, Guid latestReportId)
         {
             return await PostRequest<ComplianceReport>(environmentId, BuildReportsUrl(latestReportId));
-            
+
         }
         public async Task<ComplianceNode[]> Gather(int environmentId, string[] fqdns = null)
         {
@@ -282,8 +278,9 @@ namespace act.core.etl
 
         }
 
+       
         private async Task<T> PostRequest<T>(int environmentId, string url, string json = null)
-        { ;
+        {
             using (var client = new HttpClient())
             {
                 var environment = await _ctx.Environments.ById(environmentId);
@@ -427,6 +424,11 @@ namespace act.core.etl
 
             if (fqdns != null && fqdns.Length > 0 && fqdns.Length <= 128)
             {
+                for(var i= 0; i< fqdns.Length; i++)
+                {
+                   fqdns[i] = fqdns[i].Replace("com", "*").Replace("COM", "*");
+                   
+                }
                 var filter = new JObject
                     {
                         { "key","name"},
@@ -444,7 +446,7 @@ namespace act.core.etl
             builder.Append(id);
             return builder.ToString();
         }
-        
+
         public async Task<int> PurgeInactiveNodes()
         {
             var date = DateTime.Today.AddDays(-7);
@@ -505,7 +507,7 @@ namespace act.core.etl
         {
             var nodes = await _ctx.Nodes.AsNoTracking().Active().InChefScope().InPciScope().Assigned().ProductIsNotExlcuded().ByComplianceStatus(ComplianceStatusConstant.NotFound)
 
-                .Select(p => new {p.Owner, p.Fqdn, p.PciScope, AppOwnerEmail = p.BuildSpecification.Owner.Email, OsOwnerEmail = p.BuildSpecification.Parent.Owner.Email, LastComplianceDate = p.LastComplianceResultDate})
+                .Select(p => new { p.Owner, p.Fqdn, p.PciScope, AppOwnerEmail = p.BuildSpecification.Owner.Email, OsOwnerEmail = p.BuildSpecification.Parent.Owner.Email, LastComplianceDate = p.LastComplianceResultDate })
 
                 .ToArrayAsync();
 
