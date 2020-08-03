@@ -40,6 +40,15 @@ namespace act.core.web.Models.Nodes
         }
 
         public DateTime? LastComplianceDate { get; }
+
+        public DateTime? LastComplianceDateLocal
+        {
+            get
+            {
+                return LastComplianceDate == null? LastComplianceDate : Convert.ToDateTime(LastComplianceDate).AddMinutes(-1 * LocalTimeOffset);
+            }
+        }
+        public int LocalTimeOffset { get; }
         public Guid? ChefId { get; }
         public bool ShowButtons { get; }
 
@@ -58,7 +67,7 @@ namespace act.core.web.Models.Nodes
 
         public string Domain => FirstDot > 0 ? Fqdn.Substring(FirstDot, Fqdn.Length - FirstDot) : string.Empty;
 
-        public NodeSearchResult(long id, string fqdn, string owner, string product, string function, PciScopeConstant pciScope, int environmentId, string environmentName,  string environmentDescription, string environmentColor, PlatformConstant platform, long? buildSpecId, string buildSpecName, ComplianceStatusConstant complianceStatus, DateTime? lastComplianceDate, Guid? chefId, bool showButtons)
+        public NodeSearchResult(long id, string fqdn, string owner, string product, string function, PciScopeConstant pciScope, int environmentId, string environmentName,  string environmentDescription, string environmentColor, PlatformConstant platform, long? buildSpecId, string buildSpecName, ComplianceStatusConstant complianceStatus, DateTime? lastComplianceDate, Guid? chefId, bool showButtons,int localTimeOffset)
         {
             Id = id;
             Fqdn = fqdn;
@@ -77,6 +86,7 @@ namespace act.core.web.Models.Nodes
             LastComplianceDate = lastComplianceDate;
             ChefId = chefId;
             ShowButtons = showButtons;
+            LocalTimeOffset = localTimeOffset;
         }
     }
 }

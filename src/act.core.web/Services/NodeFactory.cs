@@ -17,6 +17,7 @@ namespace act.core.web.Services
         Task AssignBuildSpecification(long nodeId, long? buildSpecId, string userName = null);
         Task<bool> AssignBuildSpecification(string fqdn, long buildSpecId);
         Task<string[]> ChefIdsForAppOrOsSpecAndEnvironment(long specId, int environmentId);
+        void AssignLocalTimeOffset(int localTimeOffset);
 
         Task<NodeSearchResults> Search(PlatformConstant[] platform,
             int[] environment, PciScopeConstant[] pciScope,
@@ -30,6 +31,7 @@ namespace act.core.web.Services
     {
         private readonly ActDbContext _ctx;
         private readonly ILogger<NodeFactory> _logger;
+        private int localTimeOffset;
         public NodeFactory(ActDbContext ctx, ILoggerFactory logger)
         {
             _ctx = ctx;
@@ -107,7 +109,7 @@ namespace act.core.web.Services
         public async Task<NodeSearchResult[]> GetAssignedToBuildSpec(long buildSpecId)
         {
             var q = _ctx.Nodes.AsNoTracking().ForBuildSpec(buildSpecId);
-            return await ToResult(q, false);
+            return await ToResult(q, false, localTimeOffset);
         }
 
         public async Task<NodeSearchResults> Search(PlatformConstant[] platform,
@@ -261,12 +263,12 @@ namespace act.core.web.Services
 
             var matchCount = await q.CountAsync();
             var skip = take * pageIndex;
-            var results = matchCount > 0 ? await ToResult(q.Skip(skip).Take(take), showButtons) : new NodeSearchResult[0];
+            var results = matchCount > 0 ? await ToResult(q.Skip(skip).Take(take), showButtons, localTimeOffset) : new NodeSearchResult[0];
             var displayCount = skip + results.Length;
             return new NodeSearchResults(results, matchCount, displayCount);
         }
 
-        private static async Task<NodeSearchResult[]> ToResult(IQueryable<Node> q, bool showButtons)
+        private static async Task<NodeSearchResult[]> ToResult(IQueryable<Node> q, bool showButtons, int localTimeOffset)
         {
             return (await q.AsNoTracking()
                     .Select(p => new
@@ -293,8 +295,12 @@ namespace act.core.web.Services
                     p.FunctionName, p.PciScope, p.EnvironmentId, p.EnvName, p.EnvDesc, p.EnvColor,
                     p.Platform, p.BuildSpecificationId,
                     p.BuildSpecificationName, p.ComplianceStatus, p.LastComplianceResultDate,
-                    p.ChefNodeId, showButtons))
+                    p.ChefNodeId, showButtons, localTimeOffset))
                 .ToArray();
+        }
+        public void AssignLocalTimeOffset(int localTimeOffset)
+        {
+            this.localTimeOffset = localTimeOffset;
         }
     }
 }
