@@ -56,7 +56,7 @@ namespace act.core.web.Services
 
             if (!buildSpecExists)
             {
-                _logger.LogInformation($"Adding BuildSpec as null to {it.Fqdn}/{it.InventoryItemId} by {userName}");
+                _logger.LogDebug($"Adding BuildSpec as null to {it.Fqdn}/{it.InventoryItemId} by {userName}");
                 it.BuildSpecificationId = null;
                 await _ctx.SaveChangesAsync();
             }

@@ -75,7 +75,7 @@ namespace act.core.web.Services
                 return new ExecutiveScoreCard(employeeId, "NA", null, null,
                     Enumerable.Empty<ExecutiveScoreCardRow>());
 
-            var reports = _ctx.Employees.Where(p => p.SupervisorId == employeeId);
+            var reports = _ctx.Employees.Where(p => p.SupervisorId == employeeId).ToList();
             var list = new List<ExecutiveScoreCardRow>();
             foreach (var directReport in reports)
             {

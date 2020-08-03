@@ -21,8 +21,8 @@ namespace act.core.etl.ComplianceModel
                 if (IsNodeFailure)
                 {
                     var split = automate_failure_url
-                                    .Replace($"https://{automate_fqdn}/viz/#/nodes/", string.Empty)
-                                    .Replace("?run_id=", "|")
+                                    .Replace($"https://{automate_fqdn}/infrastructure/client-runs/", string.Empty)
+                                    .Replace("/runs/", "|")
                                     .Split("|")
                                     .FirstOrDefault() ?? string.Empty;
                     if (Guid.TryParse(split, out var g))
@@ -54,7 +54,7 @@ namespace act.core.etl.ComplianceModel
         }
 
         public bool IsComplianceFailure => type == "compliance_failure";
-        public bool IsNodeFailure => type == "node_failure";
+        public bool IsNodeFailure => type == "converge_failure";
 
         public ComplianceReportProfile[] failed_critical_profiles { get; set; }
     }

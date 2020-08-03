@@ -41,7 +41,7 @@ namespace act.core.web.Services
 
                 if (obj != null)
                 {
-                    _logger.LogInformation(
+                    _logger.LogDebug(
                         $"recieved automate message via webhook of type {obj.type} with url {obj.automate_failure_url} and fqdn {obj.automate_fqdn} and chefid {obj.ChefNodeId}.");
                     await NotifyByChefId(obj);
                 }
