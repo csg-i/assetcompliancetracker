@@ -495,7 +495,6 @@ namespace act.core.web.Services
 
             node.BuildSpecification.Parent.SoftwareComponents =
                 softwareComponent.Where(x => x.BuildSpecificationId == node.BuildSpecification.Parent.Id).ToList();
-
             var pt = node.Platform;
             var spec = node.BuildSpecification;
 
