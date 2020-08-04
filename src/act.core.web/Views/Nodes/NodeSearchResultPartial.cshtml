@@ -16,7 +16,7 @@
                     <li class="text-right text-muted">
                         <div class="text-blue">Last Compliance Result Date</div>
                     </li>
-                    <li class="text-center text-muted"><small>@(Model.LastComplianceDate.HasValue? Model.LastComplianceDate.Value.ToLocalTime().ToString("MM-dd-yyyy hh:mm tt"): "Not Available")</small></li>
+                    <li class="text-center text-muted"><small>@(Model.LastComplianceDate.HasValue ? Model.LastComplianceDate.Value.ToString("MM-dd-yyyy hh:mm tt") : "Not Available")</small></li>
                 </ul>
 
                 <div class="btn-group float-left">

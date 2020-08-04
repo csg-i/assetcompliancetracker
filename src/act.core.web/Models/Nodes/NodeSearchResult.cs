@@ -40,6 +40,7 @@ namespace act.core.web.Models.Nodes
         }
 
         public DateTime? LastComplianceDate { get; }
+
         public Guid? ChefId { get; }
         public bool ShowButtons { get; }
 

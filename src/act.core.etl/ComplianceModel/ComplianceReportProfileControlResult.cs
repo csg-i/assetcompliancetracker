@@ -26,7 +26,7 @@ namespace act.core.etl.ComplianceModel
 
         public string GetSoftwareName()
         {
-            var firstQuote = code_desc.IndexOf('\'') + 1;
+            var firstQuote = code_desc.IndexOf('"') + 1;
             var @try = code_desc.Substring(firstQuote, code_desc.Length - firstQuote - 1);
             if (string.IsNullOrWhiteSpace(@try))
                 return "(empty string)";
