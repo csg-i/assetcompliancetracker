@@ -19,13 +19,13 @@ namespace act.core.data
         {
             if (flags == null || flags.Length == 0)
                 return null;
-                
+
             if (!typeof(T).IsEnum)
                 throw new NotSupportedException($"{typeof(T)} must be an enumerated type.");
 
             return (T)(object)flags.Cast<int>().Aggregate(0, (c, n) => c |= n);
         }
-       
+
         public static T? GetNullableFieldValue<T>(this DbDataReader r, int ordinal) where T : struct
         {
             var val = r.GetValue(ordinal);
@@ -64,7 +64,7 @@ namespace act.core.data
                 return list.ToArray();
             }
         }
-        
+
         public static async Task<int> ExecuteCommandAsync(this DbContext ctx, string sql, params DbParameter[] parms)
         {
             using (var cmd = ctx.Database.GetDbConnection().CreateCommand())
@@ -108,6 +108,11 @@ namespace act.core.data
             return await queryable.FirstOrDefaultAsync(p => p.Id == id);
         }
 
+        public static async Task<Employee> BySamAccountName(this IQueryable<Employee> queryable, string name)
+        {
+            return await queryable.FirstOrDefaultAsync(p => p.SamAccountName == name);
+        }
+
         public static async Task<bool> ExistsById<T>(this IQueryable<T> queryable, long id) where T : LongId
         {
             return await queryable.AnyAsync(p => p.Id == id);
@@ -122,7 +127,7 @@ namespace act.core.data
 
             return @return;
         }
-        
+
         public static async Task<BuildSpecification> ById(this IQueryable<BuildSpecification> specs,
             BuildSpecificationTypeConstant type, long id)
         {
@@ -164,7 +169,7 @@ namespace act.core.data
         {
             return await nodes.FirstOrDefaultAsync(p => p.Id == environmentId);
         }
-        
+
         public static async Task<Node> ById(this IQueryable<Node> nodes, long inventoryItemId)
         {
             return await nodes.FirstOrDefaultAsync(p => p.InventoryItemId == inventoryItemId);
@@ -194,7 +199,7 @@ namespace act.core.data
         {
             return nodes.Where(p => p.IsActive);
         }
-        
+
         public static IQueryable<Node> ForEnvironment(this IQueryable<Node> nodes, int environmentId)
         {
             return nodes.Where(p => p.EnvironmentId == environmentId);
@@ -213,12 +218,12 @@ namespace act.core.data
         {
             return nodes.Where(p => p.PciScope != PciScopeConstant.C);
         }
-        
+
         public static IQueryable<Node> ByPciScope(this IQueryable<Node> nodes, PciScopeConstant pciScope)
         {
             return nodes.Where(p => p.PciScope == pciScope);
         }
-        
+
         public static IQueryable<Node> ByPciScopes(this IQueryable<Node> nodes, PciScopeConstant[] pciScopes)
         {
             return nodes.Where(p => pciScopes.Contains(p.PciScope));
@@ -232,22 +237,22 @@ namespace act.core.data
         {
             return nodes.Where(p => platforms.Contains(p.Platform));
         }
-        
+
         public static IQueryable<Node> ByComplianceStatus(this IQueryable<Node> nodes, ComplianceStatusConstant status)
         {
             return nodes.Where(p => p.ComplianceStatus == status);
         }
-        
+
         public static IQueryable<Node> ByComplianceStatuses(this IQueryable<Node> nodes, ComplianceStatusConstant[] statuses)
         {
             return nodes.Where(p => statuses.Contains(p.ComplianceStatus));
         }
-        
+
         public static IQueryable<Node> ByProductCode(this IQueryable<Node> nodes, string productCode)
         {
             return nodes.Where(p => p.ProductCode == productCode);
         }
-        
+
         public static IQueryable<Node> ProductIsNotExlcuded(this IQueryable<Node> nodes)
         {
             return nodes.Where(p => !p.Product.ExludeFromReports);
@@ -256,23 +261,23 @@ namespace act.core.data
         {
             return nodes.Where(p => p.Product.ExludeFromReports);
         }
-        
+
         public static IQueryable<Node> Assigned(this IQueryable<Node> nodes)
         {
             return nodes.Where(p => p.BuildSpecificationId != null);
         }
-        
+
         public static IQueryable<Node> Unassigned(this IQueryable<Node> nodes)
         {
             return nodes.Where(p => p.BuildSpecificationId == null);
         }
-        
+
 
         public static IQueryable<Node> InChefScope(this IQueryable<Node> nodes)
         {
             return nodes.Where(p => p.Platform == PlatformConstant.Linux || p.Platform == PlatformConstant.WindowsServer || p.Platform == PlatformConstant.WindowsClient);
         }
-        
+
         public static IQueryable<ComplianceResult> InChefScope(this IQueryable<ComplianceResult> results)
         {
             return results.Where(r => r.Node.Platform == PlatformConstant.Linux || r.Node.Platform == PlatformConstant.WindowsServer || r.Node.Platform == PlatformConstant.WindowsClient);
@@ -283,18 +288,18 @@ namespace act.core.data
             return results.Where(r => r.Node.IsActive);
 
         }
-        
+
         public static IQueryable<ComplianceResult> ProductIsNotExlcuded(this IQueryable<ComplianceResult> nodes)
         {
             return nodes.Where(p => !p.Node.Product.ExludeFromReports);
         }
-        
+
         public static IQueryable<ComplianceResult> InPciScope(this IQueryable<ComplianceResult> results)
         {
             return results.Where(r => r.Node.PciScope != PciScopeConstant.C);
         }
-        
-        
+
+
         public static IQueryable<ComplianceResultTest> InChefScope(this IQueryable<ComplianceResultTest> results)
         {
             return results.Where(r => r.ComplianceResult.Node.Platform == PlatformConstant.Linux || r.ComplianceResult.Node.Platform == PlatformConstant.WindowsServer || r.ComplianceResult.Node.Platform == PlatformConstant.WindowsClient);
@@ -305,12 +310,12 @@ namespace act.core.data
             return results.Where(r => r.ComplianceResult.Node.IsActive);
 
         }
-        
+
         public static IQueryable<ComplianceResultTest> ProductIsNotExlcuded(this IQueryable<ComplianceResultTest> nodes)
         {
             return nodes.Where(p => !p.ComplianceResult.Node.Product.ExludeFromReports);
         }
-        
+
         public static IQueryable<ComplianceResultTest> InPciScope(this IQueryable<ComplianceResultTest> results)
         {
             return results.Where(r => r.ComplianceResult.Node.PciScope != PciScopeConstant.C);
@@ -319,7 +324,7 @@ namespace act.core.data
 
         public static IQueryable<Node> OutOfChefScope(this IQueryable<Node> nodes)
         {
-            return nodes.Where(p =>  p.Platform != PlatformConstant.Linux && p.Platform != PlatformConstant.WindowsServer);
+            return nodes.Where(p => p.Platform != PlatformConstant.Linux && p.Platform != PlatformConstant.WindowsServer);
         }
 
         public static IQueryable<Node> FindForAppOrOsSpecAndEnvironmentWithComplianceResult(this IQueryable<Node> nodes,
@@ -349,8 +354,8 @@ namespace act.core.data
         {
             if (fqdnOrHostName == null)
                 return null;
-            
-            var hostName = $"{fqdnOrHostName}.%";            
+
+            var hostName = $"{fqdnOrHostName}.%";
             return await nodes.Where(p => p.Fqdn == fqdnOrHostName || EF.Functions.Like(p.Fqdn, hostName))
                 .Assigned().Select(p => p.BuildSpecificationId).FirstOrDefaultAsync();
         }
@@ -358,7 +363,7 @@ namespace act.core.data
         public static IQueryable<Employee> Search(this IQueryable<Employee> employees, string query)
         {
             if (query == null)
-                return employees.Where(p=>1==0);
+                return employees.Where(p => 1 == 0);
 
             var sw = $"{query}%";
 
@@ -379,29 +384,29 @@ namespace act.core.data
         {
             if (fqdnOrHostName == null)
                 return null;
-            
-            var hostName = $"{fqdnOrHostName}.%";            
+
+            var hostName = $"{fqdnOrHostName}.%";
             return await nodes.Where(p => p.Fqdn == fqdnOrHostName || EF.Functions.Like(p.Fqdn, hostName))
                 .FirstOrDefaultAsync();
         }
-        
+
         public static IQueryable<SoftwareComponentEnvironment> BySoftwareComponent(this IQueryable<SoftwareComponentEnvironment> scs, long id)
         {
             return scs.Where(p => p.SoftwareComponentId == id);
         }
-        
+
         public static string GetEnvironmentNames(this IEnumerable<SoftwareComponentEnvironment> scs)
         {
             foreach (var component in scs)
             {
-                    component.Environment = new Environment
-                    {
-                        Name = ((EnvironmentList) component.EnvironmentId).ToString()
-                    };
+                component.Environment = new Environment
+                {
+                    Name = ((EnvironmentList)component.EnvironmentId).ToString()
+                };
             }
             return string.Join("/", scs.OrderBy(p => p.Environment.Name).Select(p => p.Environment.Name).Distinct());
         }
-        
+
         public static IQueryable<SoftwareComponentEnvironment> ByEnvironment(this IQueryable<SoftwareComponentEnvironment> scs, int id)
         {
             return scs.Where(p => p.EnvironmentId == id);
