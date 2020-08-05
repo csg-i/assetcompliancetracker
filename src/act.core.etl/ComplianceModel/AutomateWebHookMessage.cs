@@ -33,7 +33,7 @@ namespace act.core.etl.ComplianceModel
             }
         }
 
-        DateTime IComplianceReport.end_time => end_time_utc;
+        DateTime IComplianceReport.end_time => Convert.ToDateTime(end_time_utc);
         Guid IComplianceReport.id { get; } = Guid.NewGuid();
         ComplianceReportProfile[] IComplianceReport.profiles => failed_critical_profiles;
 
@@ -46,7 +46,7 @@ namespace act.core.etl.ComplianceModel
         public string exception_title { get; set; }
         public string exception_message { get; set; }
         public string exception_backtrace { get; set; }
-        public DateTime end_time_utc { get; set; }
+        public string end_time_utc { get; set; }
 
         public ComplianceStatusConstant GetComplianceStatus()
         {
