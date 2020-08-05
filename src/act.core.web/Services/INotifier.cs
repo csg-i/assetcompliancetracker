@@ -35,9 +35,9 @@ namespace act.core.web.Services
         {
             try
             {
-                _logger.LogTrace($"NotifyComplianceFailure WebHook Called with data. {data}");
+                _logger.LogInformation($"NotifyComplianceFailure WebHook Called with data. {data}");
                 var obj = JsonConvert.DeserializeObject<AutomateWebHookMessage>(data);
-                _logger.LogTrace("NotifyComplianceFailure WebHook able to deserialize data.");
+                _logger.LogInformation("NotifyComplianceFailure WebHook able to deserialize data.");
 
                 if (obj != null)
                 {
