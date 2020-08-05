@@ -159,10 +159,13 @@ namespace act.core.etl
 
                 if (run != null)
                 {
-                    node.LastComplianceResultDate = run.EndTime;
+                    if (run.EndDate != DateTime.MinValue)
+                    {
+                        node.LastComplianceResultDate = run.EndTime;
+                        node.FailingSince ??= run.EndTime;
+                    }
                     node.LastComplianceResultId = run.ResultId;
-                    if (!node.FailingSince.HasValue)
-                        node.FailingSince = run.EndTime;
+
                     node.ComplianceStatus = run.Status;
                     await _ctx.SaveChangesAsync();
                 }
@@ -278,7 +281,7 @@ namespace act.core.etl
 
         }
 
-       
+
         private async Task<T> PostRequest<T>(int environmentId, string url, string json = null)
         {
             using (var client = new HttpClient())
@@ -424,10 +427,10 @@ namespace act.core.etl
 
             if (fqdns != null && fqdns.Length > 0 && fqdns.Length <= 128)
             {
-                for(var i= 0; i< fqdns.Length; i++)
+                for (var i = 0; i < fqdns.Length; i++)
                 {
-                   fqdns[i] = fqdns[i].Replace("com", "*").Replace("COM", "*");
-                   
+                    fqdns[i] = fqdns[i].Replace("com", "*").Replace("COM", "*");
+
                 }
                 var filter = new JObject
                     {
