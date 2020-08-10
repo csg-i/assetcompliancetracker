@@ -150,6 +150,7 @@ namespace act.core.etl
 
         public async Task SaveComplianceDataFromWebHook(AutomateWebHookMessage message)
         {
+            message.end_time_utc = message.failed_critical_profiles?[0].controls?[0].results?[0].start_time;
             var node = await _ctx.Nodes.Active().ById(message.node_uuid);
             var text = node == null ? "did not find" : "found";
             _logger.LogInformation($"NotifyComplianceFailure WebHook got a compliance failure message for chef node id {message.node_uuid} and {text} a matching node {node?.Fqdn}.");

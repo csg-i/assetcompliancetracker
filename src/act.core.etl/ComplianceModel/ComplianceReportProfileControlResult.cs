@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using act.core.data;
 
@@ -12,7 +13,7 @@ namespace act.core.etl.ComplianceModel
         // ReSharper disable MemberCanBePrivate.Global
         public string status { get; set; }
         // ReSharper restore MemberCanBePrivate.Global
-
+        public string start_time { get; set; }
         public string code_desc { get; set; }
         public string message { get; set; }
 
