@@ -41,18 +41,24 @@ namespace act.core.web.Services
     internal class BuildSpecificationFactory : IBuildSpecificationFactory
     {
         private readonly ActDbContext _ctx;
-        private static readonly MemoryCache _cache = new MemoryCache(new MemoryCacheOptions
-        {
-            SizeLimit = 10
-        });
+        private readonly object _lockObject = new object();
+        private readonly IMemoryCache _cache;
 
-        private async Task<IQueryable<SoftwareComponent>> GetOrCreateSoftwareComponent()
+        public BuildSpecificationFactory(ActDbContext ctx, IMemoryCache memoryCache)
+        {
+            _ctx = ctx;
+            _cache = memoryCache;
+        }
+
+        private IQueryable<SoftwareComponent> GetOrCreateSoftwareComponent()
         {
             const string key = "softwareComponent";
-            if (!_cache.TryGetValue(key, out IQueryable<SoftwareComponent> softwareComponents))
+            lock (_lockObject)
             {
-                softwareComponents = await Task.Run(() => _ctx.SoftwareComponents.AsNoTracking()
-                    .Include(a => a.SoftwareComponentEnvironments).AsNoTracking());
+                if (!_cache.TryGetValue(key, out IQueryable<SoftwareComponent> softwareComponents))
+                {
+                    softwareComponents = _ctx.SoftwareComponents.AsNoTracking()
+                        .Include(a => a.SoftwareComponentEnvironments).AsNoTracking();
 
                 var cacheEntryOptions = new MemoryCacheEntryOptions()
                     .SetPriority(CacheItemPriority.High)
@@ -60,13 +66,10 @@ namespace act.core.web.Services
                     .SetSlidingExpiration(TimeSpan.FromMinutes(30))
                     .SetAbsoluteExpiration(TimeSpan.FromMinutes(60));
 
-                _cache.Set(key, softwareComponents, cacheEntryOptions);
+                    _cache.Set(key, softwareComponents, cacheEntryOptions);
+                }
+                return softwareComponents;
             }
-            return softwareComponents;
-        }
-        public BuildSpecificationFactory(ActDbContext ctx)
-        {
-            _ctx = ctx;
         }
 
         public async Task<PortReportItems> AllPortsReport()
@@ -389,7 +392,7 @@ namespace act.core.web.Services
                 .Include(p => p.Parent)
                 .Include(p => p.Nodes)
                 .ById(type, specId);
-            var softwareComponent = await GetOrCreateSoftwareComponent();
+            var softwareComponent = GetOrCreateSoftwareComponent();
             BuildSpecification osSpec;
             if (appSpec == null)
             {
@@ -489,7 +492,7 @@ namespace act.core.web.Services
             if (node?.BuildSpecificationId == null)
                 return JsonInspecAttributes.Empty(fqdn);
 
-            var softwareComponent = await GetOrCreateSoftwareComponent();
+            var softwareComponent = GetOrCreateSoftwareComponent();
             node.BuildSpecification.SoftwareComponents =
                 softwareComponent.Where(x => x.BuildSpecificationId == node.BuildSpecification.Id).ToList();
 
