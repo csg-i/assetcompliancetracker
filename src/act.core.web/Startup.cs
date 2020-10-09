@@ -45,7 +45,7 @@ namespace act.core.web
             //setup adfs
             var adfs = new AdfsSection();
             _configuration.GetSection("ADFS").Bind(adfs);
-
+            services.AddMemoryCache();
 
             //register all dependencies
             services
