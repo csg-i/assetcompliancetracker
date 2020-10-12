@@ -7,6 +7,7 @@ using act.core.web.Extensions;
 using act.core.web.Models.BuildSpec;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Justification = act.core.web.Models.BuildSpec.Justification;
 
 namespace act.core.web.Services
@@ -43,26 +44,30 @@ namespace act.core.web.Services
         private readonly ActDbContext _ctx;
         private readonly object _lockObject = new object();
         private readonly IMemoryCache _cache;
+        private readonly ILogger _logger;
 
-        public BuildSpecificationFactory(ActDbContext ctx, IMemoryCache memoryCache)
+        public BuildSpecificationFactory(ActDbContext ctx, IMemoryCache memoryCache, ILoggerFactory loggerFactory)
         {
             _ctx = ctx;
             _cache = memoryCache;
+            _logger = loggerFactory.CreateLogger<JustificationFactory>();
         }
 
         private IQueryable<SoftwareComponent> GetOrCreateSoftwareComponent()
         {
             const string key = "softwareComponent";
+            _logger.LogInformation("To retrieve Software Component");
             lock (_lockObject)
             {
                 if (!_cache.TryGetValue(key, out IQueryable<SoftwareComponent> softwareComponents))
                 {
+                    _logger.LogInformation("Hitting DB for Software component");
                     softwareComponents = _ctx.SoftwareComponents.AsNoTracking()
                         .Include(a => a.SoftwareComponentEnvironments).AsNoTracking();
 
                 var cacheEntryOptions = new MemoryCacheEntryOptions()
                     .SetPriority(CacheItemPriority.High)
-                    .SetSize(1)
+                    .SetSize(10)
                     .SetSlidingExpiration(TimeSpan.FromMinutes(30))
                     .SetAbsoluteExpiration(TimeSpan.FromMinutes(60));
 
