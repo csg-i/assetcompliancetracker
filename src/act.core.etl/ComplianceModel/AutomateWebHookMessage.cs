@@ -45,7 +45,7 @@ namespace act.core.etl.ComplianceModel
         public string failure_snippet { get; set; }
         public string exception_title { get; set; }
         public string exception_message { get; set; }
-        public string exception_backtrace { get; set; }
+        public string[] exception_backtrace { get; set; }
         public string end_time_utc { get; set; }
 
         public ComplianceStatusConstant GetComplianceStatus()

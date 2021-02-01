@@ -42,7 +42,7 @@ namespace act.core.web.Services
                 if (obj != null)
                 {
                     _logger.LogInformation(
-                        $"recieved automate message via webhook of type {obj.type} with url {obj.automate_failure_url} and fqdn {obj.automate_fqdn} and chefid {obj.ChefNodeId}.");
+                        $"received automate message via webhook of type {obj.type} with url {obj.automate_failure_url} and fqdn {obj.automate_fqdn} and chefid {obj.ChefNodeId}.");
                     await NotifyByChefId(obj);
                 }
 
@@ -71,7 +71,7 @@ namespace act.core.web.Services
                 .Append("<h2>Message</h2>")
                 .Append($"<code>{message.exception_message}</code>")
                 .Append("<h2>Backtrace</h2>")
-                .Append($"<code>{message.exception_backtrace}</code>")
+                .Append($"<code>{string.Join(",", message.exception_backtrace)}</code>")
                 .Append("<p>Thank you,<br/>The CHEF Team</p>");
             await _gatherer.SendMail(emails, subject, builder.ToString());
         }
@@ -136,13 +136,12 @@ namespace act.core.web.Services
 
                 var toSend = emails.Distinct().ToArray();
                 _logger.LogInformation($"Emailing converge failure to {name} about {result.Fqdn}");
-
                 await SendNodeFailureMail(toSend, name, result.Fqdn, message);
             }
             else
             {
                 _logger.LogWarning(
-                    $"recieved automate message via webhook of type {message.type} with url {message.automate_failure_url} and fqdn {message.automate_fqdn} and chefid {message.ChefNodeId} and node_name {message.node_name} but could not find the node in ACT.");
+                    $"received automate message via webhook of type {message.type} with url {message.automate_failure_url} and fqdn {message.automate_fqdn} and chefid {message.ChefNodeId} and node_name {message.node_name} but could not find the node in ACT.");
             }
         }
 
