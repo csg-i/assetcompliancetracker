@@ -42,6 +42,10 @@ namespace act.core.data
 
         public Guid? LastComplianceResultId { get; set; }
 
+        public string RemedyGroupName { get; set; }
+
+        public string RemedyGroupEmailList { get; set; }
+
         public Employee Owner { get; set; }
 
         public Product Product { get; set; }
