@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using act.core.data;
 
 namespace act.core.data.Migrations
 {
     [DbContext(typeof(ActDbContext))]
-    partial class ActDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210511101723_UpdateNodeWithRemedyGroupInfo")]
+    partial class UpdateNodeWithRemedyGroupInfo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
