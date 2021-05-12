@@ -499,7 +499,7 @@ namespace act.core.etl
         public async Task<int> NotifyUnassignedNodes()
         {
             var nodes = await _ctx.Nodes.AsNoTracking().Active().InPciScope().Unassigned().ProductIsNotExlcuded()
-                .Select(p => new { p.Owner, p.Fqdn, p.PciScope })
+                .Select(p => new { p.Owner, p.Fqdn, p.PciScope, p.RemedyGroupEmailList })
                 .ToArrayAsync();
 
             if (nodes.Length > 0)
@@ -509,7 +509,9 @@ namespace act.core.etl
                 foreach (var node in nodes)
                 {
                     var name = node.Owner.OwnerText(false);
-                    var email = node.Owner.Email;
+                    var email = !string.IsNullOrEmpty(node.RemedyGroupEmailList)
+                        ? new[] {node.Owner.Email, node.RemedyGroupEmailList}
+                        : new[] {node.Owner.Email};
                     _logger.LogInformation(
                         $"Emailing {name} at email {email} about {node.Fqdn} with pci-scope {node.PciScope}");
                     await SendUnassignedMail(email, name, node.Fqdn, node.PciScope.ToString());
@@ -522,7 +524,7 @@ namespace act.core.etl
         {
             var nodes = await _ctx.Nodes.AsNoTracking().Active().InChefScope().InPciScope().Assigned().ProductIsNotExlcuded().ByComplianceStatus(ComplianceStatusConstant.NotFound)
 
-                .Select(p => new { p.Owner, p.Fqdn, p.PciScope, AppOwnerEmail = p.BuildSpecification.Owner.Email, OsOwnerEmail = p.BuildSpecification.Parent.Owner.Email, LastComplianceDate = p.LastComplianceResultDate })
+                .Select(p => new { p.Owner, p.Fqdn, p.PciScope, AppOwnerEmail = p.BuildSpecification.Owner.Email, OsOwnerEmail = p.BuildSpecification.Parent.Owner.Email, LastComplianceDate = p.LastComplianceResultDate, p.RemedyGroupEmailList, p.BuildSpecification.IncludeRemedyEmailList })
 
                 .ToArrayAsync();
 
@@ -533,7 +535,11 @@ namespace act.core.etl
                 foreach (var node in nodes)
                 {
                     var name = node.Owner.OwnerText(false);
-                    var emails = new[] { node.Owner.Email, node.AppOwnerEmail, node.OsOwnerEmail };
+
+                    var emails = (node.IncludeRemedyEmailList && !string.IsNullOrEmpty(node.RemedyGroupEmailList))
+                        ? new[] { node.Owner.Email, node.AppOwnerEmail, node.OsOwnerEmail, node.RemedyGroupEmailList }
+                        : new[] { node.Owner.Email, node.AppOwnerEmail, node.OsOwnerEmail };
+
                     _logger.LogInformation(
                         $"Emailing {name} at email {node.Owner.Email} and {node.AppOwnerEmail} and {node.OsOwnerEmail} about {node.Fqdn} with pci-scope {node.PciScope}");
                     await SendNotReportingMail(emails, name, node.Fqdn, node.PciScope.ToString(), node.LastComplianceDate);
@@ -543,7 +549,7 @@ namespace act.core.etl
             return nodes.Length;
         }
 
-        private async Task SendUnassignedMail(string email, string name, string fqdn, string pci)
+        private async Task SendUnassignedMail(string[] emails, string name, string fqdn, string pci)
         {
 
             var builder = new StringBuilder()
@@ -551,7 +557,7 @@ namespace act.core.etl
                     $"<p>{name}, you are receiving this email because you are the identified owner of {fqdn} and this server is not assigned to an Application specification within ACT.  Please assign this server to an Application Specification to resolve this email alert.</p>")
                 .Append("<p>Thank you,<br/>The Asset Compliance Tracker (ACT) Team</p>");
 
-            await SendMail(new[] { email }, $"ACT Unassigned Failure for a PCI '{pci}' class system - {fqdn}",
+            await SendMail(emails, $"ACT Unassigned Failure for a PCI '{pci}' class system - {fqdn}",
                 builder.ToString());
         }
         private async Task SendNotReportingMail(string[] emails, string name, string fqdn, string pci, DateTime? lastComplianceDate)

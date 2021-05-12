@@ -37,6 +37,8 @@ namespace act.core.data
 
         public string EmailAddress { get; set; }
 
+        public bool IncludeRemedyEmailList { get; set; }
+
         public override byte[] TimeStamp { get; set; }
 
         public Employee Owner { get; set; }
