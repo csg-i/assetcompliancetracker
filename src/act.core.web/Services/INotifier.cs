@@ -124,8 +124,8 @@ namespace act.core.web.Services
             {
                 var name = result.Owner.OwnerText(false);
                 var emails = !string.IsNullOrEmpty(result.RemedyGroupEmailList)
-                    ? new List<string> {result.Owner.Email, result.RemedyGroupEmailList.ToLower()}
-                    : new List<string> {result.Owner.Email};
+                    ? new List<string> {result.Owner.Email.ToLower(), result.RemedyGroupEmailList.ToLower()}
+                    : new List<string> {result.Owner.Email.ToLower()};
                 if (result.BuildSpecificationId.HasValue)
                 {
                     var bs = await _ctx.BuildSpecifications
