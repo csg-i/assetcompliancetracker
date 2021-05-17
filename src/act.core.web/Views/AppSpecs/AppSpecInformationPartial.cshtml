@@ -1,13 +1,13 @@
 ﻿@using act.core.data
 @model act.core.web.Models.AppSpecs.AppSpecInformation
-    
+
 <div class="app-information-widget on-visible" data-visibility-action="initializeInfoWidget" data-url="@Url.JsonSaveAppSpecInfo()" data-platform="@Model.Platform">
     <form role="form" class="col-xl-6 col-lg-7 col-md-8 col-sm-10 col-12 m-auto">
         <p class="text-muted">
             Enter the specification for a specific application
         </p>
         <hr />
-        <input type="hidden" name="id" id="id" value="@Model.Id"/>
+        <input type="hidden" name="id" id="id" value="@Model.Id" />
         <div class="form-group">
             <label class="sr-only" for="name">Build Specification Name</label>
             <input type="text" class="form-control form-control-lg action-app-spec-name-changed" id="name" name="name" placeholder="Application Specification Name" data-core-os-wraper="#coreoswraper" value="@Model.Name" maxlength="256" autofocus>
@@ -22,7 +22,7 @@
                 </div>
             </div>
         </div>
-        <div class="form-check" id="coreoswrapper" style="display:@(Model.Platform.ToString().ToLower().StartsWith("windows") ? "block": "none")">           
+        <div class="form-check" id="coreoswrapper" style="display:@(Model.Platform.ToString().ToLower().StartsWith("windows") ? "block": "none")">
             @if (Model.RunningCoreOs.GetValueOrDefault())
             {
                 <input type="checkbox" class="form-check-input" name="runningcoreos" id="runningcoreos" value="true" checked="checked">
@@ -30,11 +30,11 @@
             else
             {
                 <input type="checkbox" class="form-check-input" name="runningcoreos" id="runningcoreos" value="true">
-            } 
+            }
             <label for="runningcoreos" class="form-check-label"> Running Core OS (No GUI)</label>
         </div>
         <div class="form-group">
-            <input type="hidden" id="ownerid" name="ownerid" value="@Model.OwnerId"/>
+            <input type="hidden" id="ownerid" name="ownerid" value="@Model.OwnerId" />
             <label for="ownername">Owner</label>
             <input type="text" class="form-control on-visible" data-visibility-action="wireUpTypeAhead" data-value-field="#ownerid" data-url="@Url.JsonEmployeeTypeAhead()" id="ownername" name="ownername" placeholder="Owner of this specification" value="@Model.OwnerName">
         </div>
@@ -42,6 +42,10 @@
             <label for="email">Email Address</label>
             <input type="text" class="form-control" id="email" name="email" placeholder="Optional Email Address for Compliance Checks." value="@Model.Email" maxlength="256">
         </div>
+        <div class="form-group">
+            <label for="includeremedyemaillist">Send failure email notifications to the GAM Remedy Email Group?</label>
+            @Html.CheckBoxFor(r=>r.IncludeRemedyEmailList, new{ @class = "form-control w-auto d-inline ml-1" })
+            </div>
         <div class="form-group">
             <label for="wikilink">Confluence Wiki Link</label>
             <input type="text" class="form-control" id="wikilink" name="wikilink" placeholder="Optional link to a your document library in confluence." value="@Model.WikiLink" maxlength="256">

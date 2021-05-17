@@ -40,7 +40,8 @@ namespace act.core.web.Services
                     WikiLink = info.WikiLink,
                     Overview = info.Overview,
                     EmailAddress = info.Email,
-                    RunningCoreOs = osSpec?.Platform == PlatformConstant.WindowsServer  && info.RunningCoreOs.GetValueOrDefault()
+                    RunningCoreOs = osSpec?.Platform == PlatformConstant.WindowsServer  && info.RunningCoreOs.GetValueOrDefault(),
+                    IncludeRemedyEmailList = info.IncludeRemedyEmailList
                 }).Entity;
             }
             else
@@ -52,6 +53,7 @@ namespace act.core.web.Services
                 it.WikiLink = info.WikiLink;
                 it.Overview = info.Overview;
                 it.EmailAddress = info.Email;
+                it.IncludeRemedyEmailList = info.IncludeRemedyEmailList;
             }
 
             await Ctx.SaveChangesAsync();
@@ -72,7 +74,8 @@ namespace act.core.web.Services
                 Name = it.Name,
                 Id = it.Id,
                 Email = it.EmailAddress,
-                RunningCoreOs = it.RunningCoreOs
+                RunningCoreOs = it.RunningCoreOs,
+                IncludeRemedyEmailList = it.IncludeRemedyEmailList
             };
         }
 
