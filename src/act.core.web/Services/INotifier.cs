@@ -115,14 +115,17 @@ namespace act.core.web.Services
                 {
                     p.Fqdn,
                     p.Owner,
-                    p.BuildSpecificationId
+                    p.BuildSpecificationId,
+                    p.RemedyGroupEmailList
                 }).FirstOrDefaultAsync();
 
 
             if (result != null)
             {
                 var name = result.Owner.OwnerText(false);
-                var emails = new List<string> {result.Owner.Email};
+                var emails = !string.IsNullOrEmpty(result.RemedyGroupEmailList)
+                    ? new List<string> {result.Owner.Email.ToLower(), result.RemedyGroupEmailList.ToLower()}
+                    : new List<string> {result.Owner.Email.ToLower()};
                 if (result.BuildSpecificationId.HasValue)
                 {
                     var bs = await _ctx.BuildSpecifications
@@ -211,7 +214,8 @@ namespace act.core.web.Services
                 
                 if (!string.IsNullOrWhiteSpace(bs.EmailAddress)) 
                     emails.Add(bs.EmailAddress.ToLower()); //Add AppSpec Email
-
+                if(bs.IncludeRemedyEmailList && !string.IsNullOrEmpty(result.RemedyGroupEmailList))
+                    emails.Add(result.RemedyGroupEmailList.ToLower());
                 if (!string.IsNullOrWhiteSpace(bs.Parent?.EmailAddress))
                     emails.Add(bs.Parent.EmailAddress.ToLower()); //Add OS Spec Email
 
