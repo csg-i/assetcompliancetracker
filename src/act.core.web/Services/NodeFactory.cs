@@ -252,6 +252,12 @@ namespace act.core.web.Services
 
                     q = q.OrderBy(p => p.BuildSpecification.Name).ThenBy(p => p.Fqdn);
                     break;
+                case NodeSearchTypeConstant.RemedyGroupEmail:
+                    if (!string.IsNullOrWhiteSpace(query))
+                        q = q.Where(p => EF.Functions.Like(p.RemedyGroupEmailList, $"{query}%"));
+
+                    q = q.OrderBy(p => p.RemedyGroupEmailList);
+                    break;
                 default:
                     throw new ArgumentException(@"NodeSearchType not supported.", nameof(searchType));
             }
@@ -286,14 +292,15 @@ namespace act.core.web.Services
                         BuildSpecificationName = p.BuildSpecification == null ? null : p.BuildSpecification.Name,
                         p.ComplianceStatus,
                         p.LastComplianceResultDate,
-                        p.ChefNodeId
+                        p.ChefNodeId,
+                        p.RemedyGroupEmailList
                     })
                     .ToArrayAsync()) //YANK FROM DB
                 .Select(p => new NodeSearchResult(p.InventoryItemId, p.Fqdn, p.Owner.OwnerText(), p.ProductName,
                     p.FunctionName, p.PciScope, p.EnvironmentId, p.EnvName, p.EnvDesc, p.EnvColor,
                     p.Platform, p.BuildSpecificationId,
                     p.BuildSpecificationName, p.ComplianceStatus, p.LastComplianceResultDate,
-                    p.ChefNodeId, showButtons))
+                    p.ChefNodeId, showButtons,p.RemedyGroupEmailList))
                 .ToArray();
         }
     }

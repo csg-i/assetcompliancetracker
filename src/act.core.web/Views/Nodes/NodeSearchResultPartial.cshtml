@@ -49,7 +49,15 @@
             <div class="col-12 col-md-3 col-lg-3">
 
                 <ul class="d-none float-right d-lg-block ml-1">
-                    <li class="text-right text-muted" title="Owned by @Model.Owner">@Model.Owner</li>
+                    @if (!string.IsNullOrEmpty(Model.RemedyGroupEmail))
+                    {
+                        <li class="text-right text-muted" title="Owned by @Model.Owner">@Model.Owner /</li>
+                        <li class="text-right text-muted" title="Remedy Group Email @Model.RemedyGroupEmail"><small>@Model.RemedyGroupEmail</small></li>
+                    }
+                    else
+                    {
+                        <li class="text-right text-muted" title="Owned by @Model.Owner">@Model.Owner</li>
+                    }
                     <li class="text-right text-muted" title="Product @Model.Product / Function @Model.Function"><small><em>@Model.Product - @Model.Function</em></small></li>
                 </ul>
 
@@ -66,7 +74,8 @@
         </div>
         <span class="badge float-right badge-pill badge-@Model.ComplianceStatusColor" title="Security Class: @Model.SecurityClass | Compliance Status: @(Model.ComplianceStatus == ComplianceStatusConstant.NotFound ? "Not Found" : Model.ComplianceStatus.ToString()) as of @(Model.LastComplianceDate.HasValue ? Model.LastComplianceDate.Value.ToShortDateString() : "now")">@Model.SecurityClass</span>
         <ul class="d-none float-right d-lg-block mx-2">
-            <li class="text-right text-muted" title="Owned by @Model.Owner">@Model.Owner</li>
+            <li class="text-right text-muted" title="Owned by @Model.Owner">@Model.Owner /</li>
+            <li class="text-right text-muted" title="Remedy Group Email @Model.RemedyGroupEmail"><small>@Model.RemedyGroupEmail</small></li>
             <li class="text-right text-muted" title="Product @Model.Product / Function @Model.Function"><small><em>@Model.Product - @Model.Function</em></small></li>
         </ul>
     }

@@ -32,7 +32,7 @@ namespace act.core.web.Models.BuildSpec
             Overview = new HtmlString((overview??string.Empty).Replace("\n","<br/>"));
             Justifications = (justifications ?? Enumerable.Empty<Justification>()).OrderBy(p => (int)p.JustificationType);
             UnjustifiedSoftware = (unJustifiedThings ?? Enumerable.Empty<Software>()).OrderBy(p => p.JustificationType).ThenBy(p => p.Name);
-            Nodes = (nodes ?? Enumerable.Empty<InventorySystemNode>()).OrderBy(p => p.Fqdn);
+            Nodes = (nodes ?? Enumerable.Empty<InventorySystemNode>()).OrderBy(p => p.Fqdn).ThenBy(p=>p.Owner).ThenBy(p=>p.RemedyGroupEmail);
         }
     }
 }
