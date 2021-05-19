@@ -8,6 +8,7 @@ namespace act.core.web.Models.Nodes
         Product,
         Mine,
         OsSpec,
-        AppSpec
+        AppSpec,
+        RemedyGroupEmail
     }
 }

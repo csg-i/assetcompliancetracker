@@ -21,6 +21,8 @@ namespace act.core.web.Models.Nodes
         public string BuildSpecName { get; }
         public ComplianceStatusConstant ComplianceStatus { get; }
 
+        public string RemedyGroupEmail { get; }
+
         public string ComplianceStatusColor
         {
             get
@@ -59,7 +61,7 @@ namespace act.core.web.Models.Nodes
 
         public string Domain => FirstDot > 0 ? Fqdn.Substring(FirstDot, Fqdn.Length - FirstDot) : string.Empty;
 
-        public NodeSearchResult(long id, string fqdn, string owner, string product, string function, PciScopeConstant pciScope, int environmentId, string environmentName,  string environmentDescription, string environmentColor, PlatformConstant platform, long? buildSpecId, string buildSpecName, ComplianceStatusConstant complianceStatus, DateTime? lastComplianceDate, Guid? chefId, bool showButtons)
+        public NodeSearchResult(long id, string fqdn, string owner, string product, string function, PciScopeConstant pciScope, int environmentId, string environmentName,  string environmentDescription, string environmentColor, PlatformConstant platform, long? buildSpecId, string buildSpecName, ComplianceStatusConstant complianceStatus, DateTime? lastComplianceDate, Guid? chefId, bool showButtons, string remedyGroupEmail)
         {
             Id = id;
             Fqdn = fqdn;
@@ -78,6 +80,7 @@ namespace act.core.web.Models.Nodes
             LastComplianceDate = lastComplianceDate;
             ChefId = chefId;
             ShowButtons = showButtons;
+            RemedyGroupEmail = remedyGroupEmail;
         }
     }
 }

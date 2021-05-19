@@ -17,9 +17,8 @@ namespace act.core.web.Models.AppSpecs
         public string OsSpecName { get; set; }
         public string OwnerName { get; set; }
         public long? OwnerId { get; set; }
-
         public string Email { get; set; }
-
+        public bool IncludeRemedyEmailList { get; set; }
         public string WikiLink { get; set; }
         public string Overview { get; set; }
 

@@ -12,6 +12,8 @@ namespace act.core.web.Models
         long? OwnerId { get; set; }
 
         string Email { get; set; }
+
+        bool IncludeRemedyEmailList { get; set; }
         IDictionary<string, string> Validate();
     }
 }
