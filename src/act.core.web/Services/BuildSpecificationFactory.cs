@@ -393,7 +393,7 @@ namespace act.core.web.Services
             var appSpec = await _ctx.BuildSpecifications.AsNoTracking()
                 .Include(p => p.Parent)
                 .Include(p => p.Nodes)
-                .Include(p=>p.Owner)
+                .Include(p => p.Owner)
                 .ById(type, specId);
             var softwareComponent = GetOrCreateSoftwareComponent();
             BuildSpecification osSpec;

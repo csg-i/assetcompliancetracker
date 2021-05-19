@@ -23,7 +23,7 @@ namespace act.core.web.Services
             NodeComplianceSearchTypeConstant[] compliance, NodeSearchTypeConstant searchType, string query,
             bool hideProductExclusions, IUserSecurity employeeSecurity, int pageIndex, bool showButtons);
 
-        Task<IDictionary<int ,(string name, string color)>> GetEnvironments();
+        Task<IDictionary<int, (string name, string color)>> GetEnvironments();
     }
 
     internal class NodeFactory : INodeFactory
@@ -36,18 +36,18 @@ namespace act.core.web.Services
             _logger = logger.CreateLogger<NodeFactory>();
         }
 
-        public async Task<IDictionary<int ,(string name, string color)>> GetEnvironments()
+        public async Task<IDictionary<int, (string name, string color)>> GetEnvironments()
         {
             var all = await _ctx.Environments.OrderBy(p => p.Id).ToArrayAsync();
-            return all.ToDictionary(p => p.Id, p=> (p.Name, p.Color));
+            return all.ToDictionary(p => p.Id, p => (p.Name, p.Color));
         }
-        
+
         public async Task AssignBuildSpecification(long nodeId, long? buildSpecId, string userName = null)
         {
             var it = await _ctx.Nodes.ById(nodeId);
             if (it == null)
                 throw new ArgumentException($"A Node with the InventoryItemId {nodeId} was not found.", nameof(nodeId));
-            
+
             var buildSpecExists = buildSpecId.HasValue && await _ctx.BuildSpecifications
                 .OfBuildSpecType(BuildSpecificationTypeConstant.Application)
                 .ExistsById(buildSpecId.Value);
@@ -77,7 +77,7 @@ namespace act.core.web.Services
             if (!buildSpecExists)
                 throw new ArgumentException($"An Application Specification with the ID {buildSpecId} was not found.",
                     nameof(buildSpecId));
-                
+
             if (it.BuildSpecificationId != buildSpecId)
             {
                 it.BuildSpecificationId = buildSpecId;
@@ -101,7 +101,7 @@ namespace act.core.web.Services
 
         public async Task<long?> BuildSpecIdByHost(string fqdnOrHostName)
         {
-            return await _ctx.Nodes.AsNoTracking().BuildSpecIdByFqdnOrHostName(fqdnOrHostName);            
+            return await _ctx.Nodes.AsNoTracking().BuildSpecIdByFqdnOrHostName(fqdnOrHostName);
         }
 
         public async Task<NodeSearchResult[]> GetAssignedToBuildSpec(long buildSpecId)
@@ -117,27 +117,27 @@ namespace act.core.web.Services
         {
             var valid = !string.IsNullOrWhiteSpace(query);
             const int take = 30;
-            var q = _ctx.Nodes.AsNoTracking().Active();
-            if (hideProductExclusions) 
-                q = q.ProductIsNotExlcuded();
+            var node = _ctx.Nodes.AsNoTracking().Active();
+            if (hideProductExclusions)
+                node = node.ProductIsNotExlcuded();
 
             if (platform?.Length > 0)
             {
-                
-                q = q.ByPlatforms(platform);
+
+                node = node.ByPlatforms(platform);
 
                 valid = true;
             }
 
             if (environment?.Length > 0)
             {
-                q = q.ForEnvironments(environment);
+                node = node.ForEnvironments(environment);
                 valid = true;
             }
 
             if (pciScope?.Length > 0)
             {
-                q = q.ByPciScopes(pciScope);
+                node = node.ByPciScopes(pciScope);
                 valid = true;
             }
 
@@ -150,7 +150,7 @@ namespace act.core.web.Services
                 var unassigned = cf.HasFlag(NodeComplianceSearchTypeConstant.Unassigned);
                 var assigned = cf.HasFlag(NodeComplianceSearchTypeConstant.Assigned);
                 var complianceStatuses = new List<ComplianceStatusConstant>();
-                
+
                 if (cf.HasFlag(NodeComplianceSearchTypeConstant.NotReporting))
                 {
                     complianceStatuses.Add(ComplianceStatusConstant.NotFound);
@@ -167,16 +167,16 @@ namespace act.core.web.Services
                 if (complianceStatuses.Any())
                 {
                     assigned = true;
-                    q = q.ByComplianceStatuses(complianceStatuses.ToArray());
+                    node = node.ByComplianceStatuses(complianceStatuses.ToArray());
                 }
 
                 if (unassigned && !assigned)
                 {
-                    q = q.Unassigned();
+                    node = node.Unassigned();
                 }
                 else if (assigned && !unassigned)
                 {
-                    q = q.Assigned();
+                    node = node.Assigned();
                 }
 
                 valid = true;
@@ -186,88 +186,88 @@ namespace act.core.web.Services
             {
                 case NodeSearchTypeConstant.Mine:
                     if (!string.IsNullOrWhiteSpace(query))
-                        q = q.Where(p => EF.Functions.Like(p.Fqdn, $"{query}%"));
-                    q = q.Where(p => p.OwnerEmployeeId == employeeSecurity.EmployeeId).OrderBy(p => p.Fqdn);
+                        node = node.Where(p => EF.Functions.Like(p.Fqdn, $"{query}%"));
+                    node = node.Where(p => p.OwnerEmployeeId == employeeSecurity.EmployeeId).OrderBy(p => p.Fqdn);
                     valid = true;
                     break;
                 case NodeSearchTypeConstant.Fqdn:
                     if (!string.IsNullOrWhiteSpace(query))
-                        q = q.Where(p =>EF.Functions.Like(p.Fqdn, $"{query}%"));
+                        node = node.Where(p => EF.Functions.Like(p.Fqdn, $"{query}%"));
 
-                    q = q.OrderBy(p => p.Fqdn);
+                    node = node.OrderBy(p => p.Fqdn);
                     break;
                 case NodeSearchTypeConstant.Owner:
                     if (!string.IsNullOrWhiteSpace(query))
                     {
-                        var empIds = await q.Select(p => p.Owner).Search(query).Select(p => p.Id).Distinct()
+                        var empIds = await node.Select(p => p.Owner).Search(query).Select(p => p.Id).Distinct()
                             .ToArrayAsync();
-                        q = q.Where(p => empIds.Contains(p.OwnerEmployeeId));
+                        node = node.Where(p => empIds.Contains(p.OwnerEmployeeId));
                     }
 
-                    q = q.OrderBy(p => p.Owner.PreferredName ?? p.Owner.FirstName).ThenBy(p => p.Owner.LastName)
+                    node = node.OrderBy(p => p.Owner.PreferredName ?? p.Owner.FirstName).ThenBy(p => p.Owner.LastName)
                         .ThenBy(p => p.Fqdn);
                     break;
                 case NodeSearchTypeConstant.Director:
                     if (!string.IsNullOrWhiteSpace(query))
                     {
                         var empIds =
-                            (await q.Where(p => p.Owner.ReportingDirectorId != null)
+                            (await node.Where(p => p.Owner.ReportingDirectorId != null)
                                 .Select(p => p.Owner.ReportingDirector).Search(query).Select(p => p.Id).Distinct()
                                 .ToArrayAsync()).Cast<long?>().ToArray();
-                        q = q.Where(p => empIds.Contains(p.Owner.ReportingDirectorId));
+                        node = node.Where(p => empIds.Contains(p.Owner.ReportingDirectorId));
                     }
 
-                    q = q.OrderBy(p => p.Owner.PreferredName ?? p.Owner.FirstName).ThenBy(p => p.Owner.LastName)
+                    node = node.OrderBy(p => p.Owner.PreferredName ?? p.Owner.FirstName).ThenBy(p => p.Owner.LastName)
                         .ThenBy(p => p.Fqdn);
                     break;
                 case NodeSearchTypeConstant.Product:
                     if (!string.IsNullOrWhiteSpace(query))
                     {
                         var sw = $"{query}%";
-                        q = q.Where(p =>
+                        node = node.Where(p =>
                             EF.Functions.Like(p.Product.Name, sw) || EF.Functions.Like(p.ProductCode, sw) ||
                             EF.Functions.Like(p.Product.Name, sw) || EF.Functions.Like(p.ProductCode, sw) ||
                             EF.Functions.Like(p.Function.Name, sw));
                     }
 
-                    q = q.OrderBy(p => p.Product.Name).ThenBy(p => p.Function.Name).ThenBy(p => p.Fqdn);
+                    node = node.OrderBy(p => p.Product.Name).ThenBy(p => p.Function.Name).ThenBy(p => p.Fqdn);
                     break;
                 case NodeSearchTypeConstant.OsSpec:
-                    q = q.Where(p => p.BuildSpecificationId.HasValue);
+                    node = node.Where(p => p.BuildSpecificationId.HasValue);
                     if (!string.IsNullOrWhiteSpace(query))
                     {
                         var contains = $"%{query}%";
-                        q = q.Where(p => EF.Functions.Like(p.BuildSpecification.Parent.Name, contains));
+                        node = node.Where(p => EF.Functions.Like(p.BuildSpecification.Parent.Name, contains));
                     }
 
-                    q = q.OrderBy(p => p.BuildSpecification.Name).ThenBy(p => p.Fqdn);
-                    break;                
+                    node = node.OrderBy(p => p.BuildSpecification.Name).ThenBy(p => p.Fqdn);
+                    break;
                 case NodeSearchTypeConstant.AppSpec:
-                    q = q.Where(p => p.BuildSpecificationId.HasValue);
+                    node = node.Where(p => p.BuildSpecificationId.HasValue);
                     if (!string.IsNullOrWhiteSpace(query))
                     {
                         var contains = $"%{query}%";
-                        q = q.Where(p => EF.Functions.Like(p.BuildSpecification.Name, contains));
+                        node = node.Where(p => EF.Functions.Like(p.BuildSpecification.Name, contains));
                     }
 
-                    q = q.OrderBy(p => p.BuildSpecification.Name).ThenBy(p => p.Fqdn);
+                    node = node.OrderBy(p => p.BuildSpecification.Name).ThenBy(p => p.Fqdn);
                     break;
                 case NodeSearchTypeConstant.RemedyGroupEmail:
                     if (!string.IsNullOrWhiteSpace(query))
-                        q = q.Where(p => EF.Functions.Like(p.RemedyGroupEmailList, $"{query}%"));
+                        node = node.Where(p => EF.Functions.Like(p.RemedyGroupEmailList, $"{query}%"));
 
-                    q = q.OrderBy(p => p.RemedyGroupEmailList);
+                    node = node.OrderBy(p => p.RemedyGroupEmailList);
                     break;
                 default:
                     throw new ArgumentException(@"NodeSearchType not supported.", nameof(searchType));
             }
 
             if (!valid)
-                q = q.Where(p => 1 == 2);
+                node = node.Where(p => 1 == 2);
 
-            var matchCount = await q.CountAsync();
+            var matchCount = await node.CountAsync();
             var skip = take * pageIndex;
-            var results = matchCount > 0 ? await ToResult(q.Skip(skip).Take(take), showButtons) : new NodeSearchResult[0];
+            var results = matchCount > 0 ? await ToResult(node.Skip(skip).Take(take), showButtons) : new NodeSearchResult[0];
             var displayCount = skip + results.Length;
             return new NodeSearchResults(results, matchCount, displayCount);
         }
@@ -300,7 +300,7 @@ namespace act.core.web.Services
                     p.FunctionName, p.PciScope, p.EnvironmentId, p.EnvName, p.EnvDesc, p.EnvColor,
                     p.Platform, p.BuildSpecificationId,
                     p.BuildSpecificationName, p.ComplianceStatus, p.LastComplianceResultDate,
-                    p.ChefNodeId, showButtons,p.RemedyGroupEmailList))
+                    p.ChefNodeId, showButtons, p.RemedyGroupEmailList))
                 .ToArray();
         }
     }
