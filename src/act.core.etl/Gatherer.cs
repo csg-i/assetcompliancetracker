@@ -509,9 +509,8 @@ namespace act.core.etl
                 foreach (var node in nodes)
                 {
                     var name = node.Owner.OwnerText(false);
-                    var email = !string.IsNullOrEmpty(node.RemedyGroupEmailList)
-                        ? new[] {node.Owner.Email, node.RemedyGroupEmailList}
-                        : new[] {node.Owner.Email};
+                    var email = new[] {node.Owner.Email, node.RemedyGroupEmailList};
+
                     _logger.LogInformation(
                         $"Emailing {name} at email {email} about {node.Fqdn} with pci-scope {node.PciScope}");
                     await SendUnassignedMail(email, name, node.Fqdn, node.PciScope.ToString());
@@ -592,7 +591,8 @@ namespace act.core.etl
                     From = new MailAddress(_mailSettings.From)
                 };
                 foreach (var email in emails)
-                    mm.To.Add(email);
+                    if (!string.IsNullOrEmpty(email))
+                        mm.To.Add(email);
 
                 await smtp.SendMailAsync(mm);
             }
