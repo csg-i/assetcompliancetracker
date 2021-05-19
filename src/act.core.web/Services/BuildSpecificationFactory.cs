@@ -393,6 +393,7 @@ namespace act.core.web.Services
             var appSpec = await _ctx.BuildSpecifications.AsNoTracking()
                 .Include(p => p.Parent)
                 .Include(p => p.Nodes)
+                .Include(p => p.Owner)
                 .ById(type, specId);
             var softwareComponent = GetOrCreateSoftwareComponent();
             BuildSpecification osSpec;
@@ -474,7 +475,10 @@ namespace act.core.web.Services
                 .Select(p => new Software(p.Name, p.Description, p.JustificationType, p.NonCore, p.PciScope,
                     p.SoftwareComponentEnvironments.GetEnvironmentNames()))
                 .ToArray();
-            var nodes = appSpec.Nodes.Select(p => new InventorySystemNode(p.InventoryItemId, p.Fqdn)).ToArray();
+
+            var ownerName = $"{appSpec.Owner.FirstName} {appSpec.Owner.LastName}";
+
+            var nodes = appSpec.Nodes.Select(p => new InventorySystemNode(p.InventoryItemId, p.Fqdn, ownerName, p.RemedyGroupEmailList)).ToArray();
 
             return new BuildSpec(specId, type, appSpec.Name, appSpec.Owner.OwnerText(),
                 osSpec.OperatingSystemName, osSpec.OperatingSystemVersion, appSpec.WikiLink, appSpec.Overview,
