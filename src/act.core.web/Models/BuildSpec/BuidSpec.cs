@@ -19,7 +19,7 @@ namespace act.core.web.Models.BuildSpec
         public IOrderedEnumerable<Software> UnjustifiedSoftware { get; }
         public IOrderedEnumerable<InventorySystemNode> Nodes { get; }
 
-        public BuildSpec(long id, BuildSpecificationTypeConstant type, string name, string owner,string osName, string osVersion, string wikiLink, string overview, Justification[] justifications, PortReportItems ports, Software[] unJustifiedThings, InventorySystemNode[] nodes)
+        public BuildSpec(long id, BuildSpecificationTypeConstant type, string name, string owner, string osName, string osVersion, string wikiLink, string overview, Justification[] justifications, PortReportItems ports, Software[] unJustifiedThings, InventorySystemNode[] nodes)
         {
             Id = id;
             Type = type;
@@ -29,10 +29,10 @@ namespace act.core.web.Models.BuildSpec
             OsVersion = osVersion;
             WikiLink = wikiLink;
             Ports = ports;
-            Overview = new HtmlString((overview??string.Empty).Replace("\n","<br/>"));
+            Overview = new HtmlString((overview ?? string.Empty).Replace("\n", "<br/>"));
             Justifications = (justifications ?? Enumerable.Empty<Justification>()).OrderBy(p => (int)p.JustificationType);
             UnjustifiedSoftware = (unJustifiedThings ?? Enumerable.Empty<Software>()).OrderBy(p => p.JustificationType).ThenBy(p => p.Name);
-            Nodes = (nodes ?? Enumerable.Empty<InventorySystemNode>()).OrderBy(p => p.Fqdn);
+            Nodes = (nodes ?? Enumerable.Empty<InventorySystemNode>()).OrderBy(p => p.Fqdn).ThenBy(p => p.Owner).ThenBy(p => p.RemedyGroupEmail);
         }
     }
 }

@@ -30,6 +30,9 @@ namespace act.core.data.Migrations
                         .HasColumnType("varchar(256) CHARACTER SET utf8mb4")
                         .HasMaxLength(256);
 
+                    b.Property<bool>("IncludeRemedyEmailList")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("varchar(255) CHARACTER SET utf8mb4")

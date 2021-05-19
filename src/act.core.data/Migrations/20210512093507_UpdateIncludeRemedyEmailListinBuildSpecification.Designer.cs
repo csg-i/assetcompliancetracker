@@ -9,51 +9,67 @@ using act.core.data;
 namespace act.core.data.Migrations
 {
     [DbContext(typeof(ActDbContext))]
-    [Migration("20180824190017_InitialUtf8")]
-    partial class InitialUtf8
+    [Migration("20210512093507_UpdateIncludeRemedyEmailListinBuildSpecification")]
+    partial class UpdateIncludeRemedyEmailListinBuildSpecification
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.0-rtm-30799")
+                .HasAnnotation("ProductVersion", "3.1.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("act.core.data.BuildSpecification", b =>
                 {
                     b.Property<long>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("BuildSpecificationType");
+                    b.Property<int>("BuildSpecificationType")
+                        .HasColumnType("int");
 
                     b.Property<string>("EmailAddress")
+                        .HasColumnType("varchar(256) CHARACTER SET utf8mb4")
                         .HasMaxLength(256);
+
+                    b.Property<bool>("IncludeRemedyEmailList")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4")
                         .HasMaxLength(255);
 
                     b.Property<string>("OperatingSystemName")
+                        .HasColumnType("varchar(256) CHARACTER SET utf8mb4")
                         .HasMaxLength(256);
 
                     b.Property<string>("OperatingSystemVersion")
+                        .HasColumnType("varchar(32) CHARACTER SET utf8mb4")
                         .HasMaxLength(32);
 
-                    b.Property<string>("Overview");
+                    b.Property<string>("Overview")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<long>("OwnerEmployeeId");
+                    b.Property<long>("OwnerEmployeeId")
+                        .HasColumnType("bigint");
 
-                    b.Property<long?>("ParentId");
+                    b.Property<long?>("ParentId")
+                        .HasColumnType("bigint");
 
-                    b.Property<int?>("Platform");
+                    b.Property<int?>("Platform")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("RunningCoreOs");
+                    b.Property<bool>("RunningCoreOs")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<DateTime>("TimeStamp")
                         .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate();
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp(6)");
 
                     b.Property<string>("WikiLink")
+                        .HasColumnType("varchar(256) CHARACTER SET utf8mb4")
                         .HasMaxLength(256);
 
                     b.HasKey("Id");
@@ -71,7 +87,8 @@ namespace act.core.data.Migrations
             modelBuilder.Entity("act.core.data.ComplianceResult", b =>
                 {
                     b.Property<long>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("date");
@@ -79,13 +96,17 @@ namespace act.core.data.Migrations
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("datetime");
 
-                    b.Property<long>("InventoryItemId");
+                    b.Property<long>("InventoryItemId")
+                        .HasColumnType("bigint");
 
-                    b.Property<bool>("OperatingSystemTestPassed");
+                    b.Property<bool>("OperatingSystemTestPassed")
+                        .HasColumnType("tinyint(1)");
 
-                    b.Property<Guid>("ResultId");
+                    b.Property<Guid>("ResultId")
+                        .HasColumnType("char(36)");
 
-                    b.Property<int>("Status");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -102,22 +123,28 @@ namespace act.core.data.Migrations
             modelBuilder.Entity("act.core.data.ComplianceResultError", b =>
                 {
                     b.Property<long>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Code")
                         .IsRequired()
+                        .HasColumnType("varchar(256) CHARACTER SET utf8mb4")
                         .HasMaxLength(256);
 
-                    b.Property<long>("ComplianceResultId");
+                    b.Property<long>("ComplianceResultId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("LongMessage")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("varchar(256) CHARACTER SET utf8mb4")
                         .HasMaxLength(256);
 
-                    b.Property<int>("Status");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -129,21 +156,28 @@ namespace act.core.data.Migrations
             modelBuilder.Entity("act.core.data.ComplianceResultTest", b =>
                 {
                     b.Property<long>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
 
-                    b.Property<long>("ComplianceResultId");
+                    b.Property<long>("ComplianceResultId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("varchar(256) CHARACTER SET utf8mb4")
                         .HasMaxLength(256);
 
-                    b.Property<int?>("PortType");
+                    b.Property<int?>("PortType")
+                        .HasColumnType("int");
 
-                    b.Property<int>("ResultType");
+                    b.Property<int>("ResultType")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("ShouldExist");
+                    b.Property<bool>("ShouldExist")
+                        .HasColumnType("tinyint(1)");
 
-                    b.Property<int>("Status");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -154,31 +188,39 @@ namespace act.core.data.Migrations
 
             modelBuilder.Entity("act.core.data.Employee", b =>
                 {
-                    b.Property<long>("Id");
+                    b.Property<long>("Id")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Email")
+                        .HasColumnType("varchar(256) CHARACTER SET utf8mb4")
                         .HasMaxLength(256);
 
                     b.Property<string>("FirstName")
                         .IsRequired()
+                        .HasColumnType("varchar(32) CHARACTER SET utf8mb4")
                         .HasMaxLength(32);
 
-                    b.Property<bool>("IsActive");
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("LastName")
                         .IsRequired()
+                        .HasColumnType("varchar(32) CHARACTER SET utf8mb4")
                         .HasMaxLength(32);
 
                     b.Property<string>("PreferredName")
+                        .HasColumnType("varchar(64) CHARACTER SET utf8mb4")
                         .HasMaxLength(64);
 
-                    b.Property<long?>("ReportingDirectorId");
+                    b.Property<long?>("ReportingDirectorId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("SamAccountName")
                         .IsRequired()
                         .HasColumnType("nchar(64)");
 
-                    b.Property<long?>("SupervisorId");
+                    b.Property<long?>("SupervisorId")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -200,30 +242,37 @@ namespace act.core.data.Migrations
 
             modelBuilder.Entity("act.core.data.Environment", b =>
                 {
-                    b.Property<int>("Id");
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
 
                     b.Property<string>("ChefAutomateOrg")
                         .IsRequired()
+                        .HasColumnType("varchar(16) CHARACTER SET utf8mb4")
                         .HasMaxLength(16);
 
                     b.Property<string>("ChefAutomateToken")
                         .IsRequired()
+                        .HasColumnType("varchar(64) CHARACTER SET utf8mb4")
                         .HasMaxLength(64);
 
                     b.Property<string>("ChefAutomateUrl")
                         .IsRequired()
+                        .HasColumnType("varchar(256) CHARACTER SET utf8mb4")
                         .HasMaxLength(256);
 
                     b.Property<string>("Color")
                         .IsRequired()
+                        .HasColumnType("varchar(7) CHARACTER SET utf8mb4")
                         .HasMaxLength(7);
 
                     b.Property<string>("Description")
                         .IsRequired()
+                        .HasColumnType("varchar(512) CHARACTER SET utf8mb4")
                         .HasMaxLength(512);
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("varchar(32) CHARACTER SET utf8mb4")
                         .HasMaxLength(32);
 
                     b.HasKey("Id");
@@ -236,10 +285,12 @@ namespace act.core.data.Migrations
 
             modelBuilder.Entity("act.core.data.Function", b =>
                 {
-                    b.Property<int>("Id");
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4")
                         .HasMaxLength(255);
 
                     b.HasKey("Id");
@@ -252,20 +303,26 @@ namespace act.core.data.Migrations
             modelBuilder.Entity("act.core.data.Justification", b =>
                 {
                     b.Property<long>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
 
-                    b.Property<long>("BuildSpecificationId");
+                    b.Property<long>("BuildSpecificationId")
+                        .HasColumnType("bigint");
 
-                    b.Property<string>("Color");
+                    b.Property<string>("Color")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("JustificationText")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<int>("JustificationType");
+                    b.Property<int>("JustificationType")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("TimeStamp")
                         .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate();
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp(6)");
 
                     b.HasKey("Id");
 
@@ -276,47 +333,65 @@ namespace act.core.data.Migrations
 
             modelBuilder.Entity("act.core.data.Node", b =>
                 {
-                    b.Property<long>("InventoryItemId");
+                    b.Property<long>("InventoryItemId")
+                        .HasColumnType("bigint");
 
-                    b.Property<long?>("BuildSpecificationId");
+                    b.Property<long?>("BuildSpecificationId")
+                        .HasColumnType("bigint");
 
-                    b.Property<Guid?>("ChefNodeId");
+                    b.Property<Guid?>("ChefNodeId")
+                        .HasColumnType("char(36)");
 
-                    b.Property<int>("ComplianceStatus");
+                    b.Property<int>("ComplianceStatus")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("DeactivatedDate")
                         .HasColumnType("datetime");
 
-                    b.Property<int>("EnvironmentId");
+                    b.Property<int>("EnvironmentId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("FailingSince")
                         .HasColumnType("datetime");
 
                     b.Property<string>("Fqdn")
+                        .HasColumnType("varchar(256) CHARACTER SET utf8mb4")
                         .HasMaxLength(256);
 
-                    b.Property<int>("FunctionId");
+                    b.Property<int>("FunctionId")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("IsActive");
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<DateTime?>("LastComplianceResultDate")
                         .HasColumnType("datetime");
 
-                    b.Property<Guid?>("LastComplianceResultId");
+                    b.Property<Guid?>("LastComplianceResultId")
+                        .HasColumnType("char(36)");
 
                     b.Property<DateTime?>("LastEmailedOn")
                         .HasColumnType("datetime");
 
-                    b.Property<long>("OwnerEmployeeId");
+                    b.Property<long>("OwnerEmployeeId")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("PciScope")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasDefaultValueSql("4");
 
-                    b.Property<int>("Platform");
+                    b.Property<int>("Platform")
+                        .HasColumnType("int");
 
                     b.Property<string>("ProductCode")
                         .HasColumnType("nchar(4)");
+
+                    b.Property<string>("RemedyGroupEmailList")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("RemedyGroupName")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.HasKey("InventoryItemId");
 
@@ -342,25 +417,34 @@ namespace act.core.data.Migrations
             modelBuilder.Entity("act.core.data.Port", b =>
                 {
                     b.Property<long>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
 
-                    b.Property<long>("BuildSpecificationId");
+                    b.Property<long>("BuildSpecificationId")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("From");
+                    b.Property<int>("From")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("IsExternal");
+                    b.Property<bool>("IsExternal")
+                        .HasColumnType("tinyint(1)");
 
-                    b.Property<bool>("IsOutgoing");
+                    b.Property<bool>("IsOutgoing")
+                        .HasColumnType("tinyint(1)");
 
-                    b.Property<long?>("JustificationId");
+                    b.Property<long?>("JustificationId")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("PortType");
+                    b.Property<int>("PortType")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("TimeStamp")
                         .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate();
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp(6)");
 
-                    b.Property<int?>("To");
+                    b.Property<int?>("To")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -376,10 +460,12 @@ namespace act.core.data.Migrations
                     b.Property<string>("Code")
                         .HasColumnType("nchar(4)");
 
-                    b.Property<bool>("ExludeFromReports");
+                    b.Property<bool>("ExludeFromReports")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4")
                         .HasMaxLength(255);
 
                     b.HasKey("Code");
@@ -392,28 +478,37 @@ namespace act.core.data.Migrations
             modelBuilder.Entity("act.core.data.SoftwareComponent", b =>
                 {
                     b.Property<long>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
 
-                    b.Property<long>("BuildSpecificationId");
+                    b.Property<long>("BuildSpecificationId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Description")
+                        .HasColumnType("varchar(512) CHARACTER SET utf8mb4")
                         .HasMaxLength(512);
 
-                    b.Property<long?>("JustificationId");
+                    b.Property<long?>("JustificationId")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("JustificationType");
+                    b.Property<int>("JustificationType")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4")
                         .HasMaxLength(255);
 
-                    b.Property<bool>("NonCore");
+                    b.Property<bool>("NonCore")
+                        .HasColumnType("tinyint(1)");
 
-                    b.Property<int?>("PciScope");
+                    b.Property<int?>("PciScope")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("TimeStamp")
                         .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate();
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp(6)");
 
                     b.HasKey("Id");
 
@@ -426,9 +521,11 @@ namespace act.core.data.Migrations
 
             modelBuilder.Entity("act.core.data.SoftwareComponentEnvironment", b =>
                 {
-                    b.Property<int>("EnvironmentId");
+                    b.Property<int>("EnvironmentId")
+                        .HasColumnType("int");
 
-                    b.Property<long>("SoftwareComponentId");
+                    b.Property<long>("SoftwareComponentId")
+                        .HasColumnType("bigint");
 
                     b.HasKey("EnvironmentId", "SoftwareComponentId");
 
@@ -442,7 +539,8 @@ namespace act.core.data.Migrations
                     b.HasOne("act.core.data.Employee", "Owner")
                         .WithMany("BuildSpecifications")
                         .HasForeignKey("OwnerEmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("act.core.data.BuildSpecification", "Parent")
                         .WithMany("Children")
@@ -454,7 +552,8 @@ namespace act.core.data.Migrations
                     b.HasOne("act.core.data.Node", "Node")
                         .WithMany("ComplianceResults")
                         .HasForeignKey("InventoryItemId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("act.core.data.ComplianceResultError", b =>
@@ -462,7 +561,8 @@ namespace act.core.data.Migrations
                     b.HasOne("act.core.data.ComplianceResult", "ComplianceResult")
                         .WithMany("Errors")
                         .HasForeignKey("ComplianceResultId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("act.core.data.ComplianceResultTest", b =>
@@ -470,7 +570,8 @@ namespace act.core.data.Migrations
                     b.HasOne("act.core.data.ComplianceResult", "ComplianceResult")
                         .WithMany("Tests")
                         .HasForeignKey("ComplianceResultId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("act.core.data.Employee", b =>
@@ -489,7 +590,8 @@ namespace act.core.data.Migrations
                     b.HasOne("act.core.data.BuildSpecification", "BuildSpecification")
                         .WithMany("Justifications")
                         .HasForeignKey("BuildSpecificationId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("act.core.data.Node", b =>
@@ -501,17 +603,20 @@ namespace act.core.data.Migrations
                     b.HasOne("act.core.data.Environment", "Environment")
                         .WithMany("Nodes")
                         .HasForeignKey("EnvironmentId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("act.core.data.Function", "Function")
                         .WithMany("Nodes")
                         .HasForeignKey("FunctionId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("act.core.data.Employee", "Owner")
                         .WithMany("Nodes")
                         .HasForeignKey("OwnerEmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("act.core.data.Product", "Product")
                         .WithMany("Nodes")
@@ -523,7 +628,8 @@ namespace act.core.data.Migrations
                     b.HasOne("act.core.data.BuildSpecification", "BuildSpecification")
                         .WithMany("Ports")
                         .HasForeignKey("BuildSpecificationId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("act.core.data.Justification", "Justification")
                         .WithMany("Ports")
@@ -535,7 +641,8 @@ namespace act.core.data.Migrations
                     b.HasOne("act.core.data.BuildSpecification", "BuildSpecification")
                         .WithMany("SoftwareComponents")
                         .HasForeignKey("BuildSpecificationId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("act.core.data.Justification", "Justification")
                         .WithMany("SoftwareComponents")
@@ -547,12 +654,14 @@ namespace act.core.data.Migrations
                     b.HasOne("act.core.data.Environment", "Environment")
                         .WithMany("SoftwareComponentEnvironments")
                         .HasForeignKey("EnvironmentId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("act.core.data.SoftwareComponent", "SoftwareComponent")
                         .WithMany("SoftwareComponentEnvironments")
                         .HasForeignKey("SoftwareComponentId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Security.AccessControl;
 using act.core.data;
 using act.core.web.Extensions;
 
 namespace act.core.web.Models.OsSpecs
 {
-    public class OsSpecInformation:ISpecInformation
+    public class OsSpecInformation : ISpecInformation
     {
         public long? Id { get; set; }
         public string Name { get; set; }
@@ -19,6 +20,7 @@ namespace act.core.web.Models.OsSpecs
         public string OwnerName { get; set; }
 
         public string Email { get; set; }
+        public bool IncludeRemedyEmailList { get; set; }
         public IDictionary<string, string> Validate()
         {
             var errors = new Dictionary<string, string>();
@@ -30,7 +32,7 @@ namespace act.core.web.Models.OsSpecs
                 errors.Add("osversion", "The OS Version is required with a max length of 32 characters.");
             if (OwnerId == null)
                 errors.Add("ownername", "The Owner is required.");
-            if(Email !=null && !Email.IsValidEmail())
+            if (Email != null && !Email.IsValidEmail())
                 errors.Add("email", "The Email must be a valid address");
             return errors;
         }
