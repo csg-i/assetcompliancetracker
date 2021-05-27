@@ -523,7 +523,7 @@ namespace act.core.etl
         {
             var nodes = await _ctx.Nodes.AsNoTracking().Active().InChefScope().InPciScope().Assigned().ProductIsNotExlcuded().ByComplianceStatus(ComplianceStatusConstant.NotFound)
 
-                .Select(p => new { p.Owner, p.Fqdn, p.PciScope, AppOwnerEmail = p.BuildSpecification.Owner.Email, OsOwnerEmail = p.BuildSpecification.Parent.Owner.Email, LastComplianceDate = p.LastComplianceResultDate, p.RemedyGroupEmailList, p.BuildSpecification.IncludeRemedyEmailList })
+                .Select(p => new { p.Owner, p.Fqdn, p.PciScope, AppOwnerEmail = p.BuildSpecification.Owner.Email, OsOwnerEmail = p.BuildSpecification.Parent.Owner.Email, LastComplianceDate = p.LastComplianceResultDate, p.RemedyGroupEmailList })
 
                 .ToArrayAsync();
 
@@ -535,9 +535,7 @@ namespace act.core.etl
                 {
                     var name = node.Owner.OwnerText(false);
 
-                    var emails = (node.IncludeRemedyEmailList && !string.IsNullOrEmpty(node.RemedyGroupEmailList))
-                        ? new[] { node.Owner.Email, node.AppOwnerEmail, node.OsOwnerEmail, node.RemedyGroupEmailList }
-                        : new[] { node.Owner.Email, node.AppOwnerEmail, node.OsOwnerEmail };
+                    var emails = new[] { node.Owner.Email, node.AppOwnerEmail, node.OsOwnerEmail, node.RemedyGroupEmailList };
 
                     _logger.LogInformation(
                         $"Emailing {name} at email {node.Owner.Email} and {node.AppOwnerEmail} and {node.OsOwnerEmail} about {node.Fqdn} with pci-scope {node.PciScope}");
