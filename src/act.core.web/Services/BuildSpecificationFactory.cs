@@ -402,6 +402,7 @@ namespace act.core.web.Services
                 type = BuildSpecificationTypeConstant.OperatingSystem;
                 osSpec = await _ctx.BuildSpecifications.AsNoTracking()
                     .Include(p => p.SoftwareComponents)
+                    .Include(p => p.Owner)
                     .ById(type, specId);
                 if (osSpec == null)
                     throw new ArgumentException(nameof(specId));
@@ -476,7 +477,7 @@ namespace act.core.web.Services
                     p.SoftwareComponentEnvironments.GetEnvironmentNames()))
                 .ToArray();
 
-            var ownerName = $"{appSpec.Owner.FirstName} {appSpec.Owner.LastName}";
+            var ownerName = appSpec.Owner.PreferredName ?? $"{appSpec.Owner.FirstName} {appSpec.Owner.LastName}";
 
             var nodes = appSpec.Nodes.Select(p => new InventorySystemNode(p.InventoryItemId, p.Fqdn, ownerName, p.RemedyGroupEmailList)).ToArray();
 
