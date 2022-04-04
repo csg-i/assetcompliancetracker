@@ -2,7 +2,7 @@
 @model act.core.web.Models.BuildSpec.ReviewData
 
 
-<table class="table table-striped" data-name="@Model.Name" data-success="@((Model.Count == 0 && Model.CountOfOsFailures == 0).ToString().ToLower())">
+<table class="table table-striped" data-name="@Model.Name" data-success="@((Model.Count == 0 && Model.CountOfOsFailures == 0 && Model.Errors.Count() == 0).ToString().ToLower())">
     <thead>
     <tr>
         <th>Result&nbsp;Type</th>
