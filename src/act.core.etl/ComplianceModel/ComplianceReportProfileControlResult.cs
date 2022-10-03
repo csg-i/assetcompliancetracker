@@ -48,8 +48,8 @@ namespace act.core.etl.ComplianceModel
 
         public string GetPortNumber()
         {
-            var firstSquare = code_desc.IndexOf('[');
-            var lastSquare = code_desc.IndexOf(']');
+            var firstSquare = code_desc.IndexOf('{');
+            var lastSquare = code_desc.IndexOf('}');
             var onlyPort = code_desc.Substring(firstSquare, lastSquare - firstSquare);
 
             return string.Join(string.Empty, Regex.Matches(onlyPort, @"\d+").Select(m => m.Value));
