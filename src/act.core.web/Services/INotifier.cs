@@ -227,12 +227,14 @@ namespace act.core.web.Services
                     AddToLists(bs.Parent?.Owner, LevelConstants.Boss, ref emails, ref names);
                 }
                 
-                if (result.FailingSince < now.AddDays(-60))
-                {
-                    AddToLists(result.Owner, LevelConstants.BossesBoss, ref emails, ref names);
-                    AddToLists(bs.Owner, LevelConstants.BossesBoss, ref emails, ref names);
-                    AddToLists(bs.Parent?.Owner, LevelConstants.BossesBoss, ref emails, ref names);                   
-                }
+                // Escalate mails to BossesBoss
+
+                // if (result.FailingSince < now.AddDays(-60))
+                // {
+                //     AddToLists(result.Owner, LevelConstants.BossesBoss, ref emails, ref names);
+                //     AddToLists(bs.Owner, LevelConstants.BossesBoss, ref emails, ref names);
+                //     AddToLists(bs.Parent?.Owner, LevelConstants.BossesBoss, ref emails, ref names);                   
+                // }
 
                 var toSend = emails.Distinct().ToArray();
                 var toNames = names.Distinct().Reverse().ToArray();
