@@ -214,17 +214,17 @@ namespace act.core.web.Services
                     emails.Add(bs.EmailAddress.ToLower()); //Add AppSpec Email
                 if(bs.IncludeRemedyEmailList && !string.IsNullOrEmpty(result.RemedyGroupEmailList))
                     emails.Add(result.RemedyGroupEmailList.ToLower());
-                if (!string.IsNullOrWhiteSpace(bs.Parent?.EmailAddress))
-                    emails.Add(bs.Parent.EmailAddress.ToLower()); //Add OS Spec Email
+                // if (!string.IsNullOrWhiteSpace(bs.Parent?.EmailAddress))
+                //     emails.Add(bs.Parent.EmailAddress.ToLower()); //Add OS Spec Email
 
                 AddToLists(bs.Owner, LevelConstants.Self, ref emails, ref names);
-                AddToLists(bs.Parent?.Owner, LevelConstants.Self, ref emails, ref names);               
+                //AddToLists(bs.Parent?.Owner, LevelConstants.Self, ref emails, ref names);               
 
                 if (result.FailingSince < now.AddDays(-30))
                 {
                     AddToLists(result.Owner, LevelConstants.Boss, ref emails, ref names);
                     AddToLists(bs.Owner, LevelConstants.Boss, ref emails, ref names);
-                    AddToLists(bs.Parent?.Owner, LevelConstants.Boss, ref emails, ref names);
+                    //AddToLists(bs.Parent?.Owner, LevelConstants.Boss, ref emails, ref names);
                 }
                 
                 // Escalate mails to BossesBoss
