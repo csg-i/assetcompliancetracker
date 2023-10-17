@@ -456,22 +456,22 @@ namespace act.core.etl
             var date = DateTime.Today.AddDays(-7);
             var count = 0;
             _logger.LogInformation($"Getting Nodes Deactivated prior to {date.ToShortDateString()}");
-            var nodes = await _ctx.Nodes.Inactive().Where(p => p.LastComplianceResultDate < date)
-                .Select(p => new { p.Fqdn, p.LastComplianceResultDate, p.BuildSpecification.Id })
+            var nodes = await _ctx.Nodes.Inactive().Where(p => p.DeactivatedDate < date)
+                .Select(p => new { p.Fqdn, p.DeactivatedDate, p.BuildSpecification.Id })
                 .ToArrayAsync();
 
             if (nodes.Length > 0)
             {
                 foreach (var node in nodes)
                 {
-                    _logger.LogInformation($"Deactivated Node : fqdn {node.Fqdn}, deactivated date : {node.LastComplianceResultDate} , buildspecid : {node.Id}");
+                    _logger.LogInformation($"Deactivated Node : fqdn {node.Fqdn}, deactivated date : {node.DeactivatedDate} , buildspecid : {node.Id}");
                 }
             }
-            while (await _ctx.Nodes.Inactive().AnyAsync(p => p.LastComplianceResultDate < date))
+            while (await _ctx.Nodes.Inactive().AnyAsync(p => p.DeactivatedDate < date))
             {
                 _logger.LogInformation("Purging 1000 Deactivated Nodes");
                 await _ctx.ExecuteCommandAsync(
-                    "DELETE FROM Node WHERE LastComplianceResultDate < @date or IsActive = 0 ORDER BY InventoryItemId limit 1000",
+                    "DELETE FROM Node WHERE DeactivatedDate < @date or IsActive = 0 ORDER BY InventoryItemId limit 1000",
                     new MySqlParameter("@date", MySqlDbType.Date) { Value = date });
 
 
