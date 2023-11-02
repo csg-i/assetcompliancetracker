@@ -471,7 +471,7 @@ namespace act.core.etl
             {
                 _logger.LogInformation("Purging 1000 Deactivated Nodes");
                 await _ctx.ExecuteCommandAsync(
-                    "DELETE FROM Node WHERE DeactivatedDate < @date or IsActive = 0 ORDER BY InventoryItemId limit 1000",
+                    "DELETE FROM Node WHERE DeactivatedDate < @date or LastComplianceResultDate < @date or IsActive = 0 ORDER BY InventoryItemId limit 1000",
                     new MySqlParameter("@date", MySqlDbType.Date) { Value = date });
 
 
