@@ -5,9 +5,11 @@ using System.Net;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authorization;
 
 namespace act.core.web.Framework
 {
+    [AllowAnonymous]
     public abstract class PureMvcControllerBase : Controller
     {
         class UserSecurityInternal : IUserSecurity
@@ -108,14 +110,14 @@ namespace act.core.web.Framework
             {
                 foreach (var v in h.Value)
                 {
-                    Response.Headers.Add(h.Key, v);
+                    Response.Headers[h.Key] = v;
                 }
             }
         }
         public void SetNoCacheHeader()
         {
-            Response.Headers.Add("Cache-Control", "no-cache");
-            Response.Headers.Add("Pragma", "no-cache");
+            Response.Headers["Cache-Control"] = "no-cache";
+            Response.Headers["Pragma"] = "no-cache";
         }
 
         /// <summary>

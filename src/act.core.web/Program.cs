@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Net;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -18,15 +18,20 @@ namespace act.core.web
             WebHost.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((hostingContext, builder) =>
                 {
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                     var hostingEnvironment = hostingContext.HostingEnvironment;
                     var path = hostingEnvironment.IsProduction() ? "Production" : "NonProd";
-                    builder.AddSystemsManager($"/ACT/{path}");
+                    builder.AddSystemsManager($"/act/{path}");
                 })
                 .ConfigureLogging((context, logging) =>
                 {
                     logging.AddAWSProvider();
                     logging.SetMinimumLevel(LogLevel.Debug);
                 })
+            //ConfigureKestrel((context, options) =>
+                //{
+                  ///options.Configure(context.Configuration.GetSection("Kestrel"));
+                //})
                 .ConfigureKestrel(o => o.ConfigurationLoader.Load())
                 .UseStartup<Startup>();
 
