@@ -28,10 +28,7 @@ namespace act.core.web
                     logging.AddAWSProvider();
                     logging.SetMinimumLevel(LogLevel.Debug);
                 })
-            //ConfigureKestrel((context, options) =>
-                //{
-                  ///options.Configure(context.Configuration.GetSection("Kestrel"));
-                //})
+            
                 .ConfigureKestrel(o => o.ConfigurationLoader.Load())
                 .UseStartup<Startup>();
 
