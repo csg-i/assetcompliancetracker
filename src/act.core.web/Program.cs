@@ -1,4 +1,4 @@
-﻿using System.Net;
+﻿using System;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -18,10 +18,9 @@ namespace act.core.web
             WebHost.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((hostingContext, builder) =>
                 {
-                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                     var hostingEnvironment = hostingContext.HostingEnvironment;
                     var path = hostingEnvironment.IsProduction() ? "Production" : "NonProd";
-                    builder.AddSystemsManager($"/act/{path}");
+                    builder.AddSystemsManager($"/ACT/{path}");
                 })
                 .ConfigureLogging((context, logging) =>
                 {
