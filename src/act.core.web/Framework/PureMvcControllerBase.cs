@@ -5,11 +5,9 @@ using System.Net;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Authorization;
 
 namespace act.core.web.Framework
 {
-    [AllowAnonymous]
     public abstract class PureMvcControllerBase : Controller
     {
         class UserSecurityInternal : IUserSecurity
