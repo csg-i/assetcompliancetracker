@@ -89,12 +89,12 @@ namespace act.core.web.Controllers
                 
                 Exception exceptionThatOccurred = exceptionFeature.Error;
 
-                Logger.LogWarning(exceptionThatOccurred, $"Error Page Reached with statuscode {id} on route {routeWhereExceptionOccurred}.");
+                Logger.LogDebug(exceptionThatOccurred, $"Error Page Reached with statuscode {id} on route {routeWhereExceptionOccurred}.");
 
             }
             else if(id != "404")
             {
-                Logger.LogWarning($"Error Page Reached with statuscode {id}.");
+                Logger.LogDebug($"Error Page Reached with statuscode {id}.");
             }
             return View(new ErrorPage(id, Activity.Current?.Id ?? HttpContext.TraceIdentifier));
         }
