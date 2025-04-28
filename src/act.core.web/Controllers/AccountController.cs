@@ -3,7 +3,6 @@ using act.core.web.Extensions;
 using act.core.web.Framework;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.WsFederation;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -15,25 +14,23 @@ namespace act.core.web.Controllers
         {
         }
 
-        public IActionResult SignIn(string returnUrl)
+        public RedirectResult SignIn(string? returnUrl)
         {
             Logger.LogDebug("Explicit sign-in occurred.");
             SetNoCacheHeader();
-            return LocalRedirect(returnUrl ?? Url.Home());
+            return Redirect(returnUrl ?? Url.Home());
         }
 
-        public override SignOutResult SignOut()
+        public async Task SignOut()
         {
             Logger.LogDebug("Explicit sign-out occurred.");
-            if (HttpContext.Request.Cookies["ACT"] != null)
+            if (HttpContext.Request.Cookies.TryGetValue("ACT", out _))
+            {
                 Response.Cookies.Delete("ACT");
+            }
 
             SetNoCacheHeader();
-            HttpContext.SignOutAsync(WsFederationDefaults.AuthenticationScheme).Wait();
-            return new SignOutResult(WsFederationDefaults.AuthenticationScheme, new AuthenticationProperties
-            {
-                RedirectUri = Url.Home()
-            });
+            await HttpContext.SignOutAsync(WsFederationDefaults.AuthenticationScheme);
         }
     }
 }
