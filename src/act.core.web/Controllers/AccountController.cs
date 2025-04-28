@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿#nullable enable
+using System.Threading.Tasks;
 using act.core.web.Extensions;
 using act.core.web.Framework;
 using Microsoft.AspNetCore.Authentication;
