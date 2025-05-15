@@ -14,11 +14,9 @@ namespace act.core.data
         public ActDbContext CreateDbContext(string[] args)
         {
             var builder = new DbContextOptionsBuilder<ActDbContext>();
-            var connectionString = "Server=localhost;Database=act;User=root;Password=12345;";
-            var serverVersion = ServerVersion.AutoDetect(connectionString);
-            builder.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 32)), options => options
-            .EnableRetryOnFailure());
-            return new ActDbContext(builder.Options);
+            builder.UseMySql("Server=localhost;Database=act;User=root;Password=12345;",
+             options => options.ServerVersion(new Version(5, 6, 10), ServerType.MySql));
+             return new ActDbContext(builder.Options);
         }
     }
 }

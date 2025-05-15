@@ -22,18 +22,14 @@ namespace act.core.web.Controllers
             return LocalRedirect(returnUrl ?? Url.Home());
         }
 
-        public override SignOutResult SignOut()
+        public async Task SignOut()
         {
             Logger.LogDebug("Explicit sign-out occurred.");
             if (HttpContext.Request.Cookies["ACT"] != null)
                 Response.Cookies.Delete("ACT");
 
             SetNoCacheHeader();
-            HttpContext.SignOutAsync(WsFederationDefaults.AuthenticationScheme).Wait();
-            return new SignOutResult(WsFederationDefaults.AuthenticationScheme, new AuthenticationProperties
-            {
-                RedirectUri = Url.Home()
-            });
+            await HttpContext.SignOutAsync(WsFederationDefaults.AuthenticationScheme);
         }
     }
 }
