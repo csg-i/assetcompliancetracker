@@ -4,8 +4,6 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Extensions;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
 
 namespace act.core.data
 {

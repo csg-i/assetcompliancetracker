@@ -3,7 +3,6 @@ using act.core.web.Extensions;
 using act.core.web.Framework;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.WsFederation;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
