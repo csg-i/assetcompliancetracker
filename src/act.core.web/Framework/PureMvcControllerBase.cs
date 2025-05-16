@@ -14,12 +14,12 @@ namespace act.core.web.Framework
     {
         class UserSecurityInternal : IUserSecurity
         {
-            public string UserName { get; }
-            public string SamAccountName { get; }
-            public string Email { get; }
-            public string FirstName { get; }
-            public string LastName { get; }
-            public long EmployeeId { get; }
+            public string UserName { get; set; }
+            public string SamAccountName { get; set; }
+            public string Email { get; set; }
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+            public long EmployeeId { get; set; }
 
 
 
@@ -82,23 +82,23 @@ namespace act.core.web.Framework
         {
             get
             {
-                if (!IsLoggedIn)
-                    return null;
+//                if (!IsLoggedIn)
+//                   return null;
 
                 if (_userSecurity == null)
                 {
-                    var clp = HttpContext.User;
-                    if (clp != null)
-                    {
+//                    var clp = HttpContext.User;
+//                    if (clp != null)
+//                    {
                         _userSecurity = new UserSecurityInternal(
-                            clp.Claims.GetClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"),
-                            clp.Claims.GetClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/windowsaccountname"),
-                            clp.Claims.GetClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"),
-                            clp.Claims.GetClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"),
-                            clp.Claims.GetClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"),
-                            clp.Claims.GetClaimAsInt64("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/privatepersonalidentifier/PPID")
+                            "Priyanka Kovermanne Somashekhara",
+                            "kovpri01",
+                            "Kovermanne Somashekhara",
+                            "Priyanka",
+                            "Priyanka.KovermanneSomashekhara@csgi/com",
+                             81896
                         );
-                    }
+//                    }
                 }
                 return _userSecurity;
             }

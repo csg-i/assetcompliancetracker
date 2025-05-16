@@ -71,6 +71,7 @@ namespace act.core.web.Controllers
         [HttpPost]
         public async Task<PartialViewResult> Information(long? specId)
         {
+//            UserSecurity.("Priyanka Kovermanne Somashekhara", "kovpri01);
             if (specId != null)
             {
                 var it = await SpecFactory.GetOne(specId.Value);
