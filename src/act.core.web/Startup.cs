@@ -108,7 +108,7 @@ namespace act.core.web
                         .RequireAuthenticatedUser()
                         .Build();
                     o.Filters.Add(new AuthorizeFilter(policy));
-                }).AddNewtonsoftJson();
+                }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0).AddNewtonsoftJson();
         }
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
@@ -142,8 +142,8 @@ namespace act.core.web
                 {
                     return async context =>
                     {
-                        context.Response.Headers.Append("X-UA-Compatible", "IE=edge");
-                        context.Response.Headers.Append("Access-Test-Allow-Origin", "*");
+                        context.Response.Headers.Add("X-UA-Compatible", "IE=edge");
+                        context.Response.Headers.Add("Access-Test-Allow-Origin", "*");
 
                         await next(context);
                     };
