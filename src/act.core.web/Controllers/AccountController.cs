@@ -22,7 +22,7 @@ namespace act.core.web.Controllers
             return Redirect(returnUrl ?? Url.Home());
         }
 
-        public new async Task SignOut()
+        public async Task SignOut()
         {
             Logger.LogDebug("Explicit sign-out occurred.");
             if (HttpContext.Request.Cookies.TryGetValue("ACT", out _))
