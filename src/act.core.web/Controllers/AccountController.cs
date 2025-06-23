@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿#nullable enable
+using System.Threading.Tasks;
 using act.core.web.Extensions;
 using act.core.web.Framework;
 using Microsoft.AspNetCore.Authentication;
@@ -10,23 +11,24 @@ namespace act.core.web.Controllers
 {
     public class AccountController : PureMvcControllerBase
     {
-
         public AccountController(ILoggerFactory logger) : base(logger)
         {
         }
 
-        public RedirectResult SignIn(string returnUrl)
+        public RedirectResult SignIn(string? returnUrl)
         {
             Logger.LogDebug("Explicit sign-in occurred.");
             SetNoCacheHeader();
             return Redirect(returnUrl ?? Url.Home());
         }
 
-        public async Task SignOut()
+        public new async Task SignOut()
         {
             Logger.LogDebug("Explicit sign-out occurred.");
-            if (HttpContext.Request.Cookies["ACT"] != null)
+            if (HttpContext.Request.Cookies.TryGetValue("ACT", out _))
+            {
                 Response.Cookies.Delete("ACT");
+            }
 
             SetNoCacheHeader();
             await HttpContext.SignOutAsync(WsFederationDefaults.AuthenticationScheme);

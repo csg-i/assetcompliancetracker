@@ -2,8 +2,9 @@
 using act.core.etl.ComplianceModel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
-using MySql.Data.MySqlClient;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -15,7 +16,8 @@ using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 using Environment = act.core.data.Environment;
-
+using Pomelo.EntityFrameworkCore.MySql;
+using MySqlConnector;
 namespace act.core.etl
 {
     class Gatherer : IGatherer
