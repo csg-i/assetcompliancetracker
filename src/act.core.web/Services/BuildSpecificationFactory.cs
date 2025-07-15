@@ -8,6 +8,11 @@ using act.core.web.Models.BuildSpec;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Pomelo.EntityFrameworkCore.MySql;
+using Pomelo.EntityFrameworkCore.MySql.Extensions;
+using Pomelo.EntityFrameworkCore.MySql.Storage;
+using MySqlConnector;
+using Microsoft.Extensions.DependencyInjection;
 using Justification = act.core.web.Models.BuildSpec.Justification;
 
 namespace act.core.web.Services
