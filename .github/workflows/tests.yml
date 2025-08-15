@@ -1,0 +1,41 @@
+name: CI - Build and Test
+
+on:
+  push:
+    branches: [ master, main, chore/**, feat/**, feature/** ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore ACT.sln
+
+      - name: Build
+        run: dotnet build ACT.sln -c Release --no-restore
+
+      - name: Test Unit
+        run: dotnet test tests/Act.Core.UnitTests/Act.Core.UnitTests.csproj -c Release --no-build --logger "trx;LogFileName=unit.trx" --collect:"XPlat Code Coverage" --results-directory tests/TestResults/unit
+
+      - name: Test Integration
+        run: dotnet test tests/Act.Core.IntegrationTests/Act.Core.IntegrationTests.csproj -c Release --no-build --logger "trx;LogFileName=int.trx" --collect:"XPlat Code Coverage" --results-directory tests/TestResults/integration
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            tests/TestResults/**
+            tests/**/coverage/**
