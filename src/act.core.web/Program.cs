@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -19,8 +19,13 @@ namespace act.core.web
                 .ConfigureAppConfiguration((hostingContext, builder) =>
                 {
                     var hostingEnvironment = hostingContext.HostingEnvironment;
-                    var path = hostingEnvironment.IsProduction() ? "Production" : "NonProd";
-                    builder.AddSystemsManager($"/ACT/{path}");
+                    var isProd = hostingEnvironment.IsProduction();
+                    var disableAws = System.Environment.GetEnvironmentVariable("DISABLE_AWS");
+                    if (isProd && !string.Equals(disableAws, "1", StringComparison.Ordinal))
+                    {
+                        var path = "Production";
+                        builder.AddSystemsManager($"/ACT/{path}");
+                    }
                 })
                 .ConfigureLogging((context, logging) =>
                 {

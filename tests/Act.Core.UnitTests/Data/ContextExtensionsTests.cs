@@ -32,7 +32,8 @@ namespace Act.Core.UnitTests.Data
 			e.OwnerText().Should().Be("John Doe (jdoe)");
 			e.PreferredName = "Johnny";
 			e.OwnerText(false).Should().Be("Johnny");
-			((Employee)null).OwnerText().Should().Be(string.Empty);
+			Employee? nullEmp = null;
+			nullEmp!.OwnerText().Should().Be(string.Empty);
 		}
 
 		[Fact]
@@ -71,7 +72,7 @@ namespace Act.Core.UnitTests.Data
 		{
 			ctx.Products.AddRange(new Product { Code = "A001", Name = "ProdA", ExludeFromReports = false }, new Product { Code = "B001", Name = "ProdB", ExludeFromReports = true });
 			ctx.Employees.Add(new Employee { Id = 1, FirstName = "X", LastName = "Y", SamAccountName = "xy" });
-			ctx.Environments.Add(new Environment { Id = 1, Name = "NonProd", Description = "np", ChefAutomateUrl = "https://a", ChefAutomateOrg = "o", ChefAutomateToken = "t", Color = "#fff" });
+			ctx.Environments.Add(new act.core.data.Environment { Id = 1, Name = "NonProd", Description = "np", ChefAutomateUrl = "https://a", ChefAutomateOrg = "o", ChefAutomateToken = "t", Color = "#fff" });
 			ctx.Nodes.AddRange(
 				new Node { InventoryItemId = 1, Fqdn = "a", OwnerEmployeeId = 1, ProductCode = "A001", EnvironmentId = 1, PciScope = PciScopeConstant.A, Platform = PlatformConstant.Linux, IsActive = true },
 				new Node { InventoryItemId = 2, Fqdn = "b", OwnerEmployeeId = 1, ProductCode = "A001", EnvironmentId = 1, PciScope = PciScopeConstant.B, Platform = PlatformConstant.WindowsServer, IsActive = true },

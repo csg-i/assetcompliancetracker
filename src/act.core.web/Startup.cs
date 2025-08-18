@@ -47,9 +47,11 @@ namespace act.core.web
             _configuration.GetSection("ADFS").Bind(adfs);
             services.AddMemoryCache();
 
+            var disableAws = string.Equals(System.Environment.GetEnvironmentVariable("DISABLE_AWS"), "1", StringComparison.Ordinal);
+
             //register all dependencies
             services
-                .AddDefaultAWSOptions(_configuration.GetAWSOptions())
+                .AddDefaultAWSOptions(disableAws ? new Amazon.Extensions.NETCore.Setup.AWSOptions() : _configuration.GetAWSOptions())
                 .AddActDbContextPool(_configuration)
                 .ConfigureGatherer()
                 .AddTransient<ISpecificationFactory<OsSpecInformation, OsSpecSearchResult>, OsSpecificationFactory>()
@@ -64,12 +66,17 @@ namespace act.core.web
                 .AddTransient<IPortFactory, PortFactory>()
                 .AddTransient<IDashboardFactory, DashboardFactory>()
                 .AddTransient<INotifier, Notifier>()
-                .AddSingleton<IExcelExporter, ExcelExporter>()
-                .AddAWSService<IAmazonS3>()
-                .AddDataProtection()
-                .SetApplicationName("ACT")
-                .PersistKeysToAwsS3(_configuration)
-                .Services
+                .AddSingleton<IExcelExporter, ExcelExporter>();
+
+            // Data Protection and AWS S3 persistence
+            var dpBuilder = services.AddDataProtection().SetApplicationName("ACT");
+            if (!disableAws)
+            {
+                services.AddAWSService<IAmazonS3>();
+                dpBuilder.PersistKeysToAwsS3(_configuration);
+            }
+
+            services
                 .AddAuthentication(o =>
                 {
                     o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;

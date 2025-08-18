@@ -1,7 +1,9 @@
 using System.Linq;
+using System.Collections.Generic;
 using act.core.data;
 using act.core.web;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -12,26 +14,47 @@ namespace Act.Core.IntegrationTests
 {
 	public class WebAppFactory : WebApplicationFactory<Program>
 	{
+		public WebAppFactory()
+		{
+			System.Environment.SetEnvironmentVariable("AWS_EC2_METADATA_DISABLED", "true");
+			System.Environment.SetEnvironmentVariable("DISABLE_AWS", "1");
+		}
+
+		protected override IWebHostBuilder CreateWebHostBuilder()
+		{
+			// Build a minimal host to avoid Program.BuildWebHost and any external providers
+			return new WebHostBuilder()
+				.UseEnvironment("Development")
+				.ConfigureAppConfiguration((ctx, cfg) =>
+				{
+					cfg.Sources.Clear();
+					cfg.AddInMemoryCollection(new KeyValuePair<string, string?>[]
+					{
+						new KeyValuePair<string, string?>("InventorySystemLinkFormat", "https://inventory/{0}"),
+						new KeyValuePair<string, string?>("ADFS:MetadataAddress", "https://test/metadata"),
+						new KeyValuePair<string, string?>("ADFS:Wtrealm", "https://test/realm"),
+						new KeyValuePair<string, string?>("Mail:Host", "localhost"),
+						new KeyValuePair<string, string?>("Mail:Port", "25"),
+						new KeyValuePair<string, string?>("Mail:From", "test@example.com"),
+					});
+				})
+				.UseStartup<Startup>();
+		}
+
 		protected override void ConfigureWebHost(IWebHostBuilder builder)
 		{
-			builder.ConfigureAppConfiguration((ctx, cfg) =>
-			{
-				// Use in-memory configuration to short-circuit AWS Systems Manager
-				cfg.AddInMemoryCollection(new[]
-				{
-					new KeyValuePair<string, string>("InventorySystemLinkFormat", "https://inventory/{0}"),
-					new KeyValuePair<string, string>("ADFS:MetadataAddress", "https://test/metadata"),
-					new KeyValuePair<string, string>("ADFS:Wtrealm", "https://test/realm"),
-					new KeyValuePair<string, string>("Mail:Host", "localhost"),
-					new KeyValuePair<string, string>("Mail:Port", "25"),
-					new KeyValuePair<string, string>("Mail:From", "test@example.com"),
-				}
-				);
-			});
+			System.Environment.SetEnvironmentVariable("AWS_EC2_METADATA_DISABLED", "true");
+			System.Environment.SetEnvironmentVariable("DISABLE_AWS", "1");
 
 			builder.ConfigureServices(services =>
 			{
-				// Replace DB context with InMemory
+				services.PostConfigure<MvcOptions>(o =>
+				{
+					var httpsFilter = o.Filters.OfType<RequireHttpsAttribute>().FirstOrDefault();
+					if (httpsFilter != null)
+						o.Filters.Remove(httpsFilter);
+				});
+
 				var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<ActDbContext>));
 				if (descriptor != null)
 				{
@@ -39,7 +62,6 @@ namespace Act.Core.IntegrationTests
 				}
 				services.AddDbContext<ActDbContext>(o => o.UseInMemoryDatabase("act-tests"));
 
-				// Build the provider and seed minimal data
 				var sp = services.BuildServiceProvider();
 				using var scope = sp.CreateScope();
 				var ctx = scope.ServiceProvider.GetRequiredService<ActDbContext>();
@@ -53,7 +75,7 @@ namespace Act.Core.IntegrationTests
 	{
 		public static void Seed(ActDbContext ctx)
 		{
-			ctx.Environments.Add(new Environment
+			ctx.Environments.Add(new act.core.data.Environment
 			{
 				Id = 1,
 				Name = "NonProd",
