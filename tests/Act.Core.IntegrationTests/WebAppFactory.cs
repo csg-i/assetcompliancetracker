@@ -36,6 +36,7 @@ namespace Act.Core.IntegrationTests
 						new KeyValuePair<string, string?>("Mail:Host", "localhost"),
 						new KeyValuePair<string, string?>("Mail:Port", "25"),
 						new KeyValuePair<string, string?>("Mail:From", "test@example.com"),
+						new KeyValuePair<string, string?>("DataProtection:PersistTo", "Ephemeral"),
 					});
 				})
 				.UseStartup<Startup>();

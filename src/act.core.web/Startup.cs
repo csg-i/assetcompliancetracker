@@ -70,7 +70,7 @@ namespace act.core.web
 
             // Data Protection and AWS S3 persistence
             var dpBuilder = services.AddDataProtection().SetApplicationName("ACT");
-            if (!disableAws)
+            if (!disableAws && (_configuration.GetValue<string>("DataProtection:PersistTo") == "S3"))
             {
                 services.AddAWSService<IAmazonS3>();
                 dpBuilder.PersistKeysToAwsS3(_configuration);

@@ -29,7 +29,11 @@ namespace act.core.web
                 })
                 .ConfigureLogging((context, logging) =>
                 {
-                    logging.AddAWSProvider();
+                    var disableAws = string.Equals(Environment.GetEnvironmentVariable("DISABLE_AWS"), "1", StringComparison.Ordinal);
+                    if (context.HostingEnvironment.IsProduction() && !disableAws)
+                    {
+                        logging.AddAWSProvider();
+                    }
                     logging.SetMinimumLevel(LogLevel.Debug);
                 })
             
