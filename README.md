@@ -4,9 +4,14 @@ ACT is an hybrid on-prem/cloud PCI monitoring solution for VM's or physical serv
 ## Components
 - CHEF Inspec Compliance Tests
 - CHEF Cookbook
-- .NET Core 2.1 AWS Lambda
-- .NET Core 3.1 MVC Website for AWS Elastic Beanstalk
-- .NET Core 3.1 Entity Framework code-first database for AWS Aurora Serverless with migrations
+- .NET 8.0 AWS Lambda
+- .NET 8.0 MVC Website for AWS Elastic Beanstalk
+- .NET 8.0 Entity Framework code-first database for AWS Aurora Serverless with migrations
+
+## .NET Version Requirements
+- **Target Framework**: .NET 8.0
+- **Minimum Runtime**: .NET 8.0
+- **Development**: Compatible with .NET 9.0 RC (as tested)
 
 ## CHEF Inspec Compliance Tests
 There are two compliance specs, one for linux and one for windows servers or clients.  Basically the Specs take attributes passed in from the node that include:
@@ -28,7 +33,7 @@ This cookbook is a simple wrapper around CHEF's audit cookbook.  its sole recipe
 
 It then sets the list returned into the nodes attributes where they can be retrieved by the CHEF Inspec compliance tests.
 
-## .NET Core 3.0 AWS Lambda
+## .NET 8.0 AWS Lambda
 Lambda is an AWS serverless offering. The Lambda component is used to Gather information from the various CHEF Automate servers configured in the database.  It is also an extensible framework allowing for configuration based lambda functions to be added.  There is only one Lambda that need be deployed, but it takes as single JSON argument in the form of
 
     {"name":"function to run", "index":0}
@@ -47,7 +52,7 @@ It supports the following function names out of the box:
 AWS Cloudwatch can hold logs for this Lambda function and Rules can be configured for each of the calls.  The suggested interval is above in (parenthesis).
 
 ### Extending the Lambda
-You can extend the Lambda by building a new .NET Core DLL that has at least one class that inherits from "act.core.etl.lambda.LambdaAddInBase".  
+You can extend the Lambda by building a new .NET 8.0 DLL that has at least one class that inherits from "act.core.etl.lambda.LambdaAddInBase".  
 
     public class MyLambdaAddin: LambdaAddinBase
     {
@@ -81,8 +86,32 @@ You can then edit the appsettings.json file you add your component:
 
 **Important**: You must also include the compiled DLL and all of its **dependencies** in the Lambda binaries folder as as sibling to *act.core.etl.lambda.dll*
 
-## .NET Core 3.0 MVC Website for Docker on AWS Fargate
+## .NET 8.0 MVC Website for Docker on AWS Fargate
 The website is a response UI based on the [jayMVC](https://github.com/unscrum/jaymvc) framework.  It interfaces with an ADFS Server via FederationMetaData for logins and allows users to be able to add *Build Specs* for servers. The website is built to be a central repository for housing specs for all nodes across all environments, including Windows/Linux Servers as well as Appliances, UNIX, Mainframes and any other types.  Although we only have Compliance Specs created for Linux and Windows the website can be a one stop shop for every type of server during a PCI Audit.
+
+### Development Setup
+To run this application locally for development:
+
+1. **Prerequisites**:
+   - .NET 8.0 SDK installed
+   - MySQL database (as indicated by Pomelo.EntityFrameworkCore.MySql dependency)
+   - AWS CLI configured (for Systems Manager configuration)
+
+2. **Configuration**:
+   - Update `appsettings.Development.json` with your local database connection
+   - Configure AWS credentials if using AWS services locally
+
+3. **Running the Application**:
+   ```bash
+   cd src/act.core.web
+   dotnet restore
+   dotnet run
+   ```
+
+4. **Debugging**:
+   - Use Visual Studio 2022 or VS Code with C# extension
+   - Set breakpoints in your controllers and services
+   - The application will run on `http://localhost:8080` and `https://localhost:44363`
 
 ### Concepts
  Build Specs is that there are some things that are platform/OS specific and some that are application specific.  The Website allows **OS Specs** to be created to cover the basic OS install for your company, and the **App  Specs** to inherit from an **OS Spec** and extend it by adding in more installed components or open ports.
