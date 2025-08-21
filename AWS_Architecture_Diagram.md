@@ -17,7 +17,7 @@ graph TB
         end
 
         subgraph "Data Services"
-            Aurora[Aurora Serverless<br/>MySQL Database]
+            Aurora[Aurora MySQL<br/>Database]
             S3[S3 Bucket<br/>Data Protection Keys]
         end
 
@@ -86,7 +86,7 @@ graph TB
     end
 
     subgraph "Data Tier"
-        subgraph "Aurora Serverless MySQL"
+        subgraph "Aurora MySQL"
             DB[(ACT Database)]
             Tables[
                 - BuildSpecifications<br/>
@@ -168,7 +168,7 @@ graph LR
     end
 
     subgraph "Shared Services"
-        Aurora_Shared[Aurora Serverless<br/>Shared Database]
+        Aurora_Shared[Aurora MySQL<br/>Shared Database]
         S3_Shared[S3 Bucket<br/>Shared Storage]
     end
 
@@ -271,7 +271,7 @@ graph TB
     end
 
     subgraph "Database Security"
-        AuroraEnc[Aurora Encryption<br/>At Rest & In Transit]
+        AuroraEnc[Aurora MySQL Encryption<br/>At Rest & In Transit]
         ConnStr[Encrypted Connection<br/>Strings]
         EF[Entity Framework<br/>Parameterized Queries]
     end
@@ -303,7 +303,7 @@ graph TB
 ## Cost Optimization & Scaling
 
 ### Current Architecture Benefits:
-- **Aurora Serverless**: Automatically scales based on demand, pay only for usage
+- **Aurora MySQL**: Managed MySQL database with high availability and performance
 - **Lambda**: Serverless execution, pay per invocation
 - **Elastic Beanstalk**: Auto-scaling web tier based on load
 - **S3**: Cost-effective storage for data protection keys
@@ -317,5 +317,5 @@ graph TB
 ### Scaling Considerations:
 - Lambda functions can handle multiple Chef Automate servers
 - Web application can scale horizontally via Elastic Beanstalk
-- Aurora Serverless automatically handles database scaling
+- Aurora MySQL can be scaled with read replicas and instance sizing
 - S3 provides unlimited storage capacity

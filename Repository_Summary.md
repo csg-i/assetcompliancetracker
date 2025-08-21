@@ -9,12 +9,12 @@
 ### Backend Technologies
 - **.NET 8** - All components (Lambda functions, MVC web application, and Entity Framework)
 - **Entity Framework Core** - Code-first database with migrations
-- **MySQL** - Database engine (Aurora Serverless)
+- **MySQL** - Database engine (Aurora MySQL)
 
 ### AWS Services
 - **AWS Lambda** - Serverless ETL functions
 - **Elastic Beanstalk** - Web application hosting
-- **Aurora Serverless MySQL** - Managed database
+- **Aurora MySQL** - Managed database
 - **S3** - Data protection key storage
 - **CloudWatch** - Logging and scheduled triggers
 - **CodeBuild** - CI/CD pipeline
@@ -54,7 +54,7 @@
 
 #### 3. Data Layer (`act.core.data`)
 - **Framework**: Entity Framework Core
-- **Database**: Aurora Serverless MySQL
+- **Database**: Aurora MySQL
 - **Key Entities**:
   - `Node` - Servers and systems being monitored
   - `BuildSpecification` - Compliance specifications (OS and App specs)
@@ -99,7 +99,7 @@
 ### Environment Structure
 - **QA Environment**: Testing and validation
 - **Production Environment**: Live system
-- **Shared Services**: Aurora database and S3 storage
+- **Shared Services**: Aurora MySQL database and S3 storage
 
 ### Security Implementation
 - **Authentication**: ADFS/WS-Federation integration
@@ -113,7 +113,7 @@
 1. **On-Premise Servers** run Chef InSpec compliance tests
 2. **Chef Automate** servers collect and store results
 3. **Lambda functions** periodically gather data via REST APIs
-4. **Aurora Database** stores processed compliance information
+4. **Aurora MySQL Database** stores processed compliance information
 5. **Web Application** presents dashboards and reports
 
 ### User Interactions
@@ -151,7 +151,7 @@
 ## Technical Highlights
 
 ### Performance Optimizations
-- **Aurora Serverless**: Automatic scaling based on demand
+- **Aurora MySQL**: Managed database with high availability and performance
 - **Connection Pooling**: Efficient database connection management
 - **Caching**: Memory caching for frequently accessed data
 - **Optimized Queries**: Entity Framework optimization
@@ -159,7 +159,7 @@
 ### Scalability Features
 - **Horizontal Scaling**: Elastic Beanstalk auto-scaling
 - **Serverless Architecture**: Lambda functions scale automatically
-- **Database Scaling**: Aurora Serverless handles load variations
+- **Database Scaling**: Aurora MySQL can scale with read replicas and instance sizing
 - **Multi-Environment**: Support for multiple Chef Automate servers
 
 ### Maintainability
