@@ -66,7 +66,7 @@ graph TB
 graph TB
     subgraph "Web Tier - Elastic Beanstalk"
         subgraph "ACT Web Application"
-            MVC[.NET Core 3.1 MVC<br/>act.core.web]
+            MVC[.NET 8 MVC<br/>act.core.web]
             Auth[WS-Federation Auth<br/>ADFS Integration]
             DataProt[Data Protection<br/>Keys in S3]
         end
@@ -74,7 +74,7 @@ graph TB
 
     subgraph "Application Tier - AWS Lambda"
         subgraph "ETL Lambda Functions"
-            LambdaCore[.NET Core 2.1<br/>act.core.etl.lambda]
+            LambdaCore[.NET 8<br/>act.core.etl.lambda]
             Functions[
                 • databaseupdate<br/>
                 • gather (by environment)<br/>

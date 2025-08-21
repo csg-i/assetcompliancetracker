@@ -7,8 +7,7 @@
 ## Technology Stack
 
 ### Backend Technologies
-- **.NET Core 2.1** - AWS Lambda functions
-- **.NET Core 3.1** - MVC web application and Entity Framework
+- **.NET 8** - All components (Lambda functions, MVC web application, and Entity Framework)
 - **Entity Framework Core** - Code-first database with migrations
 - **MySQL** - Database engine (Aurora Serverless)
 
@@ -31,7 +30,7 @@
 ### Core Components
 
 #### 1. Web Application (`act.core.web`)
-- **Framework**: .NET Core 3.1 MVC
+- **Framework**: .NET 8 MVC
 - **Purpose**: Central dashboard and management interface
 - **Key Features**:
   - PCI compliance dashboard with visual reporting
@@ -42,7 +41,7 @@
   - Responsive UI based on jayMVC framework
 
 #### 2. Lambda ETL Functions (`act.core.etl.lambda`)
-- **Framework**: .NET Core 2.1
+- **Framework**: .NET 8
 - **Purpose**: Automated data processing and maintenance
 - **Functions**:
   - `gather` - Collects compliance data from Chef Automate servers
