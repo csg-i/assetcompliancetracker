@@ -76,11 +76,11 @@ graph TB
         subgraph "ETL Lambda Functions"
             LambdaCore[.NET 8<br/>act.core.etl.lambda]
             Functions[
-                • databaseupdate<br/>
-                • gather (by environment)<br/>
-                • email notifications<br/>
-                • reset compliance<br/>
-                • purge operations
+                - databaseupdate<br/>
+                - gather by environment<br/>
+                - email notifications<br/>
+                - reset compliance<br/>
+                - purge operations
             ]
         end
     end
@@ -89,11 +89,11 @@ graph TB
         subgraph "Aurora Serverless MySQL"
             DB[(ACT Database)]
             Tables[
-                • BuildSpecifications<br/>
-                • Nodes<br/>
-                • ComplianceResults<br/>
-                • Environments<br/>
-                • Employees
+                - BuildSpecifications<br/>
+                - Nodes<br/>
+                - ComplianceResults<br/>
+                - Environments<br/>
+                - Employees
             ]
         end
         
@@ -105,7 +105,7 @@ graph TB
     subgraph "Monitoring & Scheduling"
         subgraph "CloudWatch"
             Rules[CloudWatch Rules<br/>Scheduled Triggers]
-            Logs[Application Logs<br/>/act/Dev-Log]
+            Logs[Application Logs<br/>act Dev-Log]
         end
     end
 
@@ -152,7 +152,7 @@ graph LR
 
     subgraph "AWS CodeBuild"
         Build[Build Process<br/>BuildSpec.yml]
-        Artifacts[Build Artifacts<br/>• Lambda.zip<br/>• BeanstalkProd.zip<br/>• BeanstalkQA.zip]
+        Artifacts[Build Artifacts<br/>- Lambda.zip<br/>- BeanstalkProd.zip<br/>- BeanstalkQA.zip]
     end
 
     subgraph "Deployment Targets"
