@@ -15,6 +15,124 @@ ACT consists of four main .NET Core 8.0 components working together to provide c
 3. **act.core.web** - ASP.NET Core MVC web application for user interface
 4. **act.core.etl.lambda** - AWS Lambda functions for automated data processing
 
+## Code Structure
+
+```mermaid
+graph TB
+    subgraph "Repository Structure"
+        subgraph "Source Code (src/)"
+            DATA[act.core.data<br/>📊 Entity Framework<br/>Data Layer]
+            ETL[act.core.etl<br/>🔄 Extract Transform Load<br/>Business Logic]
+            WEB[act.core.web<br/>🌐 ASP.NET Core MVC<br/>Web Application]
+            LAMBDA[act.core.etl.lambda<br/>⚡ AWS Lambda<br/>Functions]
+        end
+        
+        subgraph "Chef Components"
+            COOKBOOK[Chef/cookbooks/act/<br/>📋 Chef Cookbook<br/>Automation]
+            LINUX_SPEC[Compliance/<br/>csg_linux_compliant_server/<br/>🐧 Linux InSpec Profile]
+            WIN_SPEC[Compliance/<br/>csg_windows_compliant_server/<br/>🪟 Windows InSpec Profile]
+        end
+        
+        subgraph "Deployment"
+            DOCKER[Docker/<br/>🐳 Dockerfile<br/>Container Config]
+            BUILD[BuildSpec.yml<br/>🏗️ CodeBuild<br/>CI/CD Pipeline]
+        end
+        
+        subgraph "Configuration"
+            SOLUTION[ACT.sln<br/>📁 Visual Studio<br/>Solution File]
+            DOCS[Documentation/<br/>📚 Architecture &<br/>Setup Guides]
+        end
+    end
+    
+    subgraph "Dependencies & Relationships"
+        WEB --> DATA
+        WEB --> ETL
+        LAMBDA --> DATA
+        LAMBDA --> ETL
+        ETL --> DATA
+        
+        COOKBOOK --> LINUX_SPEC
+        COOKBOOK --> WIN_SPEC
+        
+        BUILD --> WEB
+        BUILD --> LAMBDA
+        BUILD --> DOCKER
+        
+        SOLUTION --> DATA
+        SOLUTION --> ETL
+        SOLUTION --> WEB
+        SOLUTION --> LAMBDA
+    end
+    
+    subgraph "External Integrations"
+        CHEF_AUTO[Chef Automate<br/>Servers]
+        MYSQL_DB[(MySQL Database<br/>Aurora Serverless)]
+        AWS_SERVICES[AWS Services<br/>Lambda, Beanstalk, CloudWatch]
+    end
+    
+    ETL --> CHEF_AUTO
+    DATA --> MYSQL_DB
+    WEB --> MYSQL_DB
+    LAMBDA --> MYSQL_DB
+    LAMBDA --> AWS_SERVICES
+    WEB --> AWS_SERVICES
+    
+    classDef coreProject fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef chefComponent fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef deployment fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef config fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef external fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    
+    class DATA,ETL,WEB,LAMBDA coreProject
+    class COOKBOOK,LINUX_SPEC,WIN_SPEC chefComponent
+    class DOCKER,BUILD deployment
+    class SOLUTION,DOCS config
+    class CHEF_AUTO,MYSQL_DB,AWS_SERVICES external
+```
+
+### Project Dependencies
+
+```mermaid
+graph LR
+    subgraph ".NET Core Projects"
+        DATA[act.core.data<br/>Entity Framework<br/>MySQL Provider]
+        ETL[act.core.etl<br/>Business Logic<br/>Chef Integration]
+        WEB[act.core.web<br/>MVC Web App<br/>ADFS Auth]
+        LAMBDA[act.core.etl.lambda<br/>AWS Lambda<br/>Scheduled Tasks]
+    end
+    
+    subgraph "Key Dependencies"
+        EF[Entity Framework Core 8.0]
+        MYSQL[Pomelo MySQL Provider]
+        AWS_SDK[AWS SDK .NET]
+        ASPNET[ASP.NET Core 8.0]
+        ADFS_AUTH[WS-Federation Auth]
+        NEWTONSOFT[Newtonsoft.Json]
+    end
+    
+    DATA --> EF
+    DATA --> MYSQL
+    
+    ETL --> DATA
+    
+    WEB --> DATA
+    WEB --> ETL
+    WEB --> ASPNET
+    WEB --> ADFS_AUTH
+    WEB --> AWS_SDK
+    
+    LAMBDA --> DATA
+    LAMBDA --> ETL
+    LAMBDA --> AWS_SDK
+    LAMBDA --> NEWTONSOFT
+    
+    classDef project fill:#bbdefb,stroke:#1976d2,stroke-width:2px
+    classDef dependency fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
+    
+    class DATA,ETL,WEB,LAMBDA project
+    class EF,MYSQL,AWS_SDK,ASPNET,ADFS_AUTH,NEWTONSOFT dependency
+```
+
 ### Technology Stack
 
 - **.NET Core 8.0** - Primary application framework
