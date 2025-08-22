@@ -133,6 +133,83 @@ graph LR
     class EF,MYSQL,AWS_SDK,ASPNET,ADFS_AUTH,NEWTONSOFT dependency
 ```
 
+### Application Layer Architecture
+
+```mermaid
+graph TB
+    subgraph "Presentation Layer"
+        UI[Web UI Controllers<br/>Views & Models]
+        API[REST API Endpoints<br/>JSON Responses]
+        AUTH[ADFS Authentication<br/>Claims & Authorization]
+    end
+    
+    subgraph "Business Logic Layer"
+        BL[Business Logic<br/>act.core.etl]
+        CHEF_INT[Chef Integration<br/>API Clients]
+        EMAIL[Email Services<br/>Notification Logic]
+        SCHED[Scheduled Tasks<br/>Lambda Functions]
+    end
+    
+    subgraph "Data Access Layer"
+        EF_CTX[Entity Framework<br/>DbContext]
+        REPOS[Repository Pattern<br/>Data Models]
+        MIGRATIONS[Database Migrations<br/>Schema Management]
+    end
+    
+    subgraph "Infrastructure Layer"
+        DB[(MySQL Database<br/>Aurora Serverless)]
+        CHEF_SRV[Chef Automate<br/>External APIs]
+        AWS_SVC[AWS Services<br/>CloudWatch, S3]
+        MAIL_SRV[Mail Server<br/>SMTP]
+    end
+    
+    subgraph "Cross-Cutting Concerns"
+        LOG[Logging<br/>CloudWatch Integration]
+        CONFIG[Configuration<br/>appsettings.json]
+        CACHE[Caching<br/>Memory & Distributed]
+        SECURITY[Security<br/>SSL, Encryption]
+    end
+    
+    UI --> BL
+    API --> BL
+    AUTH --> UI
+    AUTH --> API
+    
+    BL --> EF_CTX
+    CHEF_INT --> BL
+    EMAIL --> BL
+    SCHED --> BL
+    
+    EF_CTX --> REPOS
+    REPOS --> MIGRATIONS
+    
+    REPOS --> DB
+    CHEF_INT --> CHEF_SRV
+    EMAIL --> MAIL_SRV
+    SCHED --> AWS_SVC
+    
+    LOG -.-> UI
+    LOG -.-> BL
+    LOG -.-> EF_CTX
+    CONFIG -.-> BL
+    CONFIG -.-> EF_CTX
+    CACHE -.-> BL
+    SECURITY -.-> UI
+    SECURITY -.-> API
+    
+    classDef presentation fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef business fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef data fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+    classDef infrastructure fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef crosscutting fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    
+    class UI,API,AUTH presentation
+    class BL,CHEF_INT,EMAIL,SCHED business
+    class EF_CTX,REPOS,MIGRATIONS data
+    class DB,CHEF_SRV,AWS_SVC,MAIL_SRV infrastructure
+    class LOG,CONFIG,CACHE,SECURITY crosscutting
+```
+
 ### Technology Stack
 
 - **.NET Core 8.0** - Primary application framework
