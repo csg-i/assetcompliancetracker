@@ -104,6 +104,118 @@ graph TB
     class Mail,Artifacts,ADFS external
 ```
 
+## Code Structure Architecture
+
+The ACT solution follows a layered architecture pattern with clear separation of concerns across multiple .NET 8.0 projects:
+
+```mermaid
+graph TB
+    subgraph "Repository Structure"
+        subgraph ".NET Solution (ACT.sln)"
+            subgraph "Presentation Layer"
+                Web[act.core.web<br/>ASP.NET Core MVC<br/>• Controllers<br/>• Views<br/>• Models<br/>• Services<br/>• Framework]
+            end
+            
+            subgraph "Application Layer"
+                Lambda[act.core.etl.lambda<br/>AWS Lambda Functions<br/>• Bootstrap<br/>• Migrator<br/>• Function Handlers]
+                
+                ETL[act.core.etl<br/>Business Logic<br/>• Gatherer<br/>• ComplianceModel<br/>• IGatherer Interface<br/>• MailSettings]
+            end
+            
+            subgraph "Data Access Layer"
+                Data[act.core.data<br/>Entity Framework<br/>• ActDbContext<br/>• Entity Models<br/>• Migrations<br/>• Extensions<br/>• Constants]
+            end
+        end
+        
+        subgraph "Infrastructure as Code"
+            Chef[Chef/cookbooks/act<br/>Configuration Management<br/>• Recipes<br/>• Resources<br/>• Libraries<br/>• Attributes]
+            
+            Compliance[Compliance/<br/>InSpec Profiles<br/>• Linux Profile<br/>• Windows Profile<br/>• Controls<br/>• Libraries]
+        end
+        
+        subgraph "DevOps & Deployment"
+            Docker[Docker/<br/>• Dockerfile<br/>• Container Config]
+            
+            Build[BuildSpec.yml<br/>AWS CodeBuild<br/>• Build Pipeline<br/>• Artifact Generation]
+        end
+    end
+    
+    %% Dependencies
+    Web --> ETL
+    Web --> Data
+    Lambda --> ETL
+    Lambda --> Data
+    ETL --> Data
+    Chef --> Web
+    Compliance --> Chef
+    
+    %% Styling
+    classDef presentation fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
+    classDef application fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px
+    classDef data fill:#E8F5E8,stroke:#388E3C,stroke-width:2px
+    classDef infrastructure fill:#FFF3E0,stroke:#F57C00,stroke-width:2px
+    classDef devops fill:#FAFAFA,stroke:#616161,stroke-width:2px
+    
+    class Web presentation
+    class Lambda,ETL application
+    class Data data
+    class Chef,Compliance infrastructure
+    class Docker,Build devops
+```
+
+### Project Dependencies
+
+```mermaid
+graph LR
+    subgraph "Dependency Flow"
+        Web[act.core.web] --> ETL[act.core.etl]
+        Web --> Data[act.core.data]
+        Lambda[act.core.etl.lambda] --> ETL
+        Lambda --> Data
+        ETL --> Data
+    end
+    
+    subgraph "External Dependencies"
+        Web --> AWS1[AWS SDK<br/>S3, Systems Manager]
+        Web --> EF1[Entity Framework<br/>MySQL Provider]
+        Web --> ADFS[ADFS Authentication]
+        
+        Lambda --> AWS2[AWS SDK<br/>Lambda, S3, Core]
+        Lambda --> EF2[Entity Framework<br/>MySQL Provider]
+        
+        ETL --> MySQL[MySQL Connector]
+        Data --> EF3[Entity Framework<br/>Core & Tools]
+    end
+    
+    classDef project fill:#E1F5FE,stroke:#0277BD,stroke-width:2px
+    classDef external fill:#FFF8E1,stroke:#F57F17,stroke-width:2px
+    
+    class Web,Lambda,ETL,Data project
+    class AWS1,AWS2,EF1,EF2,EF3,MySQL,ADFS external
+```
+
+### Key Architectural Patterns
+
+1. **Layered Architecture**
+   - **Presentation**: MVC web application with controllers, views, and models
+   - **Application**: Business logic and Lambda function handlers
+   - **Data Access**: Entity Framework with database context and models
+
+2. **Dependency Injection**
+   - All projects use Microsoft.Extensions.DependencyInjection
+   - Services registered in Bootstrap classes
+   - Scoped lifetime for database contexts
+
+3. **Configuration Management**
+   - appsettings.json for application configuration
+   - AWS Systems Manager for secure parameters
+   - Environment-specific configuration files
+
+4. **Entity Framework Code-First**
+   - Database schema defined in C# entity classes
+   - Migrations for database versioning
+   - Repository pattern through DbContext
+
 ## Data Flow Architecture
 
 ```mermaid
