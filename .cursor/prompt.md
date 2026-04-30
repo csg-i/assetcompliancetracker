@@ -1,22 +1,24 @@
 # User Story #1143682: ACT: Delete nodes based on LastComplianceResultDate
 
 ## Goal
-Extend the existing `PurgeInactiveNodes` functionality in AssetComplianceTracker so that nodes are also marked for deletion when their `LastComplianceResultDate` is older than 15 days, in addition to the existing `DeactivationDate` and `ActiveCD` flag checks against the GAM database.
+Extend the existing `PurgeInactiveNodes` functionality in AssetComplianceTracker so that nodes are also deleted when their `LastComplianceResultDate` is older than 15 days, in addition to the existing checks on `DeactivationDate` and `ActiveCD` flag.
 
 ## Requirements
-- Extend `PurgeInactiveNodes` logic to include a check on `LastComplianceResultDate` for each node.
-- If a node's `LastComplianceResultDate` is older than 15 days from the current date, the node should be marked for deletion.
-- Nodes meeting this new criterion should be deleted during the lambda run, consistent with how existing inactive-node deletion works.
-- The existing deletion logic based on `DeactivationDate` and `ActiveCD` flag must remain unchanged.
+- Identify nodes in the AssetComplianceTracker system whose `LastComplianceResultDate` is older than 15 days.
+- Mark those nodes for deletion (consistent with how `PurgeInactiveNodes` currently marks nodes based on `DeactivationDate` and `ActiveCD` flag in the GAM database).
+- Ensure the identified nodes are deleted during the scheduled Lambda run, alongside nodes already flagged by the existing logic.
+- The new condition should be additive — nodes satisfying either the existing criteria OR the new `LastComplianceResultDate` condition (>15 days old) should be purged.
 
 ## Acceptance Criteria
 - (none specified)
 
 ## Implementation Notes
-- The functionality resides in the `assetcompliancetracker` repository (project: ASA).
-- The existing purge mechanism is called `PurgeInactiveNodes` and currently checks `DeactivationDate` and `ActiveCD` flag in the GAM database.
-- The new check should use `LastComplianceResultDate` — if this date is more than 15 days in the past, the node qualifies for deletion.
-- This logic runs inside a lambda function; ensure the new check integrates with the existing lambda execution flow.
+- The existing purge mechanism is `PurgeInactiveNodes` inside the `assetcompliancetracker` repository.
+- Current logic checks `DeactivationDate` and `ActiveCD` flag in the GAM database.
+- New logic must additionally check `LastComplianceResultDate`; if older than 15 days from today, the node should be marked for deletion.
+- Deletion occurs during the Lambda run — ensure the new check is integrated into that execution path.
+- Target repository: `assetcompliancetracker`
+- Target ADO repo URL: https://dev.azure.com/CSGDevOpsAutomation/ASA/_git/assetcompliancetracker
 
 ## Out of Scope
 - (none specified)
