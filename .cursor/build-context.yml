@@ -1,0 +1,10 @@
+# Project type: .NET 8 ASP.NET Core web application (Asset Compliance Tracker)
+# Solution: ACT.sln
+
+prerequisites:
+  - name: ".NET 8 SDK"
+    check: "dotnet --list-sdks | Select-String '8\\.'"
+    install: "winget install Microsoft.DotNet.SDK.8 --silent --accept-package-agreements --accept-source-agreements"
+
+build: "dotnet build ACT.sln"
+test: "dotnet test ACT.sln --no-build"

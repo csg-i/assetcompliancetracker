@@ -454,27 +454,44 @@ namespace act.core.etl
 
         public async Task<int> PurgeInactiveNodes()
         {
-            var date = DateTime.Today.AddDays(-7);
+            var deactivationCutoff = DateTime.Today.AddDays(-7);
+            var complianceCutoff = DateTime.Today.AddDays(-15);
             var count = 0;
-            _logger.LogInformation($"Getting Nodes Deactivated prior to {date.ToShortDateString()}");
-            var nodes = await _ctx.Nodes.Inactive().Where(p => p.DeactivatedDate < date)
+
+            _logger.LogInformation($"Getting Nodes Deactivated prior to {deactivationCutoff.ToShortDateString()}");
+            var deactivatedNodes = await _ctx.Nodes.Inactive().Where(p => p.DeactivatedDate < deactivationCutoff)
                 .Select(p => new { p.Fqdn, p.DeactivatedDate, p.BuildSpecification.Id })
                 .ToArrayAsync();
 
-            if (nodes.Length > 0)
+            foreach (var node in deactivatedNodes)
             {
-                foreach (var node in nodes)
-                {
-                    _logger.LogInformation($"Deactivated Node : fqdn {node.Fqdn}, deactivated date : {node.DeactivatedDate} , buildspecid : {node.Id}");
-                }
+                _logger.LogInformation($"Deactivated Node: fqdn {node.Fqdn}, deactivated date: {node.DeactivatedDate}, buildspecid: {node.Id}");
             }
-            while (await _ctx.Nodes.Inactive().AnyAsync(p => p.DeactivatedDate < date))
-            {
-                _logger.LogInformation("Purging 1000 Deactivated Nodes");
-                await _ctx.ExecuteCommandAsync(
-                    "DELETE FROM Node WHERE DeactivatedDate < @date or LastComplianceResultDate < @date or IsActive = 0 ORDER BY InventoryItemId limit 1000",
-                    new MySqlParameter("@date", MySqlDbType.Date) { Value = date });
 
+            _logger.LogInformation($"Getting Nodes with LastComplianceResultDate older than {complianceCutoff.ToShortDateString()}");
+            var staleComplianceNodes = await _ctx.Nodes
+                .Where(p => p.LastComplianceResultDate < complianceCutoff)
+                .Select(p => new { p.Fqdn, p.LastComplianceResultDate, p.BuildSpecification.Id })
+                .ToArrayAsync();
+
+            foreach (var node in staleComplianceNodes)
+            {
+                _logger.LogInformation($"Stale Compliance Node: fqdn {node.Fqdn}, lastComplianceResultDate: {node.LastComplianceResultDate}, buildspecid: {node.Id}");
+            }
+
+            while (
+                await _ctx.Nodes.Inactive().AnyAsync(p => p.DeactivatedDate < deactivationCutoff)
+                || await _ctx.Nodes.AnyAsync(p => p.LastComplianceResultDate < complianceCutoff))
+            {
+                _logger.LogInformation("Purging up to 1000 Inactive or Stale-Compliance Nodes");
+                await _ctx.ExecuteCommandAsync(
+                    "DELETE FROM Node " +
+                    "WHERE IsActive = 0 " +
+                    "   OR DeactivatedDate < @deactivationDate " +
+                    "   OR LastComplianceResultDate < @complianceDate " +
+                    "ORDER BY InventoryItemId LIMIT 1000",
+                    new MySqlParameter("@deactivationDate", MySqlDbType.Date) { Value = deactivationCutoff },
+                    new MySqlParameter("@complianceDate", MySqlDbType.Date) { Value = complianceCutoff });
 
                 count += 1000;
             }
