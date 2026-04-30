@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 using act.core.data;
 using act.core.etl;
+using Environment = act.core.data.Environment;
 
 namespace act.core.etl.tests
 {
@@ -18,12 +20,13 @@ namespace act.core.etl.tests
 
         public GathererTests()
         {
-            // Setup in-memory database
+            // Setup SQLite in-memory database
             var options = new DbContextOptionsBuilder<ActDbContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .UseSqlite("DataSource=:memory:")
                 .Options;
 
             _dbContext = new ActDbContext(options);
+            _dbContext.Database.EnsureCreated();
             _loggerFactory = new NullLoggerFactory();
 
             // Setup configuration
@@ -39,90 +42,56 @@ namespace act.core.etl.tests
 
         private void SeedTestData()
         {
-            // Create a basic BuildSpecification for testing
-            var buildSpec = new BuildSpecification
-            {
-                Id = 1,
-                Name = "Test Build Spec",
-                OwnerEmployeeId = 1,
-                BuildSpecificationType = BuildSpecificationTypeConstant.OperatingSystem
-            };
-            _dbContext.BuildSpecifications.Add(buildSpec);
-
-            // Create an Employee for testing
-            var employee = new Employee
-            {
-                Id = 1,
-                FirstName = "Test",
-                LastName = "User",
-                Email = "test@example.com",
-                SamAccountName = "testuser",
-                IsActive = true
-            };
-            _dbContext.Employees.Add(employee);
-
-            // Create a Product for testing
-            var product = new Product
-            {
-                Code = "TEST",
-                Name = "Test Product",
-                ExludeFromReports = false
-            };
-            _dbContext.Products.Add(product);
-
-            // Create a Function for testing
-            var function = new Function
-            {
-                Id = 1,
-                Name = "Test Function"
-            };
-            _dbContext.Functions.Add(function);
-
-            // Create an Environment for testing
-            var environment = new Environment
-            {
-                Id = 1,
-                Name = "Test",
-                Description = "Test Environment",
-                ChefAutomateUrl = "https://test.example.com",
-                ChefAutomateOrg = "test",
-                ChefAutomateToken = "test-token",
-                Color = "#000000"
-            };
-            _dbContext.Environments.Add(environment);
-
-            _dbContext.SaveChanges();
+            // For SQLite testing, we'll create the minimal required tables using raw SQL
+            // This avoids the complexity of full entity relationships for testing the DELETE logic
+            
+            var connection = _dbContext.Database.GetDbConnection();
+            connection.Open();
+            
+            using var command = connection.CreateCommand();
+            command.CommandText = @"
+                CREATE TABLE IF NOT EXISTS BuildSpecification (
+                    Id INTEGER PRIMARY KEY,
+                    Name TEXT NOT NULL
+                );
+                
+                CREATE TABLE IF NOT EXISTS Node (
+                    InventoryItemId INTEGER PRIMARY KEY,
+                    Fqdn TEXT NOT NULL,
+                    IsActive INTEGER NOT NULL,
+                    DeactivatedDate TEXT,
+                    LastComplianceResultDate TEXT,
+                    OwnerEmployeeId INTEGER,
+                    ProductCode TEXT,
+                    FunctionId INTEGER,
+                    EnvironmentId INTEGER,
+                    BuildSpecificationId INTEGER,
+                    PciScope INTEGER,
+                    Platform INTEGER,
+                    ComplianceStatus INTEGER
+                );
+                
+                INSERT OR IGNORE INTO BuildSpecification (Id, Name) VALUES (1, 'Test Build Spec');
+            ";
+            command.ExecuteNonQuery();
+            
+            connection.Close();
         }
 
         [Fact]
         public async Task PurgeInactiveNodes_ActiveNodeWithLastComplianceResultDateOlderThan15Days_ShouldDelete()
         {
             // Arrange
-            var node = new Node
-            {
-                InventoryItemId = 1,
-                Fqdn = "test1.example.com",
-                IsActive = true,
-                DeactivatedDate = null,
-                LastComplianceResultDate = DateTime.Today.AddDays(-16),
-                OwnerEmployeeId = 1,
-                ProductCode = "TEST",
-                FunctionId = 1,
-                EnvironmentId = 1,
-                BuildSpecificationId = 1,
-                PciScope = PciScopeConstant.A,
-                Platform = PlatformConstant.WindowsServer,
-                ComplianceStatus = ComplianceStatusConstant.Failed
-            };
-            _dbContext.Nodes.Add(node);
-            await _dbContext.SaveChangesAsync();
+            await InsertNodeAsync(1, "test1.example.com", isActive: true, 
+                deactivatedDate: null, 
+                lastComplianceResultDate: DateTime.Today.AddDays(-16));
 
             // Act
             var result = await _gatherer.PurgeInactiveNodes();
 
             // Assert
-            Assert.True(result >= 1000, "Should return count >= 1000 indicating nodes were processed");
-            var remainingNode = await _dbContext.Nodes.FindAsync(1L);
+            Assert.True(result >= 1, "Should return count >= 1 indicating nodes were deleted");
+            var remainingNode = await GetNodeAsync(1);
             Assert.Null(remainingNode); // Node should be deleted
         }
 
@@ -130,31 +99,16 @@ namespace act.core.etl.tests
         public async Task PurgeInactiveNodes_ActiveNodeWithLastComplianceResultDateExactly15DaysOld_ShouldNotDelete()
         {
             // Arrange
-            var node = new Node
-            {
-                InventoryItemId = 2,
-                Fqdn = "test2.example.com",
-                IsActive = true,
-                DeactivatedDate = null,
-                LastComplianceResultDate = DateTime.Today.AddDays(-15),
-                OwnerEmployeeId = 1,
-                ProductCode = "TEST",
-                FunctionId = 1,
-                EnvironmentId = 1,
-                BuildSpecificationId = 1,
-                PciScope = PciScopeConstant.A,
-                Platform = PlatformConstant.WindowsServer,
-                ComplianceStatus = ComplianceStatusConstant.Failed
-            };
-            _dbContext.Nodes.Add(node);
-            await _dbContext.SaveChangesAsync();
+            await InsertNodeAsync(2, "test2.example.com", isActive: true, 
+                deactivatedDate: null, 
+                lastComplianceResultDate: DateTime.Today.AddDays(-15));
 
             // Act
             var result = await _gatherer.PurgeInactiveNodes();
 
             // Assert
             Assert.Equal(0, result); // Should return 0 as no nodes qualify for deletion
-            var remainingNode = await _dbContext.Nodes.FindAsync(2L);
+            var remainingNode = await GetNodeAsync(2);
             Assert.NotNull(remainingNode); // Node should still exist
         }
 
@@ -162,31 +116,16 @@ namespace act.core.etl.tests
         public async Task PurgeInactiveNodes_ActiveNodeWithLastComplianceResultDateWithin15Days_ShouldNotDelete()
         {
             // Arrange
-            var node = new Node
-            {
-                InventoryItemId = 3,
-                Fqdn = "test3.example.com",
-                IsActive = true,
-                DeactivatedDate = null,
-                LastComplianceResultDate = DateTime.Today.AddDays(-5),
-                OwnerEmployeeId = 1,
-                ProductCode = "TEST",
-                FunctionId = 1,
-                EnvironmentId = 1,
-                BuildSpecificationId = 1,
-                PciScope = PciScopeConstant.A,
-                Platform = PlatformConstant.WindowsServer,
-                ComplianceStatus = ComplianceStatusConstant.Failed
-            };
-            _dbContext.Nodes.Add(node);
-            await _dbContext.SaveChangesAsync();
+            await InsertNodeAsync(3, "test3.example.com", isActive: true, 
+                deactivatedDate: null, 
+                lastComplianceResultDate: DateTime.Today.AddDays(-5));
 
             // Act
             var result = await _gatherer.PurgeInactiveNodes();
 
             // Assert
             Assert.Equal(0, result);
-            var remainingNode = await _dbContext.Nodes.FindAsync(3L);
+            var remainingNode = await GetNodeAsync(3);
             Assert.NotNull(remainingNode); // Node should still exist
         }
 
@@ -194,31 +133,16 @@ namespace act.core.etl.tests
         public async Task PurgeInactiveNodes_InactiveNodeDeactivatedMoreThan7DaysAgo_ShouldDelete()
         {
             // Arrange
-            var node = new Node
-            {
-                InventoryItemId = 4,
-                Fqdn = "test4.example.com",
-                IsActive = false,
-                DeactivatedDate = DateTime.Today.AddDays(-8),
-                LastComplianceResultDate = DateTime.Today.AddDays(-1), // Recent compliance date
-                OwnerEmployeeId = 1,
-                ProductCode = "TEST",
-                FunctionId = 1,
-                EnvironmentId = 1,
-                BuildSpecificationId = 1,
-                PciScope = PciScopeConstant.A,
-                Platform = PlatformConstant.WindowsServer,
-                ComplianceStatus = ComplianceStatusConstant.Failed
-            };
-            _dbContext.Nodes.Add(node);
-            await _dbContext.SaveChangesAsync();
+            await InsertNodeAsync(4, "test4.example.com", isActive: false, 
+                deactivatedDate: DateTime.Today.AddDays(-8), 
+                lastComplianceResultDate: DateTime.Today.AddDays(-1));
 
             // Act
             var result = await _gatherer.PurgeInactiveNodes();
 
             // Assert
-            Assert.True(result >= 1000, "Should return count >= 1000 indicating nodes were processed");
-            var remainingNode = await _dbContext.Nodes.FindAsync(4L);
+            Assert.True(result >= 1, "Should return count >= 1 indicating nodes were deleted");
+            var remainingNode = await GetNodeAsync(4);
             Assert.Null(remainingNode); // Node should be deleted
         }
 
@@ -226,31 +150,16 @@ namespace act.core.etl.tests
         public async Task PurgeInactiveNodes_InactiveNodeDeactivatedLessThan7DaysAgoWithRecentCompliance_ShouldNotDelete()
         {
             // Arrange
-            var node = new Node
-            {
-                InventoryItemId = 5,
-                Fqdn = "test5.example.com",
-                IsActive = false,
-                DeactivatedDate = DateTime.Today.AddDays(-3),
-                LastComplianceResultDate = DateTime.Today.AddDays(-3),
-                OwnerEmployeeId = 1,
-                ProductCode = "TEST",
-                FunctionId = 1,
-                EnvironmentId = 1,
-                BuildSpecificationId = 1,
-                PciScope = PciScopeConstant.A,
-                Platform = PlatformConstant.WindowsServer,
-                ComplianceStatus = ComplianceStatusConstant.Failed
-            };
-            _dbContext.Nodes.Add(node);
-            await _dbContext.SaveChangesAsync();
+            await InsertNodeAsync(5, "test5.example.com", isActive: false, 
+                deactivatedDate: DateTime.Today.AddDays(-3), 
+                lastComplianceResultDate: DateTime.Today.AddDays(-3));
 
             // Act
             var result = await _gatherer.PurgeInactiveNodes();
 
             // Assert
             Assert.Equal(0, result);
-            var remainingNode = await _dbContext.Nodes.FindAsync(5L);
+            var remainingNode = await GetNodeAsync(5);
             Assert.NotNull(remainingNode); // Node should still exist
         }
 
@@ -259,71 +168,29 @@ namespace act.core.etl.tests
         {
             // Arrange
             // Node 1: Active, LastComplianceResultDate = 20 days ago → should be deleted
-            var node1 = new Node
-            {
-                InventoryItemId = 6,
-                Fqdn = "test6.example.com",
-                IsActive = true,
-                DeactivatedDate = null,
-                LastComplianceResultDate = DateTime.Today.AddDays(-20),
-                OwnerEmployeeId = 1,
-                ProductCode = "TEST",
-                FunctionId = 1,
-                EnvironmentId = 1,
-                BuildSpecificationId = 1,
-                PciScope = PciScopeConstant.A,
-                Platform = PlatformConstant.WindowsServer,
-                ComplianceStatus = ComplianceStatusConstant.Failed
-            };
+            await InsertNodeAsync(6, "test6.example.com", isActive: true, 
+                deactivatedDate: null, 
+                lastComplianceResultDate: DateTime.Today.AddDays(-20));
 
             // Node 2: Inactive, DeactivatedDate = 10 days ago → should be deleted
-            var node2 = new Node
-            {
-                InventoryItemId = 7,
-                Fqdn = "test7.example.com",
-                IsActive = false,
-                DeactivatedDate = DateTime.Today.AddDays(-10),
-                LastComplianceResultDate = DateTime.Today.AddDays(-1), // Recent compliance
-                OwnerEmployeeId = 1,
-                ProductCode = "TEST",
-                FunctionId = 1,
-                EnvironmentId = 1,
-                BuildSpecificationId = 1,
-                PciScope = PciScopeConstant.A,
-                Platform = PlatformConstant.WindowsServer,
-                ComplianceStatus = ComplianceStatusConstant.Failed
-            };
+            await InsertNodeAsync(7, "test7.example.com", isActive: false, 
+                deactivatedDate: DateTime.Today.AddDays(-10), 
+                lastComplianceResultDate: DateTime.Today.AddDays(-1));
 
             // Node 3: Active, LastComplianceResultDate = 10 days ago → should be retained
-            var node3 = new Node
-            {
-                InventoryItemId = 8,
-                Fqdn = "test8.example.com",
-                IsActive = true,
-                DeactivatedDate = null,
-                LastComplianceResultDate = DateTime.Today.AddDays(-10),
-                OwnerEmployeeId = 1,
-                ProductCode = "TEST",
-                FunctionId = 1,
-                EnvironmentId = 1,
-                BuildSpecificationId = 1,
-                PciScope = PciScopeConstant.A,
-                Platform = PlatformConstant.WindowsServer,
-                ComplianceStatus = ComplianceStatusConstant.Failed
-            };
-
-            _dbContext.Nodes.AddRange(node1, node2, node3);
-            await _dbContext.SaveChangesAsync();
+            await InsertNodeAsync(8, "test8.example.com", isActive: true, 
+                deactivatedDate: null, 
+                lastComplianceResultDate: DateTime.Today.AddDays(-10));
 
             // Act
             var result = await _gatherer.PurgeInactiveNodes();
 
             // Assert
-            Assert.True(result >= 1000, "Should return count >= 1000 indicating nodes were processed");
+            Assert.True(result >= 2, "Should return count >= 2 indicating two nodes were deleted");
             
-            var remainingNode1 = await _dbContext.Nodes.FindAsync(6L);
-            var remainingNode2 = await _dbContext.Nodes.FindAsync(7L);
-            var remainingNode3 = await _dbContext.Nodes.FindAsync(8L);
+            var remainingNode1 = await GetNodeAsync(6);
+            var remainingNode2 = await GetNodeAsync(7);
+            var remainingNode3 = await GetNodeAsync(8);
 
             Assert.Null(remainingNode1); // Node 1 should be deleted
             Assert.Null(remainingNode2); // Node 2 should be deleted
@@ -338,24 +205,9 @@ namespace act.core.etl.tests
             var testLoggerFactory = new TestLoggerFactory(testLogger);
             var testGatherer = new Gatherer(_dbContext, testLoggerFactory, new ConfigurationBuilder().Build());
 
-            var node = new Node
-            {
-                InventoryItemId = 9,
-                Fqdn = "test9.example.com",
-                IsActive = true,
-                DeactivatedDate = null,
-                LastComplianceResultDate = DateTime.Today.AddDays(-20),
-                OwnerEmployeeId = 1,
-                ProductCode = "TEST",
-                FunctionId = 1,
-                EnvironmentId = 1,
-                BuildSpecificationId = 1,
-                PciScope = PciScopeConstant.A,
-                Platform = PlatformConstant.WindowsServer,
-                ComplianceStatus = ComplianceStatusConstant.Failed
-            };
-            _dbContext.Nodes.Add(node);
-            await _dbContext.SaveChangesAsync();
+            await InsertNodeAsync(9, "test9.example.com", isActive: true, 
+                deactivatedDate: null, 
+                lastComplianceResultDate: DateTime.Today.AddDays(-20));
 
             // Act
             await testGatherer.PurgeInactiveNodes();
@@ -365,6 +217,74 @@ namespace act.core.etl.tests
                 entry.Contains("Stale Compliance Node") && 
                 entry.Contains("test9.example.com")), 
                 "Should log stale compliance node information");
+        }
+
+        [Fact]
+        public async Task PurgeInactiveNodes_NodeWithNullLastComplianceResultDate_ShouldNotDelete()
+        {
+            // Arrange
+            await InsertNodeAsync(10, "test10.example.com", isActive: true, 
+                deactivatedDate: null, 
+                lastComplianceResultDate: null);
+
+            // Act
+            var result = await _gatherer.PurgeInactiveNodes();
+
+            // Assert
+            Assert.Equal(0, result); // Should return 0 as no nodes qualify for deletion
+            var remainingNode = await GetNodeAsync(10);
+            Assert.NotNull(remainingNode); // Node should still exist (NULL is not less than a date)
+        }
+
+        private async Task InsertNodeAsync(long inventoryItemId, string fqdn, bool isActive, 
+            DateTime? deactivatedDate, DateTime? lastComplianceResultDate)
+        {
+            var connection = _dbContext.Database.GetDbConnection();
+            if (connection.State != System.Data.ConnectionState.Open)
+                await connection.OpenAsync();
+            
+            using var command = connection.CreateCommand();
+            command.CommandText = @"
+                INSERT INTO Node (InventoryItemId, Fqdn, IsActive, DeactivatedDate, LastComplianceResultDate, 
+                                  OwnerEmployeeId, ProductCode, FunctionId, EnvironmentId, BuildSpecificationId, 
+                                  PciScope, Platform, ComplianceStatus)
+                VALUES (@id, @fqdn, @active, @deactivated, @compliance, 1, 'TEST', 1, 1, 1, 0, 0, 0);
+            ";
+            
+            var parameters = new[]
+            {
+                CreateParameter(command, "@id", inventoryItemId),
+                CreateParameter(command, "@fqdn", fqdn),
+                CreateParameter(command, "@active", isActive ? 1 : 0),
+                CreateParameter(command, "@deactivated", deactivatedDate?.ToString("yyyy-MM-dd HH:mm:ss")),
+                CreateParameter(command, "@compliance", lastComplianceResultDate?.ToString("yyyy-MM-dd HH:mm:ss"))
+            };
+            
+            command.Parameters.AddRange(parameters);
+            await command.ExecuteNonQueryAsync();
+        }
+        
+        private async Task<Node> GetNodeAsync(long inventoryItemId)
+        {
+            var connection = _dbContext.Database.GetDbConnection();
+            if (connection.State != System.Data.ConnectionState.Open)
+                await connection.OpenAsync();
+            
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT InventoryItemId FROM Node WHERE InventoryItemId = @id";
+            command.Parameters.Add(CreateParameter(command, "@id", inventoryItemId));
+            
+            var result = await command.ExecuteScalarAsync();
+            return result != null ? new Node { InventoryItemId = (long)result } : null;
+        }
+        
+        private static System.Data.Common.DbParameter CreateParameter(System.Data.Common.DbCommand command, 
+            string name, object value)
+        {
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = name;
+            parameter.Value = value ?? DBNull.Value;
+            return parameter;
         }
 
         public void Dispose()

@@ -20,7 +20,7 @@ using Pomelo.EntityFrameworkCore.MySql;
 using MySqlConnector;
 namespace act.core.etl
 {
-    class Gatherer : IGatherer
+    public class Gatherer : IGatherer
     {
 
         private readonly ActDbContext _ctx;
@@ -484,16 +484,15 @@ namespace act.core.etl
                 || await _ctx.Nodes.AnyAsync(p => p.LastComplianceResultDate < complianceCutoff))
             {
                 _logger.LogInformation("Purging up to 1000 Inactive or Stale-Compliance Nodes");
-                await _ctx.ExecuteCommandAsync(
+                var deleted = await _ctx.ExecuteCommandAsync(
                     "DELETE FROM Node " +
-                    "WHERE IsActive = 0 " +
-                    "   OR DeactivatedDate < @deactivationDate " +
+                    "WHERE (IsActive = 0 AND DeactivatedDate < @deactivationDate) " +
                     "   OR LastComplianceResultDate < @complianceDate " +
                     "ORDER BY InventoryItemId LIMIT 1000",
                     new MySqlParameter("@deactivationDate", MySqlDbType.Date) { Value = deactivationCutoff },
                     new MySqlParameter("@complianceDate", MySqlDbType.Date) { Value = complianceCutoff });
 
-                count += 1000;
+                count += deleted;
             }
 
             return count;
