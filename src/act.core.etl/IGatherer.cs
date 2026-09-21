@@ -16,6 +16,7 @@ namespace act.core.etl
         Task SaveComplianceDataFromWebHook(AutomateWebHookMessage message);
         Task<int> NotifyUnassignedNodes();
         Task<int> NotifyNotReportingNodes();
+        Task<int> NotifyPciClassCNodes();
         Task<int> PurgeInactiveNodes();
 
         Task<int> DeactivateNode(int id);

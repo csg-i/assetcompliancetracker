@@ -547,6 +547,107 @@ namespace act.core.etl
             return nodes.Length;
         }
 
+        public async Task<int> NotifyPciClassCNodes()
+        {
+            var nodes = await _ctx.Nodes.AsNoTracking()
+                .Active()
+                .ByPciScope(PciScopeConstant.C)
+                .ProductIsNotExlcuded()
+                .Select(p => new
+                {
+                    p.Owner,
+                    p.Fqdn,
+                    p.PciScope,
+                    p.ComplianceStatus,
+                    p.LastComplianceResultDate,
+                    p.RemedyGroupName,
+                    p.RemedyGroupEmailList
+                })
+                .ToArrayAsync();
+
+            if (nodes.Length == 0)
+            {
+                _logger.LogInformation("No PCI Class C nodes found to email");
+                return 0;
+            }
+
+            var groups = nodes.GroupBy(p => p.Owner.Id).ToArray();
+            _logger.LogInformation(
+                $"Emailing {groups.Length} GAM owners covering {nodes.Length} PCI Class C nodes");
+
+            foreach (var group in groups)
+            {
+                var owner = group.First().Owner;
+                var name = owner.OwnerText(false);
+                var intendedOwnerEmail = owner.Email;
+                var emails = ResolvePciClassCRecipients(intendedOwnerEmail);
+
+                _logger.LogInformation(
+                    $"Emailing PCI Class C digest for {name} ({intendedOwnerEmail}) with {group.Count()} server(s) to {string.Join(",", emails)}");
+
+                await SendPciClassCDigestMail(emails, name, intendedOwnerEmail, group.Select(n =>
+                    (n.Fqdn, n.ComplianceStatus, n.LastComplianceResultDate, n.RemedyGroupName)).ToArray());
+            }
+
+            return groups.Length;
+        }
+
+        private string[] ResolvePciClassCRecipients(string intendedOwnerEmail)
+        {
+            if (!string.IsNullOrWhiteSpace(_mailSettings.TestRecipient))
+                return new[] { _mailSettings.TestRecipient };
+
+            return string.IsNullOrWhiteSpace(intendedOwnerEmail)
+                ? Array.Empty<string>()
+                : new[] { intendedOwnerEmail };
+        }
+
+        private async Task SendPciClassCDigestMail(string[] emails, string name, string intendedOwnerEmail,
+            (string Fqdn, ComplianceStatusConstant Status, DateTime? LastComplianceDate, string RemedyGroup)[] servers)
+        {
+            if (emails == null || emails.Length == 0)
+            {
+                _logger.LogWarning($"Skipping PCI Class C digest for {name}; no recipient email.");
+                return;
+            }
+
+            var builder = new StringBuilder()
+                .Append(
+                    $"<p>{name}, you are receiving this email because you are the identified GAM technical contact for the following PCI Class C server(s). Please remediate these servers.</p>")
+                .Append($"<p>Total servers: <b>{servers.Length}</b></p>")
+                .Append("<table border=\"1\" cellpadding=\"6\" cellspacing=\"0\" style=\"border-collapse:collapse\">")
+                .Append("<tr><th>Server</th><th>PCI Class</th><th>Compliance Status</th><th>Last Compliance</th><th>GAM Support Group</th></tr>");
+
+            foreach (var server in servers.OrderBy(s => s.Fqdn))
+            {
+                var status = server.Status == ComplianceStatusConstant.NotFound
+                    ? "Not Reporting"
+                    : server.Status.ToString();
+                var last = server.LastComplianceDate.HasValue
+                    ? server.LastComplianceDate.Value.ToString("MM-dd-yyyy hh:mm tt")
+                    : "Not Available";
+                var group = string.IsNullOrWhiteSpace(server.RemedyGroup) ? "&nbsp;" : server.RemedyGroup;
+
+                builder.Append(
+                    $"<tr><td>{server.Fqdn}</td><td>C</td><td>{status}</td><td>{last}</td><td>{group}</td></tr>");
+            }
+
+            builder
+                .Append("</table>")
+                .Append("<p>Please update the GAM Security Class tag and remediate or reclassify these servers as required.</p>")
+                .Append("<p>Thank you,<br/>The Asset Compliance Tracker (ACT) Team</p>");
+
+            if (!string.IsNullOrWhiteSpace(_mailSettings.TestRecipient))
+            {
+                builder.Append(
+                    $"<p><i>TEST DELIVERY. This mail was sent to {_mailSettings.TestRecipient} instead of the GAM owner {intendedOwnerEmail}.</i></p>");
+            }
+
+            await SendMail(emails,
+                $"ACT PCI Class C Remediation - {servers.Length} server(s) for {name}",
+                builder.ToString());
+        }
+
         private async Task SendUnassignedMail(string[] emails, string name, string fqdn, string pci)
         {
 

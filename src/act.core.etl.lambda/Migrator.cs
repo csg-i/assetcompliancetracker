@@ -27,12 +27,25 @@ namespace act.core.etl.lambda
                 parm = env[ParameterStoreName].ToString();   
             
             
-            var config = new ConfigurationBuilder()
+            var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", false, true)
-                .AddEnvironmentVariables()
-                .AddSystemsManager(parm)
-                .Build();
+                .AddEnvironmentVariables();
+
+            IConfigurationRoot config;
+            try
+            {
+                config = builder.AddSystemsManager(parm).Build();
+            }
+            catch (Exception)
+            {
+                // Local Debug often has no AWS session; use appsettings ConnectionStrings:ActDb.
+                config = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json", false, true)
+                    .AddEnvironmentVariables()
+                    .Build();
+            }
             var addins = config.GetSection("AddIns").GetChildren().Select(p => p.Value).ToArray();
             
             var services = new ServiceCollection().ConfigureLambda(config).ConfigureLambdaArgumentProcessor();

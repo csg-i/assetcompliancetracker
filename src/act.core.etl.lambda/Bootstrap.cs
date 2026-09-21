@@ -33,6 +33,8 @@ namespace act.core.etl.lambda
                                 return await scope.ServiceProvider.GetService<IGatherer>().NotifyNotReportingNodes();
                             if (arg.Index == 0)
                                 return await scope.ServiceProvider.GetService<IGatherer>().NotifyUnassignedNodes();
+                            if (arg.Index == 2)
+                                return await scope.ServiceProvider.GetService<IGatherer>().NotifyPciClassCNodes();
                             return 0;
                         })
                         .RegisterProcessorFunction("reset",
