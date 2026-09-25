@@ -1,5 +1,36 @@
 # ACT - Asset Compliance Tracker
-ACT is an hybrid on-prem/cloud PCI monitoring solution for VM's or physical servers.
+
+ACT is a hybrid on-premises/cloud PCI monitoring solution for virtual machines and physical servers, providing automated compliance checking, reporting, and management capabilities for organizations maintaining PCI DSS compliance.
+
+## Quick Start
+
+- **[Architecture Documentation](ARCHITECTURE.md)** - Complete system architecture and AWS deployment diagrams
+- **[Local Development Setup](LOCAL_DEVELOPMENT.md)** - Detailed setup instructions for local development
+- **[Original Documentation](#components)** - Detailed component descriptions below
+
+## Repository Structure
+
+```
+├── src/                          # .NET Core 8.0 applications
+│   ├── act.core.data/           # Entity Framework data layer
+│   ├── act.core.etl/            # Extract, Transform, Load operations
+│   ├── act.core.web/            # ASP.NET Core MVC web application
+│   └── act.core.etl.lambda/     # AWS Lambda functions
+├── Chef/                        # Chef cookbook for compliance automation
+├── Compliance/                  # InSpec compliance profiles
+├── Docker/                      # Docker configuration for deployment
+├── BuildSpec.yml               # AWS CodeBuild configuration
+└── ACT.sln                     # Visual Studio solution file
+```
+
+## Technology Stack
+
+- **.NET Core 8.0** - Primary application framework
+- **Entity Framework Core** - ORM with MySQL support
+- **MySQL** - Database (AWS Aurora Serverless in production)
+- **Chef InSpec** - Compliance testing framework
+- **AWS Services** - Lambda, Elastic Beanstalk, Aurora Serverless, CloudWatch
+- **Docker** - Containerization for deployment
 
 ## Components
 - CHEF Inspec Compliance Tests
