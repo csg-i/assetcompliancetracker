@@ -206,6 +206,7 @@ namespace act.core.data
         }
         public static IQueryable<Node> ForEnvironments(this IQueryable<Node> nodes, int[] environmentIds)
         {
+            // List.Contains: on .NET 10, array.Contains binds to MemoryExtensions (Span) and breaks EF.
             var ids = environmentIds.ToList();
             return nodes.Where(p => ids.Contains(p.EnvironmentId));
         }
