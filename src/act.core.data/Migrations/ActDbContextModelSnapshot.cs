@@ -349,6 +349,14 @@ namespace act.core.data.Migrations
                     b.Property<int>("EnvironmentId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("EscalationMailedOn")
+                        .HasColumnType("datetime");
+
+                    b.Property<int>("EscalationStep")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
                     b.Property<DateTime?>("FailingSince")
                         .HasColumnType("datetime");
 

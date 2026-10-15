@@ -219,8 +219,12 @@ namespace act.core.web.Services
 
                 if (result.FailingSince < now.AddDays(-30))
                 {
-                    AddToLists(result.Owner, LevelConstants.Boss, ref emails, ref names);
-                    AddToLists(bs.Owner, LevelConstants.Boss, ref emails, ref names);
+                    var employeeIds = new[] { result.OwnerEmployeeId, bs.OwnerEmployeeId };
+                    var chain = await _ctx.Employees.LoadWithSupervisorChain(employeeIds);
+                    chain.TryGetValue(result.OwnerEmployeeId, out var ownerWithChain);
+                    chain.TryGetValue(bs.OwnerEmployeeId, out var specOwnerWithChain);
+                    ownerWithChain.AddEscalationThroughDirector(emails, names);
+                    specOwnerWithChain.AddEscalationThroughDirector(emails, names);
                 }
                 
                 // Escalate mails to BossesBoss

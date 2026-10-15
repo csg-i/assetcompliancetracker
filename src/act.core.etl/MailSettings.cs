@@ -11,5 +11,10 @@
         /// Leave empty to send to the real owner.
         /// </summary>
         public string TestRecipient { get; set; }
+
+        /// <summary>
+        /// CC on PCI Class C remediation mail. Previous recipients stay on To as escalation moves up.
+        /// </summary>
+        public string EscalationCc { get; set; } = "list-glb-agilearchitecture@csgi.com";
     }
 }

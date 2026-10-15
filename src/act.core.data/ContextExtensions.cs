@@ -92,6 +92,152 @@ namespace act.core.data
             return pn;
         }
 
+        public static void AddMailRecipient(this Employee employee, ICollection<string> emails, ICollection<string> names)
+        {
+            if (employee == null)
+                return;
+
+            var name = employee.OwnerText(false);
+            if (!string.IsNullOrWhiteSpace(name))
+                names.Add(name);
+
+            var email = employee.Email?.ToLower();
+            if (!string.IsNullOrWhiteSpace(email))
+                emails.Add(email);
+        }
+
+        /// <summary>
+        /// Adds managers on the supervisor chain. Skips the reporting director and anyone above them (VPs).
+        /// </summary>
+        public static void AddEscalationSupervisors(this Employee employee, ICollection<string> emails,
+            ICollection<string> names)
+        {
+            if (employee == null)
+                return;
+
+            var directorId = employee.ReportingDirectorId;
+            var current = employee.Supervisor;
+            var seen = new HashSet<long>();
+
+            while (current != null && seen.Add(current.Id))
+            {
+                if (directorId.HasValue && current.Id == directorId.Value)
+                    break;
+
+                if (directorId.HasValue && !ReportsToOrIs(current, directorId.Value))
+                    break;
+
+                current.AddMailRecipient(emails, names);
+                current = current.Supervisor;
+            }
+        }
+
+        /// <summary>
+        /// Adds the reporting director only. Vice presidents are not stored as ReportingDirector.
+        /// </summary>
+        public static void AddEscalationDirector(this Employee employee, ICollection<string> emails,
+            ICollection<string> names)
+        {
+            employee?.ReportingDirector.AddMailRecipient(emails, names);
+        }
+
+        /// <summary>
+        /// Adds <paramref name="levels"/> managers above the employee, one level per step.
+        /// Includes the reporting director and stops there. Anyone already on the list stays on it.
+        /// </summary>
+        public static void AddEscalationLevels(this Employee employee, ICollection<string> emails,
+            ICollection<string> names, int levels)
+        {
+            if (employee == null || levels <= 0)
+                return;
+
+            var directorId = employee.ReportingDirectorId;
+            var current = employee.Supervisor;
+            var seen = new HashSet<long>();
+            var added = 0;
+
+            while (current != null && added < levels && seen.Add(current.Id))
+            {
+                if (directorId.HasValue && current.Id != directorId.Value && !ReportsToOrIs(current, directorId.Value))
+                    break;
+
+                current.AddMailRecipient(emails, names);
+                added++;
+
+                if (directorId.HasValue && current.Id == directorId.Value)
+                    break;
+
+                current = current.Supervisor;
+            }
+        }
+
+        /// <summary>
+        /// Adds the supervisor chain up to and including <see cref="Employee.ReportingDirector"/>.
+        /// Stops before anyone above that director (vice presidents).
+        /// </summary>
+        public static void AddEscalationThroughDirector(this Employee employee, ICollection<string> emails,
+            ICollection<string> names)
+        {
+            employee.AddEscalationSupervisors(emails, names);
+            employee.AddEscalationDirector(emails, names);
+        }
+
+        public static async Task<IDictionary<long, Employee>> LoadWithSupervisorChain(
+            this IQueryable<Employee> employees, IEnumerable<long> seedIds)
+        {
+            var map = new Dictionary<long, Employee>();
+            var pending = new Queue<long>(seedIds.Where(id => id > 0).Distinct());
+
+            while (pending.Count > 0)
+            {
+                var batch = new List<long>();
+                while (pending.Count > 0)
+                {
+                    var id = pending.Dequeue();
+                    if (!map.ContainsKey(id))
+                        batch.Add(id);
+                }
+
+                if (batch.Count == 0)
+                    continue;
+
+                var loaded = await employees.AsNoTracking().Where(e => batch.Contains(e.Id)).ToArrayAsync();
+                foreach (var employee in loaded)
+                {
+                    map[employee.Id] = employee;
+                    if (employee.SupervisorId.HasValue && !map.ContainsKey(employee.SupervisorId.Value))
+                        pending.Enqueue(employee.SupervisorId.Value);
+                    if (employee.ReportingDirectorId.HasValue && !map.ContainsKey(employee.ReportingDirectorId.Value))
+                        pending.Enqueue(employee.ReportingDirectorId.Value);
+                }
+            }
+
+            foreach (var employee in map.Values)
+            {
+                if (employee.SupervisorId.HasValue && map.TryGetValue(employee.SupervisorId.Value, out var supervisor))
+                    employee.Supervisor = supervisor;
+                if (employee.ReportingDirectorId.HasValue &&
+                    map.TryGetValue(employee.ReportingDirectorId.Value, out var director))
+                    employee.ReportingDirector = director;
+            }
+
+            return map;
+        }
+
+        private static bool ReportsToOrIs(Employee start, long directorId)
+        {
+            var current = start;
+            var seen = new HashSet<long>();
+            while (current != null && seen.Add(current.Id))
+            {
+                if (current.Id == directorId)
+                    return true;
+                current = current.Supervisor;
+            }
+
+            return false;
+        }
+
         public static async Task<bool> Exists(this IQueryable<ComplianceResult> queryable, long inventoryItemId,
             Guid runId)
         {

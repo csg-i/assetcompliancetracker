@@ -12,7 +12,8 @@ namespace act.core.etl
         Task<HttpResponseMessage> Proxy(int environmentId, string url);
         Task<int> PurgeOldComplianceRuns();
         Task<int> PurgeOldComplianceDetails();
-        Task<int> ResetComplianceStatus();    
+        Task<int> ResetComplianceStatus();
+        Task<int> ResetPciClassCEscalation();    
         Task SaveComplianceDataFromWebHook(AutomateWebHookMessage message);
         Task<int> NotifyUnassignedNodes();
         Task<int> NotifyNotReportingNodes();
@@ -20,7 +21,7 @@ namespace act.core.etl
         Task<int> PurgeInactiveNodes();
 
         Task<int> DeactivateNode(int id);
-        Task SendMail(string[] emails, string subject, string body);
+        Task SendMail(string[] emails, string subject, string body, string[] cc = null);
 
         Task<ComplianceNodes> PostRequest(int environmentId, int perPage = 100, int page = 1,
             string[] fqdns = null);

@@ -40,6 +40,9 @@ namespace act.core.etl.lambda
                         .RegisterProcessorFunction("reset",
                             async (scope, arg) =>
                                 await scope.ServiceProvider.GetService<IGatherer>().ResetComplianceStatus())
+                        .RegisterProcessorFunction("resetescalation",
+                            async (scope, arg) =>
+                                await scope.ServiceProvider.GetService<IGatherer>().ResetPciClassCEscalation())
                         .RegisterProcessorFunction("purgedetails",
                             async (scope, arg) =>
                                 await scope.ServiceProvider.GetService<IGatherer>().PurgeOldComplianceDetails())

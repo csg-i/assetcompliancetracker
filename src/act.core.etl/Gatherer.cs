@@ -32,6 +32,9 @@ namespace act.core.etl
             _ctx = ctx;
             _mailSettings = new MailSettings();
             configuration.GetSection("Mail").Bind(_mailSettings);
+            var forcedTest = System.Environment.GetEnvironmentVariable("ACT_TEST_MAIL");
+            if (!string.IsNullOrWhiteSpace(forcedTest))
+                _mailSettings.TestRecipient = forcedTest.Trim();
             _logger = logger.CreateLogger<Gatherer>();
         }
 
@@ -339,6 +342,8 @@ namespace act.core.etl
                         {
                             nodeInfo.FailingSince = null;
                             nodeInfo.LastEmailedOn = null;
+                            nodeInfo.EscalationMailedOn = null;
+                            nodeInfo.EscalationStep = 0;
                             if (!_ctx.ComplianceResults.Any(p =>
                                 p.InventoryItemId == nodeInfo.InventoryItemId &&
                                 p.ResultId == node.ScanData.id))
@@ -358,6 +363,7 @@ namespace act.core.etl
                         }
                         else if (nodeInfo.ComplianceStatus == ComplianceStatusConstant.Failed)
                         {
+                            nodeInfo.FailingSince ??= node.ScanData.end_time ?? DateTime.Now;
                             list.Add(node);
                         }
                     }
@@ -411,6 +417,8 @@ namespace act.core.etl
                     node.ComplianceStatus = ComplianceStatusConstant.NotFound;
                     node.FailingSince = null;
                     node.LastEmailedOn = null;
+                    node.EscalationMailedOn = null;
+                    node.EscalationStep = 0;
                     await _ctx.SaveChangesAsync();
                     _logger.LogInformation($"Reset Compliance status on Node {node.Fqdn}.");
 
@@ -418,6 +426,14 @@ namespace act.core.etl
             }
 
             return list.Length;
+        }
+
+        public async Task<int> ResetPciClassCEscalation()
+        {
+            var count = await _ctx.ExecuteCommandAsync(
+                "UPDATE Node SET EscalationMailedOn = NULL, EscalationStep = 0 WHERE EscalationMailedOn IS NOT NULL OR EscalationStep <> 0");
+            _logger.LogInformation($"Cleared PCI Class C escalation stamps on {count} node(s).");
+            return count;
         }
         private JObject BuildNodesUrl(int perPage, int page, string[] fqdns)
         {
@@ -454,29 +470,45 @@ namespace act.core.etl
 
         public async Task<int> PurgeInactiveNodes()
         {
-            var date = DateTime.Today.AddDays(-7);
+            var deactivationCutoff = DateTime.Today.AddDays(-7);
+            var complianceCutoff = DateTime.Today.AddDays(-15);
             var count = 0;
-            _logger.LogInformation($"Getting Nodes Deactivated prior to {date.ToShortDateString()}");
-            var nodes = await _ctx.Nodes.Inactive().Where(p => p.DeactivatedDate < date)
-                .Select(p => new { p.Fqdn, p.DeactivatedDate, p.BuildSpecification.Id })
+
+            _logger.LogInformation($"Getting Nodes Deactivated prior to {deactivationCutoff.ToShortDateString()}");
+            var deactivatedNodes = await _ctx.Nodes.Inactive().Where(p => p.DeactivatedDate < deactivationCutoff)
+                .Select(p => new { p.Fqdn, p.DeactivatedDate, p.BuildSpecificationId })
                 .ToArrayAsync();
 
-            if (nodes.Length > 0)
+            foreach (var node in deactivatedNodes)
             {
-                foreach (var node in nodes)
-                {
-                    _logger.LogInformation($"Deactivated Node : fqdn {node.Fqdn}, deactivated date : {node.DeactivatedDate} , buildspecid : {node.Id}");
-                }
+                _logger.LogInformation($"Deactivated Node: fqdn {node.Fqdn}, deactivated date: {node.DeactivatedDate}, buildspecid: {node.BuildSpecificationId}");
             }
-            while (await _ctx.Nodes.Inactive().AnyAsync(p => p.DeactivatedDate < date))
+
+            _logger.LogInformation($"Getting Nodes with LastComplianceResultDate older than {complianceCutoff.ToShortDateString()}");
+            var staleComplianceNodes = await _ctx.Nodes
+                .Where(p => p.LastComplianceResultDate < complianceCutoff)
+                .Select(p => new { p.Fqdn, p.LastComplianceResultDate, p.BuildSpecificationId })
+                .ToArrayAsync();
+
+            foreach (var node in staleComplianceNodes)
             {
-                _logger.LogInformation("Purging 1000 Deactivated Nodes");
-                await _ctx.ExecuteCommandAsync(
-                    "DELETE FROM Node WHERE DeactivatedDate < @date or LastComplianceResultDate < @date or IsActive = 0 ORDER BY InventoryItemId limit 1000",
-                    new MySqlParameter("@date", MySqlDbType.Date) { Value = date });
+                _logger.LogInformation($"Stale Compliance Node: fqdn {node.Fqdn}, lastComplianceResultDate: {node.LastComplianceResultDate}, buildspecid: {node.BuildSpecificationId}");
+            }
 
+            while (
+                await _ctx.Nodes.Inactive().AnyAsync(p => p.DeactivatedDate < deactivationCutoff)
+                || await _ctx.Nodes.AnyAsync(p => p.LastComplianceResultDate < complianceCutoff))
+            {
+                _logger.LogInformation("Purging up to 1000 Inactive or Stale-Compliance Nodes");
+                var deleted = await _ctx.ExecuteCommandAsync(
+                    "DELETE FROM Node " +
+                    "WHERE (IsActive = 0 AND DeactivatedDate < @deactivationDate) " +
+                    "   OR LastComplianceResultDate < @complianceDate " +
+                    "ORDER BY InventoryItemId LIMIT 1000",
+                    new MySqlParameter("@deactivationDate", MySqlDbType.Date) { Value = deactivationCutoff },
+                    new MySqlParameter("@complianceDate", MySqlDbType.Date) { Value = complianceCutoff });
 
-                count += 1000;
+                count += deleted;
             }
 
             return count;
@@ -549,103 +581,325 @@ namespace act.core.etl
 
         public async Task<int> NotifyPciClassCNodes()
         {
-            var nodes = await _ctx.Nodes.AsNoTracking()
+            var now = DateTime.Now;
+            var dueAfter = now.AddDays(-7);
+
+            var chefNodes = await LoadChefInventoryStillOnPciPolicy();
+            if (chefNodes.Count == 0)
+            {
+                _logger.LogWarning(
+                    "Chef inventory returned no PCI-policy nodes; sending no PCI Class C digests.");
+                return 0;
+            }
+
+            var actNodes = await _ctx.Nodes.AsNoTracking()
                 .Active()
+                .InChefScope()
                 .ByPciScope(PciScopeConstant.C)
                 .ProductIsNotExlcuded()
                 .Select(p => new
                 {
-                    p.Owner,
+                    p.InventoryItemId,
+                    p.OwnerEmployeeId,
                     p.Fqdn,
-                    p.PciScope,
-                    p.ComplianceStatus,
-                    p.LastComplianceResultDate,
-                    p.RemedyGroupName,
-                    p.RemedyGroupEmailList
+                    p.EscalationMailedOn,
+                    p.EscalationStep
                 })
                 .ToArrayAsync();
 
-            if (nodes.Length == 0)
+            var stillOnChef = new List<(long InventoryItemId, long OwnerEmployeeId, string Fqdn, DateTime? EscalationMailedOn, int EscalationStep, CfgmgmtNode Chef)>();
+            foreach (var node in actNodes)
             {
-                _logger.LogInformation("No PCI Class C nodes found to email");
+                if (string.IsNullOrWhiteSpace(node.Fqdn))
+                    continue;
+                if (!TryFindChefNode(chefNodes, node.Fqdn, out var chef))
+                    continue;
+                stillOnChef.Add((node.InventoryItemId, node.OwnerEmployeeId, node.Fqdn, node.EscalationMailedOn, node.EscalationStep, chef));
+            }
+
+            var testDelivery = !string.IsNullOrWhiteSpace(_mailSettings.TestRecipient);
+            var due = stillOnChef
+                .Select(p => new
+                {
+                    Node = p,
+                    Levels = testDelivery ? 0 : EscalationLevels(p.EscalationMailedOn, p.EscalationStep)
+                })
+                .Where(p => testDelivery || IsEscalationDue(p.Node.EscalationMailedOn, dueAfter))
+                .ToArray();
+
+            _logger.LogInformation(
+                $"Chef PCI-policy inventory {chefNodes.Count} nodes; ACT Class C active {actNodes.Length}; still reporting to Chef {stillOnChef.Count}; due this week {due.Length}.");
+
+            if (stillOnChef.Count == 0)
+            {
+                _logger.LogWarning(
+                    $"No ACT Class C FQDN matched Chef PCI inventory. Sample Chef keys: {string.Join(",", chefNodes.Keys.Take(15))}.");
                 return 0;
             }
 
-            var groups = nodes.GroupBy(p => p.Owner.Id).ToArray();
+            if (due.Length == 0)
+                return 0;
+
+            var employees = await _ctx.Employees.LoadWithSupervisorChain(due.Select(p => p.Node.OwnerEmployeeId));
+            var groups = due.GroupBy(p => new { p.Node.OwnerEmployeeId, p.Levels }).ToArray();
             _logger.LogInformation(
-                $"Emailing {groups.Length} GAM owners covering {nodes.Length} PCI Class C nodes");
+                $"Emailing {groups.Length} PCI Class C Chef-removal digests covering {due.Length} nodes");
 
             foreach (var group in groups)
             {
-                var owner = group.First().Owner;
+                employees.TryGetValue(group.Key.OwnerEmployeeId, out var owner);
+                if (owner == null)
+                {
+                    _logger.LogWarning(
+                        $"Skipping PCI Class C digest; no Employee row for owner id {group.Key.OwnerEmployeeId}.");
+                    continue;
+                }
+
                 var name = owner.OwnerText(false);
-                var intendedOwnerEmail = owner.Email;
-                var emails = ResolvePciClassCRecipients(intendedOwnerEmail);
+                var names = new List<string>();
+                var intendedEmails = new List<string>();
+
+                owner.AddMailRecipient(intendedEmails, names);
+                owner.AddEscalationLevels(intendedEmails, names, group.Key.Levels);
+
+                var toNames = names.Distinct().Reverse().ToArray();
+                var intended = intendedEmails.Distinct().ToArray();
+                var toSend = ResolvePciClassCRecipients(intended);
+                if (toSend.Length == 0)
+                {
+                    _logger.LogWarning(
+                        $"Skipping PCI Class C digest for owner id {group.Key.OwnerEmployeeId}; no recipient email.");
+                    continue;
+                }
+
+                var cc = ResolvePciClassCCc();
 
                 _logger.LogInformation(
-                    $"Emailing PCI Class C digest for {name} ({intendedOwnerEmail}) with {group.Count()} server(s) to {string.Join(",", emails)}");
+                    $"Emailing PCI Class C digest for {name} with {group.Count()} server(s), escalation levels {group.Key.Levels}, to {string.Join(",", toSend)} cc {string.Join(",", cc)} (intended {string.Join(",", intended)})");
 
-                await SendPciClassCDigestMail(emails, name, intendedOwnerEmail, group.Select(n =>
-                    (n.Fqdn, n.ComplianceStatus, n.LastComplianceResultDate, n.RemedyGroupName)).ToArray());
+                await SendPciClassCDigestMail(toSend, cc, toNames, name, group.Select(n =>
+                    (n.Node.Fqdn, n.Node.Chef.ChefVersion, n.Node.Chef.PolicyName, n.Node.Chef.PolicyGroup,
+                        ServiceLevelFromPolicyGroup(n.Node.Chef.PolicyGroup))).ToArray());
+
+                if (testDelivery)
+                    continue;
+
+                var ids = group.Select(n => n.Node.InventoryItemId).ToArray();
+                var toStamp = await _ctx.Nodes.Where(p => ids.Contains(p.InventoryItemId)).ToArrayAsync();
+                foreach (var node in toStamp)
+                {
+                    node.EscalationMailedOn = now;
+                    node.EscalationStep = group.Key.Levels + 1;
+                }
+                await _ctx.SaveChangesAsync();
             }
 
             return groups.Length;
         }
 
-        private string[] ResolvePciClassCRecipients(string intendedOwnerEmail)
+        private static bool IsEscalationDue(DateTime? escalationMailedOn, DateTime dueAfter)
+        {
+            if (!escalationMailedOn.HasValue)
+                return true;
+
+            return escalationMailedOn.Value <= dueAfter;
+        }
+
+        private static int EscalationLevels(DateTime? escalationMailedOn, int escalationStep)
+        {
+            if (!escalationMailedOn.HasValue)
+                return 0;
+
+            return escalationStep < 0 ? 0 : escalationStep;
+        }
+
+        private async Task<Dictionary<string, CfgmgmtNode>> LoadChefInventoryStillOnPciPolicy()
+        {
+            var map = new Dictionary<string, CfgmgmtNode>(StringComparer.OrdinalIgnoreCase);
+            var environmentIds = await _ctx.Environments.AsNoTracking().Select(e => e.Id).ToArrayAsync();
+            foreach (var environmentId in environmentIds)
+            {
+                try
+                {
+                    var page = 1;
+                    const int pageSize = 1000;
+                    while (page <= 50)
+                    {
+                        var url = $"/api/v0/cfgmgmt/nodes?pagination.page={page}&pagination.size={pageSize}";
+                        var batch = await GetChefInventoryPage(environmentId, url);
+                        if (batch.Length == 0)
+                            break;
+
+                        foreach (var node in batch)
+                        {
+                            if (!IsPciChefPolicy(node))
+                                continue;
+                            AddChefInventoryKeys(map, node);
+                        }
+
+                        if (batch.Length < pageSize)
+                            break;
+                        page++;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, $"Chef inventory refresh failed for environment {environmentId}.");
+                }
+            }
+
+            return map;
+        }
+
+        private async Task<CfgmgmtNode[]> GetChefInventoryPage(int environmentId, string url)
+        {
+            var content = await GetRequestContent(environmentId, url);
+            if (string.IsNullOrWhiteSpace(content))
+                return Array.Empty<CfgmgmtNode>();
+
+            var trimmed = content.TrimStart();
+            if (trimmed.StartsWith("["))
+                return JsonConvert.DeserializeObject<CfgmgmtNode[]>(content) ?? Array.Empty<CfgmgmtNode>();
+
+            var wrapped = JsonConvert.DeserializeObject<CfgmgmtNodes>(content);
+            return wrapped?.Nodes ?? Array.Empty<CfgmgmtNode>();
+        }
+
+        private async Task<string> GetRequestContent(int environmentId, string url)
+        {
+            using (var client = new HttpClient())
+            {
+                var environment = await _ctx.Environments.ById(environmentId);
+                if (environment == null || string.IsNullOrWhiteSpace(environment.ChefAutomateUrl))
+                    return null;
+
+                client.BaseAddress = new Uri(environment.ChefAutomateUrl);
+                client.DefaultRequestHeaders.Add("api-token", environment.ChefAutomateToken);
+                var responseMessage = await client.GetAsync(url);
+                if (!responseMessage.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning(
+                        $"Chef GET {url} for environment {environmentId} returned {(int)responseMessage.StatusCode}.");
+                    return null;
+                }
+
+                return await responseMessage.Content.ReadAsStringAsync();
+            }
+        }
+
+        private static bool IsPciChefPolicy(CfgmgmtNode node)
+        {
+            if (node == null)
+                return false;
+
+            var policy = (node.PolicyName ?? string.Empty).Trim();
+            var group = (node.PolicyGroup ?? string.Empty).Trim();
+            return policy.StartsWith("pci", StringComparison.OrdinalIgnoreCase) ||
+                   group.StartsWith("pci", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static void AddChefInventoryKeys(Dictionary<string, CfgmgmtNode> map, CfgmgmtNode node)
+        {
+            if (node == null)
+                return;
+
+            AddChefInventoryKey(map, node.Fqdn, node);
+            AddChefInventoryKey(map, node.Name, node);
+        }
+
+        private static void AddChefInventoryKey(Dictionary<string, CfgmgmtNode> map, string key, CfgmgmtNode node)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+                return;
+
+            var trimmed = key.Trim();
+            map[trimmed] = node;
+            var dot = trimmed.IndexOf('.');
+            if (dot > 0)
+                map[trimmed.Substring(0, dot)] = node;
+        }
+
+        private static bool TryFindChefNode(Dictionary<string, CfgmgmtNode> chefNodes, string fqdn, out CfgmgmtNode chef)
+        {
+            if (chefNodes.TryGetValue(fqdn.Trim(), out chef))
+                return true;
+
+            var host = fqdn.Trim();
+            var dot = host.IndexOf('.');
+            if (dot > 0 && chefNodes.TryGetValue(host.Substring(0, dot), out chef))
+                return true;
+
+            chef = null;
+            return false;
+        }
+
+        private static string ServiceLevelFromPolicyGroup(string policyGroup)
+        {
+            var group = policyGroup ?? string.Empty;
+            if (group.IndexOf("cte", StringComparison.OrdinalIgnoreCase) >= 0)
+                return "CTE";
+            if (group.IndexOf("prod", StringComparison.OrdinalIgnoreCase) >= 0)
+                return "Production";
+            return "Non-Prod";
+        }
+
+        private string[] ResolvePciClassCRecipients(string[] intendedEmails)
         {
             if (!string.IsNullOrWhiteSpace(_mailSettings.TestRecipient))
                 return new[] { _mailSettings.TestRecipient };
 
-            return string.IsNullOrWhiteSpace(intendedOwnerEmail)
-                ? Array.Empty<string>()
-                : new[] { intendedOwnerEmail };
+            return intendedEmails ?? Array.Empty<string>();
         }
 
-        private async Task SendPciClassCDigestMail(string[] emails, string name, string intendedOwnerEmail,
-            (string Fqdn, ComplianceStatusConstant Status, DateTime? LastComplianceDate, string RemedyGroup)[] servers)
+        private string[] ResolvePciClassCCc()
+        {
+            if (string.IsNullOrWhiteSpace(_mailSettings.EscalationCc))
+                return Array.Empty<string>();
+
+            return new[] { _mailSettings.EscalationCc.Trim() };
+        }
+
+        private async Task SendPciClassCDigestMail(string[] emails, string[] cc, string[] names, string ownerName,
+            (string Fqdn, string ClientVersion, string PolicyName, string PolicyGroup, string ServiceLevel)[] servers)
         {
             if (emails == null || emails.Length == 0)
             {
-                _logger.LogWarning($"Skipping PCI Class C digest for {name}; no recipient email.");
+                _logger.LogWarning("Skipping PCI Class C digest; no recipient email.");
                 return;
             }
 
+            var greeting = names != null && names.Length > 0
+                ? string.Join(", ", names)
+                : "Team";
+
             var builder = new StringBuilder()
+                .Append($"<p>Hello {greeting},</p>")
                 .Append(
-                    $"<p>{name}, you are receiving this email because you are the identified GAM technical contact for the following PCI Class C server(s). Please remediate these servers.</p>")
+                    "<p>we are still seeing below servers reporting to Chef. Please create the <a href=\"https://csgsupport-dwp.onbmc.com/dwp/app/#/checkout\">WO</a> to remove the chef client on servers from pci policy. Use mySupport <a href=\"https://csgsupport-dwp.onbmc.com/dwp/app/#/checkout\">Submit a Compute General Request</a>.</p>")
                 .Append($"<p>Total servers: <b>{servers.Length}</b></p>")
                 .Append("<table border=\"1\" cellpadding=\"6\" cellspacing=\"0\" style=\"border-collapse:collapse\">")
-                .Append("<tr><th>Server</th><th>PCI Class</th><th>Compliance Status</th><th>Last Compliance</th><th>GAM Support Group</th></tr>");
+                .Append("<tr><th>FQDN</th><th>Client Version</th><th>Policy Name</th><th>Policy Group</th><th>SecurityClass</th><th>ServiceLevel</th></tr>");
 
             foreach (var server in servers.OrderBy(s => s.Fqdn))
             {
-                var status = server.Status == ComplianceStatusConstant.NotFound
-                    ? "Not Reporting"
-                    : server.Status.ToString();
-                var last = server.LastComplianceDate.HasValue
-                    ? server.LastComplianceDate.Value.ToString("MM-dd-yyyy hh:mm tt")
-                    : "Not Available";
-                var group = string.IsNullOrWhiteSpace(server.RemedyGroup) ? "&nbsp;" : server.RemedyGroup;
-
                 builder.Append(
-                    $"<tr><td>{server.Fqdn}</td><td>C</td><td>{status}</td><td>{last}</td><td>{group}</td></tr>");
+                    $"<tr><td>{server.Fqdn}</td><td>{Cell(server.ClientVersion)}</td><td>{Cell(server.PolicyName)}</td><td>{Cell(server.PolicyGroup)}</td><td>C</td><td>{Cell(server.ServiceLevel)}</td></tr>");
             }
 
             builder
                 .Append("</table>")
-                .Append("<p>Please update the GAM Security Class tag and remediate or reclassify these servers as required.</p>")
                 .Append("<p>Thank you,<br/>The Asset Compliance Tracker (ACT) Team</p>");
 
-            if (!string.IsNullOrWhiteSpace(_mailSettings.TestRecipient))
-            {
-                builder.Append(
-                    $"<p><i>TEST DELIVERY. This mail was sent to {_mailSettings.TestRecipient} instead of the GAM owner {intendedOwnerEmail}.</i></p>");
-            }
-
+            var subjectName = !string.IsNullOrWhiteSpace(ownerName) ? ownerName : "PCI Class C";
             await SendMail(emails,
-                $"ACT PCI Class C Remediation - {servers.Length} server(s) for {name}",
-                builder.ToString());
+                $"ACT PCI Class C Chef client still installed - {servers.Length} server(s) for {subjectName}",
+                builder.ToString(),
+                cc);
+        }
+
+        private static string Cell(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? "&nbsp;" : value;
         }
 
         private async Task SendUnassignedMail(string[] emails, string name, string fqdn, string pci)
@@ -673,7 +927,7 @@ namespace act.core.etl
                 builder.ToString());
         }
 
-        public async Task SendMail(string[] emails, string subject, string body)
+        public async Task SendMail(string[] emails, string subject, string body, string[] cc = null)
         {
             if (emails == null || emails.Length == 0)
                 throw new ArgumentNullException(nameof(emails));
@@ -693,6 +947,12 @@ namespace act.core.etl
                 foreach (var email in emails)
                     if (!string.IsNullOrEmpty(email))
                         mm.To.Add(email);
+                if (cc != null)
+                {
+                    foreach (var email in cc)
+                        if (!string.IsNullOrEmpty(email))
+                            mm.CC.Add(email);
+                }
 
                 await smtp.SendMailAsync(mm);
             }

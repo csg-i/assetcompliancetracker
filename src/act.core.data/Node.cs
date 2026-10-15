@@ -38,6 +38,16 @@ namespace act.core.data
         public DateTime? FailingSince { get; set; }
         public DateTime? LastEmailedOn { get; set; }
 
+        /// <summary>
+        /// When the current failure's escalation mail was last sent. Independent of <see cref="LastEmailedOn"/>.
+        /// </summary>
+        public DateTime? EscalationMailedOn { get; set; }
+
+        /// <summary>
+        /// Managers above the owner to include on the next escalation mail. 0 is the owner-only mail.
+        /// </summary>
+        public int EscalationStep { get; set; }
+
         public Guid? ChefNodeId { get; set; }
 
         public Guid? LastComplianceResultId { get; set; }

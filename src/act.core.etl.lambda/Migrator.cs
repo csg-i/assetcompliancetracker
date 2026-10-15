@@ -39,13 +39,21 @@ namespace act.core.etl.lambda
             }
             catch (Exception)
             {
+#if DEBUG
                 // Local Debug often has no AWS session; use appsettings ConnectionStrings:ActDb.
                 config = new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory())
                     .AddJsonFile("appsettings.json", false, true)
                     .AddEnvironmentVariables()
                     .Build();
+#else
+                throw;
+#endif
             }
+            var actDb = config.GetConnectionString("ActDb") ?? config.GetConnectionString("ActDB") ?? string.Empty;
+            LambdaLogger.Log(
+                $"Config SSM path '{parm}'. ActDb set: {!string.IsNullOrWhiteSpace(actDb)}. ActDb looks local: {actDb.IndexOf("localhost", StringComparison.OrdinalIgnoreCase) >= 0}.");
+
             var addins = config.GetSection("AddIns").GetChildren().Select(p => p.Value).ToArray();
             
             var services = new ServiceCollection().ConfigureLambda(config).ConfigureLambdaArgumentProcessor();
