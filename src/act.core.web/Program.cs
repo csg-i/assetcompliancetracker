@@ -22,8 +22,6 @@ namespace act.core.web
                             var hostingEnvironment = hostingContext.HostingEnvironment;
                             var path = hostingEnvironment.IsProduction() ? "Production" : "NonProd";
                             builder.AddSystemsManager($"/ACT/{path}");
-                            // Local smoke only: SSM /ACT/NonProd may override ActDB with a shared RDS.
-                            // Re-apply local files + env last so Server=127.0.0.1 (SSH tunnel) wins.
                             if (hostingEnvironment.IsDevelopment())
                             {
                                 builder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
