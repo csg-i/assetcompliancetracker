@@ -10,8 +10,5 @@
     <Version>1.0.0.0</Version>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
-    <!-- .NET 10 / C# 14 prefers MemoryExtensions.Contains (Span), which breaks EF Core 8 query translation.
-         Stay on C# 13 until Pomelo/EF are upgraded to versions that handle the new overload. -->
-    <LangVersion>13</LangVersion>
   </PropertyGroup>
 </Project>
