@@ -107,41 +107,6 @@ namespace act.core.data
         }
 
         /// <summary>
-        /// Adds managers on the supervisor chain. Skips the reporting director and anyone above them (VPs).
-        /// </summary>
-        public static void AddEscalationSupervisors(this Employee employee, ICollection<string> emails,
-            ICollection<string> names)
-        {
-            if (employee == null)
-                return;
-
-            var directorId = employee.ReportingDirectorId;
-            var current = employee.Supervisor;
-            var seen = new HashSet<long>();
-
-            while (current != null && seen.Add(current.Id))
-            {
-                if (directorId.HasValue && current.Id == directorId.Value)
-                    break;
-
-                if (directorId.HasValue && !ReportsToOrIs(current, directorId.Value))
-                    break;
-
-                current.AddMailRecipient(emails, names);
-                current = current.Supervisor;
-            }
-        }
-
-        /// <summary>
-        /// Adds the reporting director only. Vice presidents are not stored as ReportingDirector.
-        /// </summary>
-        public static void AddEscalationDirector(this Employee employee, ICollection<string> emails,
-            ICollection<string> names)
-        {
-            employee?.ReportingDirector.AddMailRecipient(emails, names);
-        }
-
-        /// <summary>
         /// PCI Class C mail only. Adds <paramref name="levels"/> managers above the employee.
         /// Includes the Dir/Head director and stops there. Does not add a VP stored as the reporting director.
         /// </summary>
@@ -178,17 +143,6 @@ namespace act.core.data
 
                 current = current.Supervisor;
             }
-        }
-
-        /// <summary>
-        /// Adds the supervisor chain up to and including <see cref="Employee.ReportingDirector"/>.
-        /// Stops before anyone above that director (vice presidents).
-        /// </summary>
-        public static void AddEscalationThroughDirector(this Employee employee, ICollection<string> emails,
-            ICollection<string> names)
-        {
-            employee.AddEscalationSupervisors(emails, names);
-            employee.AddEscalationDirector(emails, names);
         }
 
         public static async Task<IDictionary<long, Employee>> LoadWithSupervisorChain(
