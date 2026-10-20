@@ -20,7 +20,7 @@ using Pomelo.EntityFrameworkCore.MySql;
 using MySqlConnector;
 namespace act.core.etl
 {
-    class Gatherer : IGatherer
+    public class Gatherer : IGatherer
     {
 
         private readonly ActDbContext _ctx;
