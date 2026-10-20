@@ -875,7 +875,7 @@ namespace act.core.etl
             var builder = new StringBuilder()
                 .Append($"<p>Hello {greeting},</p>")
                 .Append(
-                    "<p>we are still seeing below servers reporting to Chef. Please create the <a href=\"https://csgsupport-dwp.onbmc.com/dwp/app/#/checkout\">WO</a> to remove the chef client on servers from pci policy. Use mySupport <a href=\"https://csgsupport-dwp.onbmc.com/dwp/app/#/checkout\">Submit a Compute General Request</a>.</p>")
+                    "<p>we are still seeing below servers reporting to Chef. Please create the <a href=\"https://csgsupport-dwp.onbmc.com/dwp/app/#/\">WO</a> to remove the chef client on servers or Move them out from pci policy. Use CSG mySupport <a href=\"https://csgsupport-dwp.onbmc.com/dwp/app/#/\">Submit a Compute General Request</a>.</p>")
                 .Append($"<p>Total servers: <b>{servers.Length}</b></p>")
                 .Append("<table border=\"1\" cellpadding=\"6\" cellspacing=\"0\" style=\"border-collapse:collapse\">")
                 .Append("<tr><th>FQDN</th><th>Client Version</th><th>Policy Name</th><th>Policy Group</th><th>SecurityClass</th><th>ServiceLevel</th></tr>");
