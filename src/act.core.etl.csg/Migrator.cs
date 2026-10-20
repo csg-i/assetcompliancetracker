@@ -206,6 +206,16 @@ namespace act.core.etl.csg
                         }
                     }
 
+                    if (employee.PciDirectorId.HasValue)
+                    {
+                        if (!await _ctx.Employees.AnyAsync(p => p.Id == employee.PciDirectorId))
+                        {
+                            LambdaLogger.Log(
+                                $"Attempted to update employee '{employee.Id}-{employee.FirstName} {employee.LastName}' but the PCI director {employee.PciDirectorId} was not loaded yet.");
+                            employee.PciDirectorId = null;
+                        }
+                    }
+
                     var toUpdate = await _ctx.Employees.AsNoTracking().ById(employee.Id);
                     if (toUpdate == null)
                     {

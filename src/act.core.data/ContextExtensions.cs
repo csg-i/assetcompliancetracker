@@ -142,8 +142,8 @@ namespace act.core.data
         }
 
         /// <summary>
-        /// Adds <paramref name="levels"/> managers above the employee, one level per step.
-        /// Includes the reporting director and stops there. Anyone already on the list stays on it.
+        /// PCI Class C mail only. Adds <paramref name="levels"/> managers above the employee.
+        /// Includes the Dir/Head director and stops there. Does not add a VP stored as the reporting director.
         /// </summary>
         public static void AddEscalationLevels(this Employee employee, ICollection<string> emails,
             ICollection<string> names, int levels)
@@ -151,20 +151,29 @@ namespace act.core.data
             if (employee == null || levels <= 0)
                 return;
 
-            var directorId = employee.ReportingDirectorId;
+            var stopId = employee.PciDirectorId;
             var current = employee.Supervisor;
             var seen = new HashSet<long>();
             var added = 0;
 
             while (current != null && added < levels && seen.Add(current.Id))
             {
-                if (directorId.HasValue && current.Id != directorId.Value && !ReportsToOrIs(current, directorId.Value))
+                if (stopId.HasValue)
+                {
+                    if (current.Id != stopId.Value && !ReportsToOrIs(current, stopId.Value))
+                        break;
+                }
+                else if (employee.ReportingDirectorId.HasValue &&
+                         (current.Id == employee.ReportingDirectorId.Value ||
+                          !ReportsToOrIs(current, employee.ReportingDirectorId.Value)))
+                {
                     break;
+                }
 
                 current.AddMailRecipient(emails, names);
                 added++;
 
-                if (directorId.HasValue && current.Id == directorId.Value)
+                if (stopId.HasValue && current.Id == stopId.Value)
                     break;
 
                 current = current.Supervisor;
@@ -209,6 +218,8 @@ namespace act.core.data
                         pending.Enqueue(employee.SupervisorId.Value);
                     if (employee.ReportingDirectorId.HasValue && !map.ContainsKey(employee.ReportingDirectorId.Value))
                         pending.Enqueue(employee.ReportingDirectorId.Value);
+                    if (employee.PciDirectorId.HasValue && !map.ContainsKey(employee.PciDirectorId.Value))
+                        pending.Enqueue(employee.PciDirectorId.Value);
                 }
             }
 

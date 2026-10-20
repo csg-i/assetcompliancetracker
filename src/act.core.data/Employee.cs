@@ -26,6 +26,8 @@ namespace act.core.data
 
         public long? ReportingDirectorId { get; set; }
 
+        public long? PciDirectorId { get; set; }
+
         public string Email { get; set; }
 
         public Employee Supervisor { get; set; }

@@ -97,6 +97,7 @@ WHERE not [LAN_LOGIN] is null and IsActive = 1 and Email_type_cd = 'M' and Activ
 	,IsActive
 	,Email
 	,ReportingDirectorId
+	,PciDirectorId
 FROM (
 	SELECT
 	ROW_NUMBER() OVER( ORDER BY emp.[EMPLOYEE_ID] ASC) [RowNumber]
@@ -109,12 +110,39 @@ FROM (
 	,[IsActive]
 	,[EMAIL_ADDRESS] [Email]      
 	,[ReportingDirectorId]
+	,[PciDirectorId]
 	FROM [dbo].[EMPLOYEES] emp
 	JOIN [dbo].[Email] eml
 	on emp.EMPLOYEE_ID = eml.EMPLOYEE_ID
 	LEFT JOIN (
 		SELECT 
 			[Employee_EMPLOYEE_ID][EmployeeId],
+			case 
+				when [Level_12_JOB_TITLE] like '%Dir%' or  [Level_12_JOB_TITLE] like 'Head%' or  [Level_12_JOB_TITLE] like '%VP%'
+					then [Level_12_EMPLOYEE_ID] 
+				when [Level_11_JOB_TITLE] like '%Dir%' or  [Level_11_JOB_TITLE] like 'Head%' or  [Level_11_JOB_TITLE] like '%VP%'
+					then [Level_11_EMPLOYEE_ID] 
+				when [Level_10_JOB_TITLE] like '%Dir%' or  [Level_10_JOB_TITLE] like 'Head%' or  [Level_10_JOB_TITLE] like '%VP%'
+					then [Level_10_EMPLOYEE_ID] 
+				when [Level_09_JOB_TITLE] like '%Dir%' or  [Level_09_JOB_TITLE] like 'Head%' or  [Level_09_JOB_TITLE] like '%VP%'
+					then [Level_09_EMPLOYEE_ID] 
+				when [Level_08_JOB_TITLE] like '%Dir%' or  [Level_08_JOB_TITLE] like 'Head%' or  [Level_08_JOB_TITLE] like '%VP%'
+					then [Level_08_EMPLOYEE_ID] 
+				when [Level_07_JOB_TITLE] like '%Dir%' or  [Level_07_JOB_TITLE] like 'Head%' or  [Level_07_JOB_TITLE] like '%VP%'
+					then [Level_07_EMPLOYEE_ID] 
+				when [Level_06_JOB_TITLE] like '%Dir%' or  [Level_06_JOB_TITLE] like 'Head%' or  [Level_06_JOB_TITLE] like '%VP%'
+					then [Level_06_EMPLOYEE_ID] 
+				when [Level_05_JOB_TITLE] like '%Dir%' or  [Level_05_JOB_TITLE] like 'Head%' or  [Level_05_JOB_TITLE] like '%VP%'
+					then [Level_05_EMPLOYEE_ID] 
+				when [Level_04_JOB_TITLE] like '%Dir%' or  [Level_04_JOB_TITLE] like 'Head%' or  [Level_04_JOB_TITLE] like '%VP%'
+					then [Level_04_EMPLOYEE_ID] 
+				when [Level_03_JOB_TITLE] like '%Dir%' or  [Level_03_JOB_TITLE] like 'Head%' or  [Level_03_JOB_TITLE] like '%VP%'
+					then [Level_03_EMPLOYEE_ID] 
+				when [Level_02_JOB_TITLE] like '%Dir%' or  [Level_02_JOB_TITLE] like 'Head%' or  [Level_02_JOB_TITLE] like '%VP%'
+					then [Level_02_EMPLOYEE_ID] 
+				when [Level_01_JOB_TITLE] like '%Dir%' or  [Level_01_JOB_TITLE] like 'Head%' or  [Level_01_JOB_TITLE] like '%VP%'
+					then [Level_01_EMPLOYEE_ID] 
+				else null end [ReportingDirectorId],
 			case 
 				when [Level_12_JOB_TITLE] like '%Dir%' or  [Level_12_JOB_TITLE] like 'Head%'
 					then [Level_12_EMPLOYEE_ID] 
@@ -140,7 +168,7 @@ FROM (
 					then [Level_02_EMPLOYEE_ID] 
 				when [Level_01_JOB_TITLE] like '%Dir%' or  [Level_01_JOB_TITLE] like 'Head%'
 					then [Level_01_EMPLOYEE_ID] 
-				else null end [ReportingDirectorId]      
+				else null end [PciDirectorId]
 		FROM 
 			[dbo].[vw_EmplevelsExpanded]
 		) dir
