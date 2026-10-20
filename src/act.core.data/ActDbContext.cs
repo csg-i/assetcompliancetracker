@@ -276,6 +276,10 @@ namespace act.core.data
                 
                 entity.Property(e => e.LastEmailedOn).HasColumnType("datetime");
 
+                entity.Property(e => e.EscalationMailedOn).HasColumnType("datetime");
+
+                entity.Property(e => e.EscalationStep).HasDefaultValue(0);
+
                 entity.Property(e => e.PciScope).HasDefaultValueSql("4");
 
                 entity.Property(e => e.ProductCode).HasColumnType("nchar(4)");

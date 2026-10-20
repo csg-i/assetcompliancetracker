@@ -92,6 +92,117 @@ namespace act.core.data
             return pn;
         }
 
+        public static void AddMailRecipient(this Employee employee, ICollection<string> emails, ICollection<string> names)
+        {
+            if (employee == null)
+                return;
+
+            var name = employee.OwnerText(false);
+            if (!string.IsNullOrWhiteSpace(name))
+                names.Add(name);
+
+            var email = employee.Email?.ToLower();
+            if (!string.IsNullOrWhiteSpace(email))
+                emails.Add(email);
+        }
+
+        /// <summary>
+        /// PCI Class C mail only. Adds <paramref name="levels"/> managers above the employee.
+        /// Includes the Dir/Head director and stops there. Does not add a VP stored as the reporting director.
+        /// </summary>
+        public static void AddEscalationLevels(this Employee employee, ICollection<string> emails,
+            ICollection<string> names, int levels)
+        {
+            if (employee == null || levels <= 0)
+                return;
+
+            var stopId = employee.PciDirectorId;
+            var current = employee.Supervisor;
+            var seen = new HashSet<long>();
+            var added = 0;
+
+            while (current != null && added < levels && seen.Add(current.Id))
+            {
+                if (stopId.HasValue)
+                {
+                    if (current.Id != stopId.Value && !ReportsToOrIs(current, stopId.Value))
+                        break;
+                }
+                else if (employee.ReportingDirectorId.HasValue &&
+                         (current.Id == employee.ReportingDirectorId.Value ||
+                          !ReportsToOrIs(current, employee.ReportingDirectorId.Value)))
+                {
+                    break;
+                }
+
+                current.AddMailRecipient(emails, names);
+                added++;
+
+                if (stopId.HasValue && current.Id == stopId.Value)
+                    break;
+
+                current = current.Supervisor;
+            }
+        }
+
+        public static async Task<IDictionary<long, Employee>> LoadWithSupervisorChain(
+            this IQueryable<Employee> employees, IEnumerable<long> seedIds)
+        {
+            var map = new Dictionary<long, Employee>();
+            var pending = new Queue<long>(seedIds.Where(id => id > 0).Distinct());
+
+            while (pending.Count > 0)
+            {
+                var batch = new List<long>();
+                while (pending.Count > 0)
+                {
+                    var id = pending.Dequeue();
+                    if (!map.ContainsKey(id))
+                        batch.Add(id);
+                }
+
+                if (batch.Count == 0)
+                    continue;
+
+                var loaded = await employees.AsNoTracking().Where(e => batch.Contains(e.Id)).ToArrayAsync();
+                foreach (var employee in loaded)
+                {
+                    map[employee.Id] = employee;
+                    if (employee.SupervisorId.HasValue && !map.ContainsKey(employee.SupervisorId.Value))
+                        pending.Enqueue(employee.SupervisorId.Value);
+                    if (employee.ReportingDirectorId.HasValue && !map.ContainsKey(employee.ReportingDirectorId.Value))
+                        pending.Enqueue(employee.ReportingDirectorId.Value);
+                    if (employee.PciDirectorId.HasValue && !map.ContainsKey(employee.PciDirectorId.Value))
+                        pending.Enqueue(employee.PciDirectorId.Value);
+                }
+            }
+
+            foreach (var employee in map.Values)
+            {
+                if (employee.SupervisorId.HasValue && map.TryGetValue(employee.SupervisorId.Value, out var supervisor))
+                    employee.Supervisor = supervisor;
+                if (employee.ReportingDirectorId.HasValue &&
+                    map.TryGetValue(employee.ReportingDirectorId.Value, out var director))
+                    employee.ReportingDirector = director;
+            }
+
+            return map;
+        }
+
+        private static bool ReportsToOrIs(Employee start, long directorId)
+        {
+            var current = start;
+            var seen = new HashSet<long>();
+            while (current != null && seen.Add(current.Id))
+            {
+                if (current.Id == directorId)
+                    return true;
+                current = current.Supervisor;
+            }
+
+            return false;
+        }
+
         public static async Task<bool> Exists(this IQueryable<ComplianceResult> queryable, long inventoryItemId,
             Guid runId)
         {

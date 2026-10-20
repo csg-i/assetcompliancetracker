@@ -210,6 +210,9 @@ namespace act.core.data.Migrations
                         .HasColumnType("varchar(64) CHARACTER SET utf8mb4")
                         .HasMaxLength(64);
 
+                    b.Property<long?>("PciDirectorId")
+                        .HasColumnType("bigint");
+
                     b.Property<long?>("ReportingDirectorId")
                         .HasColumnType("bigint");
 
@@ -221,6 +224,8 @@ namespace act.core.data.Migrations
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PciDirectorId");
 
                     b.HasIndex("ReportingDirectorId");
 
@@ -348,6 +353,14 @@ namespace act.core.data.Migrations
 
                     b.Property<int>("EnvironmentId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("EscalationMailedOn")
+                        .HasColumnType("datetime");
+
+                    b.Property<int>("EscalationStep")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<DateTime?>("FailingSince")
                         .HasColumnType("datetime");
