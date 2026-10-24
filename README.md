@@ -1,121 +1,293 @@
 # ACT - Asset Compliance Tracker
-ACT is an hybrid on-prem/cloud PCI monitoring solution for VM's or physical servers.
 
-## Components
-- CHEF Inspec Compliance Tests
-- CHEF Cookbook
-- .NET Core 2.1 AWS Lambda
-- .NET Core 3.1 MVC Website for AWS Elastic Beanstalk
-- .NET Core 3.1 Entity Framework code-first database for AWS Aurora Serverless with migrations
+[![.NET](https://img.shields.io/badge/.NET-8.0-purple.svg)](https://dotnet.microsoft.com/download/dotnet/8.0)
+[![AWS](https://img.shields.io/badge/AWS-Cloud-orange.svg)](https://aws.amazon.com/)
+[![Chef](https://img.shields.io/badge/Chef-Automation-green.svg)](https://www.chef.io/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-blue.svg)](https://www.mysql.com/)
 
-## CHEF Inspec Compliance Tests
-There are two compliance specs, one for linux and one for windows servers or clients.  Basically the Specs take attributes passed in from the node that include:
-- OS Name
-- OS Version
-- TCP Ports
-- UDP Ports
-- Installed Software/Packages/Features
+ACT is a comprehensive hybrid on-premises/cloud PCI compliance monitoring solution designed to track and validate the compliance status of virtual machines and physical servers across multiple environments. The system provides automated compliance testing, centralized specification management, and detailed reporting capabilities.
 
-The Inspec tests then do an RPM query for Linux or some Powershell commands for Windows and then *netstat* for both to get a list of installed components and open ports and compare it to the list passed in.  They are highly optimized to only run the commands 1 time per run and typically are sub second.
+## 🏗️ Architecture Overview
 
-## CHEF Cookbook
-This cookbook is a simple wrapper around CHEF's audit cookbook.  its sole recipe is used to make a REST call to the ACT Website which returns the following information from ACTs database.
-- OS Name
-- OS Version
-- TCP Ports
-- UDP Ports
-- Installed Software/Packages/Features
+ACT consists of four main components working together to provide end-to-end compliance monitoring:
 
-It then sets the list returned into the nodes attributes where they can be retrieved by the CHEF Inspec compliance tests.
+### Core Components
 
-## .NET Core 3.0 AWS Lambda
-Lambda is an AWS serverless offering. The Lambda component is used to Gather information from the various CHEF Automate servers configured in the database.  It is also an extensible framework allowing for configuration based lambda functions to be added.  There is only one Lambda that need be deployed, but it takes as single JSON argument in the form of
+1. **ACT Web Application** (.NET 8.0 MVC)
+   - Centralized web interface for compliance management
+   - Build specification creation and management
+   - Node assignment and compliance reporting
+   - ADFS-based authentication and authorization
 
-    {"name":"function to run", "index":0}
+2. **ACT Lambda Functions** (.NET 8.0 Serverless)
+   - Automated data processing and maintenance tasks
+   - Scheduled execution via AWS CloudWatch Events
+   - Integration with Chef Automate servers
+   - Email notifications and data cleanup
 
-It supports the following function names out of the box:
-- databaseupdate - apply the Entity Framework migrations.  Should be run ON DEMAND.
-- gather - (requires index) Gathers the information from the CHEF Automate server for the environment ID passed into the "index" field of the JSON argument. Configure an AWS CloudWatch Rule to run this on an INTERVAL (hourly).
-- email - sends emails out for  - Configure an AWS CloudWatch Rule to run this on an INTERVAL (daily).
-  - index 0 - Unassigned nodes
-  - index 1 - Not reporting nodes
-- reset - Resets the compliance status of nodes that have not called in for more than 48 hours to "Not Reporting".  Configure an AWS CloudWatch Rule to run this on an INTERVAL (hourly).
-- purgedetails - purges the compliance details. .  Configure an AWS CloudWatch Rule to run this on an INTERVAL (daily).
-- purgeruns - purges the compliance runs older than 28 days.  Configure an AWS CloudWatch Rule to run this on an INTERVAL (daily).
-- purgeinactive - purges the nodes that are have a deactivated date more than 7 days old.  Configure an AWS CloudWatch Rule to run this on an INTERVAL.
+3. **MySQL Database** (AWS Aurora Serverless)
+   - Stores compliance specifications and node data
+   - Entity Framework Code-First with automated migrations
+   - Supports multiple environments (QA, Production)
 
-AWS Cloudwatch can hold logs for this Lambda function and Rules can be configured for each of the calls.  The suggested interval is above in (parenthesis).
+4. **Chef Integration** (Cookbook + InSpec Profiles)
+   - Deploys compliance tests to target servers
+   - Platform-specific compliance validation (Linux/Windows)
+   - Automated reporting back to Chef Automate
 
-### Extending the Lambda
-You can extend the Lambda by building a new .NET Core DLL that has at least one class that inherits from "act.core.etl.lambda.LambdaAddInBase".  
+### AWS Services Used
 
-    public class MyLambdaAddin: LambdaAddinBase
-    {
-        public override IDictionary<string, Func<IServiceScope, Argument, Task<int>>> ProcessFunctions { get; } =
+- **AWS Elastic Beanstalk**: Web application hosting
+- **AWS Lambda**: Serverless function execution
+- **AWS Aurora Serverless**: Managed MySQL database
+- **AWS CodeBuild**: CI/CD pipeline automation
+- **AWS CloudWatch**: Logging, monitoring, and scheduled events
+- **AWS S3**: Artifact storage and data persistence
+- **AWS Systems Manager**: Secure configuration management
 
-            new Dictionary<string, Func<IServiceScope, Argument, Task<int>>>
-            {
-                {
-                    "products",
-                    async (scope, args) => await scope.ServiceProvider.GetService<IMyETLFunc>().AddOrUpdateProducts()
-                },
-                {
-                    "functions",
-                    async (scope, args) => await scope.ServiceProvider.GetService<IMyETLFunc>().AddOrUpdateFunctions()
-                }
-            };
+## 📋 Key Features
 
-        public override void AddServices(IServiceCollection services){
-            services.AddSingleton<IMyETLFunc,MyETLFunc>();
-        }
-    }
+### Compliance Management
+- **Multi-Platform Support**: Linux, Windows, Unix, and appliance compliance
+- **Hierarchical Specifications**: OS specs with application-specific extensions
+- **PCI Classification**: A/B/C class assignment for risk-based compliance
+- **Automated Testing**: InSpec-based compliance validation
+- **Real-time Reporting**: Live compliance status and detailed reports
 
-You can then edit the appsettings.json file you add your component:
+### Automation & Scheduling
+- **Scheduled Data Gathering**: Hourly collection from Chef Automate
+- **Automated Notifications**: Daily email alerts for compliance issues
+- **Data Maintenance**: Automated cleanup of old compliance data
+- **Node Management**: Automatic handling of non-reporting nodes
 
-    {
-      ...,
-      "AddIns":[
-        "org.mycompany.MyEtlFunctions"
-      ]
-    }
+### Integration Capabilities
+- **Chef Automate Integration**: Seamless data collection and reporting
+- **ADFS Authentication**: Enterprise single sign-on support
+- **Email Notifications**: SMTP-based alerting system
+- **Extensible Architecture**: Plugin system for custom functionality
 
-**Important**: You must also include the compiled DLL and all of its **dependencies** in the Lambda binaries folder as as sibling to *act.core.etl.lambda.dll*
+## 🚀 Quick Start
 
-## .NET Core 3.0 MVC Website for Docker on AWS Fargate
-The website is a response UI based on the [jayMVC](https://github.com/unscrum/jaymvc) framework.  It interfaces with an ADFS Server via FederationMetaData for logins and allows users to be able to add *Build Specs* for servers. The website is built to be a central repository for housing specs for all nodes across all environments, including Windows/Linux Servers as well as Appliances, UNIX, Mainframes and any other types.  Although we only have Compliance Specs created for Linux and Windows the website can be a one stop shop for every type of server during a PCI Audit.
+### Prerequisites
+- .NET 8.0 SDK
+- MySQL 8.0+
+- Visual Studio 2022 or VS Code
+- AWS CLI (for cloud deployment)
+- Chef Development Kit (for cookbook development)
 
-### Concepts
- Build Specs is that there are some things that are platform/OS specific and some that are application specific.  The Website allows **OS Specs** to be created to cover the basic OS install for your company, and the **App  Specs** to inherit from an **OS Spec** and extend it by adding in more installed components or open ports.
+### Local Development Setup
+```bash
+# Clone repository
+git clone https://github.com/your-org/assetcompliancetracker.git
+cd assetcompliancetracker
 
- Nodes can be assigned to an **App Spec** at the end of the wizard, via the **App Spec** Search page, or via the node search page.  
+# Restore dependencies
+dotnet restore
 
- Nodes when imported should be assigned an PCI Class:
-  - A = 1 - Most Secure - touches PCI data
-  - B = 2 - More Secure - doesn't touch PCI data but has contact with **A** nodes.
-  - C = 4 - Doesn't touch PCI data or have any communication with nodes that are **A**.
+# Build solution
+dotnet build
 
-  Nodes can can also be assigned to platform type when imported:
-  - Linux = 0
-  - Windows Server = 1
-  - Other = 2
-  - Unix = 3
-  - Windows Client = 4
-  - Appliance = 5
+# Setup database
+docker run --name act-mysql -e MYSQL_ROOT_PASSWORD=1234 -p 3306:3306 -d mysql:8.0
 
-### Screens
-The dashboard gives graphs that produce an overview of your organizations PCI Health.
+# Run web application
+cd src/act.core.web
+dotnet run
+```
 
-There are screens for searching and adding/editing **Build Specification** as well as Report screens for an **App Spec** that can be shown to PCI Assessors.
+**📖 For detailed setup instructions, see [Local Development Guide](docs/LOCAL_DEVELOPMENT.md)**
 
-The **Spec wizard** will change based on the kind of server. Windows Servers will have 4 steps.
-- Windows OS Features
-- Windows 3rd Party Apps
-- Ports
+## 🏗️ Architecture Documentation
 
-While Linux Servers will only have 3
-- Packages
-- Ports
+For comprehensive architecture information, deployment diagrams, and system design details:
 
-and Other will only have **Ports**
+**📖 See [Architecture Documentation](docs/ARCHITECTURE.md)**
 
-There is also a Node search feature that allows for quickly finding Nodes and assigning them for specs.
+## 📦 Repository Structure
+
+```
+├── src/                          # Source code
+│   ├── act.core.web/            # MVC Web Application
+│   ├── act.core.etl.lambda/     # Lambda Functions
+│   ├── act.core.etl/            # ETL Business Logic
+│   └── act.core.data/           # Entity Framework Data Layer
+├── Chef/                        # Chef Cookbook
+│   └── cookbooks/act/           # ACT Chef Cookbook
+├── Compliance/                  # InSpec Compliance Profiles
+│   ├── csg_linux_compliant_server/    # Linux compliance tests
+│   └── csg_windows_compliant_server/  # Windows compliance tests
+├── Docker/                      # Docker configuration
+├── docs/                        # Documentation
+│   ├── ARCHITECTURE.md          # System architecture
+│   └── LOCAL_DEVELOPMENT.md     # Development setup
+├── BuildSpec.yml               # AWS CodeBuild configuration
+└── ACT.sln                     # Visual Studio solution
+```
+
+## 🔧 Development Workflow
+
+### Web Application Development
+```bash
+cd src/act.core.web
+dotnet run
+# Access at https://localhost:44363
+```
+
+### Lambda Function Testing
+```bash
+cd src/act.core.etl.lambda
+# Test database migration
+dotnet run -- '{"name":"databaseupdate","index":0}'
+# Test data gathering
+dotnet run -- '{"name":"gather","index":1}'
+```
+
+### Chef Cookbook Development
+```bash
+cd Chef/cookbooks/act
+cookstyle .           # Syntax checking
+chef exec rspec       # Unit tests
+kitchen test          # Integration tests
+```
+
+### InSpec Profile Development
+```bash
+cd Compliance/csg_linux_compliant_server
+inspec check .        # Validate profile
+inspec exec .         # Run compliance tests
+```
+
+## 🚀 Deployment
+
+### AWS Deployment Pipeline
+The system uses AWS CodeBuild for automated deployment:
+
+1. **Source**: Code changes trigger the build pipeline
+2. **Build**: Compiles .NET applications and packages artifacts
+3. **Deploy**: 
+   - Web app to Elastic Beanstalk (QA and Production)
+   - Lambda functions to AWS Lambda
+   - Database migrations via Lambda
+
+### Manual Deployment
+```bash
+# Build and package
+dotnet publish src/act.core.web -c Release
+dotnet publish src/act.core.etl.lambda -c Release
+
+# Deploy to AWS (requires AWS CLI configuration)
+aws elasticbeanstalk create-application-version --application-name ACT
+aws lambda update-function-code --function-name ACT-ETL
+```
+
+## 🔍 Lambda Functions
+
+The system includes several Lambda functions for automated operations:
+
+| Function | Purpose | Schedule |
+|----------|---------|----------|
+| `databaseupdate` | Apply Entity Framework migrations | On-demand |
+| `gather` | Collect data from Chef Automate servers | Hourly |
+| `email` | Send compliance notifications | Daily |
+| `reset` | Reset non-reporting node status | Hourly |
+| `purgedetails` | Clean up compliance details | Daily |
+| `purgeruns` | Remove old compliance runs (28+ days) | Daily |
+| `purgeinactive` | Remove deactivated nodes (7+ days) | Daily |
+
+## 🎯 Compliance Testing
+
+### Supported Platforms
+- **Linux**: CentOS, RHEL, RedHat distributions
+- **Windows**: Server and Client versions
+- **Other**: Unix, Appliances, Mainframes (port-only testing)
+
+### PCI Classification Levels
+- **Class A (1)**: Most secure - directly handles PCI data
+- **Class B (2)**: More secure - communicates with Class A nodes
+- **Class C (4)**: Standard - no PCI data interaction
+
+### Testing Process
+1. **Specification Retrieval**: Chef cookbook calls ACT web service
+2. **Attribute Setting**: Node attributes configured from specifications
+3. **Compliance Execution**: InSpec profiles run platform-specific tests
+4. **Result Reporting**: Compliance status reported to Chef Automate
+5. **Data Collection**: Lambda functions gather results for centralized reporting
+
+## 🔌 Extensibility
+
+### Lambda Function Extensions
+Create custom ETL functions by implementing `LambdaAddinBase`:
+
+```csharp
+public class MyLambdaAddin: LambdaAddinBase
+{
+    public override IDictionary<string, Func<IServiceScope, Argument, Task<int>>> ProcessFunctions { get; } =
+        new Dictionary<string, Func<IServiceScope, Argument, Task<int>>>
+        {
+            { "myfunction", async (scope, args) => await MyCustomFunction() }
+        };
+}
+```
+
+### Configuration
+Add to `appsettings.json`:
+```json
+{
+  "AddIns": ["org.mycompany.MyEtlFunctions"]
+}
+```
+
+## 📊 Monitoring & Alerting
+
+### CloudWatch Integration
+- Application and Lambda function logs
+- Custom metrics for compliance tracking
+- Automated alerting for system issues
+
+### Email Notifications
+- Unassigned nodes alerts
+- Non-reporting nodes notifications
+- Compliance status summaries
+
+## 🔒 Security
+
+### Authentication
+- ADFS Federation for web application
+- AWS IAM roles for service communication
+- Parameter Store for secure configuration
+
+### Data Protection
+- SSL/TLS encryption in transit
+- Database encryption at rest
+- Secure credential management
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development Guidelines
+- Follow .NET coding standards
+- Include unit tests for new functionality
+- Update documentation for architectural changes
+- Test Chef cookbook changes with Test Kitchen
+- Validate InSpec profiles before submission
+
+## 📄 License
+
+This project is proprietary software. Copyright (c) 2017 CSG Systems International, Inc. and/or its affiliates ("CSG"). All Rights Reserved.
+
+## 📞 Support
+
+For technical support and questions:
+- **Issues**: Use GitHub Issues for bug reports and feature requests
+- **Documentation**: See [docs/](docs/) directory for detailed guides
+- **Architecture**: Review [ARCHITECTURE.md](docs/ARCHITECTURE.md) for system design
+- **Development**: Follow [LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md) for setup
+
+---
+
+**🏆 ACT provides enterprise-grade PCI compliance monitoring with the flexibility of cloud deployment and the reliability of automated testing.**
