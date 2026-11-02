@@ -317,7 +317,8 @@ namespace act.core.data
         }
         public static IQueryable<Node> ForEnvironments(this IQueryable<Node> nodes, int[] environmentIds)
         {
-            return nodes.Where(p => environmentIds.Contains(p.EnvironmentId));
+            var ids = environmentIds.ToList();
+            return nodes.Where(p => ids.Contains(p.EnvironmentId));
         }
 
         public static IQueryable<Node> Inactive(this IQueryable<Node> nodes)
@@ -337,7 +338,8 @@ namespace act.core.data
 
         public static IQueryable<Node> ByPciScopes(this IQueryable<Node> nodes, PciScopeConstant[] pciScopes)
         {
-            return nodes.Where(p => pciScopes.Contains(p.PciScope));
+            var scopes = pciScopes.ToList();
+            return nodes.Where(p => scopes.Contains(p.PciScope));
         }
 
         public static IQueryable<Node> ByPlatform(this IQueryable<Node> nodes, PlatformConstant platform)
@@ -346,7 +348,8 @@ namespace act.core.data
         }
         public static IQueryable<Node> ByPlatforms(this IQueryable<Node> nodes, PlatformConstant[] platforms)
         {
-            return nodes.Where(p => platforms.Contains(p.Platform));
+            var list = platforms.ToList();
+            return nodes.Where(p => list.Contains(p.Platform));
         }
 
         public static IQueryable<Node> ByComplianceStatus(this IQueryable<Node> nodes, ComplianceStatusConstant status)
@@ -356,7 +359,8 @@ namespace act.core.data
 
         public static IQueryable<Node> ByComplianceStatuses(this IQueryable<Node> nodes, ComplianceStatusConstant[] statuses)
         {
-            return nodes.Where(p => statuses.Contains(p.ComplianceStatus));
+            var list = statuses.ToList();
+            return nodes.Where(p => list.Contains(p.ComplianceStatus));
         }
 
         public static IQueryable<Node> ByProductCode(this IQueryable<Node> nodes, string productCode)

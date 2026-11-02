@@ -200,7 +200,7 @@ namespace act.core.web.Services
                     if (!string.IsNullOrWhiteSpace(query))
                     {
                         var empIds = await node.Select(p => p.Owner).Search(query).Select(p => p.Id).Distinct()
-                            .ToArrayAsync();
+                            .ToListAsync();
                         node = node.Where(p => empIds.Contains(p.OwnerEmployeeId));
                     }
 
@@ -213,7 +213,7 @@ namespace act.core.web.Services
                         var empIds =
                             (await node.Where(p => p.Owner.ReportingDirectorId != null)
                                 .Select(p => p.Owner.ReportingDirector).Search(query).Select(p => p.Id).Distinct()
-                                .ToArrayAsync()).Cast<long?>().ToArray();
+                                .ToListAsync()).Cast<long?>().ToList();
                         node = node.Where(p => empIds.Contains(p.Owner.ReportingDirectorId));
                     }
 
