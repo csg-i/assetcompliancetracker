@@ -78,8 +78,7 @@ namespace act.core.web.Controllers
             return View(new BuildSpecReport(id, uri.AbsoluteUri.Replace(uri.PathAndQuery, string.Empty)));
         }
 
-        [HttpGet]
-        [HttpPost]
+        [AcceptVerbs("GET", "POST")]
         [AllowAnonymous]
         public async Task<PartialViewResult> Specs(long id)
         {
