@@ -58,15 +58,17 @@ namespace act.core.web.Services
             _logger = loggerFactory.CreateLogger<JustificationFactory>();
         }
 
-        private IQueryable<SoftwareComponent> GetOrCreateSoftwareComponent()
+        private List<SoftwareComponent> GetOrCreateSoftwareComponent()
         {
             const string key = "softwareComponent";
             _logger.LogInformation("To retrieve Software Component");
-            if (!_cache.TryGetValue(key, out IQueryable<SoftwareComponent> softwareComponents))
+            if (!_cache.TryGetValue(key, out List<SoftwareComponent> softwareComponents))
             {
                 _logger.LogInformation("Hitting DB for Software component");
                 softwareComponents = _ctx.SoftwareComponents.AsNoTracking()
-                    .Include(a => a.SoftwareComponentEnvironments).AsNoTracking();
+                    .Include(a => a.SoftwareComponentEnvironments)
+                    .AsNoTracking()
+                    .ToList();
 
                 var cacheEntryOptions = new MemoryCacheEntryOptions()
                     .SetPriority(CacheItemPriority.High)
@@ -423,6 +425,8 @@ namespace act.core.web.Services
             }
             else
             {
+                if (appSpec.Parent == null)
+                    throw new ArgumentException($"Application spec {specId} has no parent OS spec.", nameof(specId));
 
                 appSpec.SoftwareComponents =
                     softwareComponent.Where(x => x.BuildSpecificationId == appSpec.Id).ToList();
