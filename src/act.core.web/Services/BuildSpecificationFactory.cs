@@ -443,7 +443,7 @@ namespace act.core.web.Services
             apps.AddRange(appSpec.SoftwareComponents);
 
             var ids = apps.Select(p => p.JustificationId).Where(p => p.HasValue).Select(p => p.Value).Distinct()
-                .ToArray();
+                .ToList();
 
 
             var sofwareJts = new List<JustificationTypeConstant>();
