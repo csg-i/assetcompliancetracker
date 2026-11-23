@@ -86,7 +86,7 @@ namespace act.core.web.Services
                     }
                     else
                     {
-                        var empIds = Ctx.Employees.Search(query).Select(p => p.Id).ToArray();
+                        var empIds = Ctx.Employees.Search(query).Select(p => p.Id).ToList();
                         q = q.Where(p => empIds.Contains(p.OwnerEmployeeId)).OrderBy(p => p.Owner.FirstName)
                             .ThenBy(p => p.Owner.LastName).ThenBy(p => p.Name);
                     }
